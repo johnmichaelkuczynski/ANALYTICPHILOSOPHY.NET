@@ -130,6 +130,7 @@ const figuresPapers = {
   ],
   "darwin": [
     { file: "darwin_complete_works.txt", title: "On the Origin of Species, The Expression of the Emotions in Man and Animals & The Descent of Man" },
+    { file: "darwin_autobiography.txt", title: "The Autobiography of Charles Darwin" },
   ],
   "dewey": [
     { file: "dewey_democracy_education.txt", title: "Democracy and Education" },
