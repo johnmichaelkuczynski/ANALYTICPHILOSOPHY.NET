@@ -133,7 +133,7 @@ const figuresPapers = {
     { file: "darwin_autobiography.txt", title: "The Autobiography of Charles Darwin" },
   ],
   "dewey": [
-    { file: "dewey_democracy_education.txt", title: "Democracy and Education" },
+    { file: "dewey_collected_works.txt", title: "The Collected Works of John Dewey" },
   ],
   "kant": [
     { file: "kant_kuczynski_analysis.txt", title: "Kuczynski's Analysis: Kant on God and Theology" },
