@@ -184,7 +184,7 @@ const figuresPapers = {
     { file: "peirce_writings.txt", title: "The Essential Peirce: Selected Philosophical Writings, Volume 2 (1893-1913)" },
   ],
   "leibniz": [
-    { file: "leibniz_theodicy_utf8.txt", title: "Theodicy: Essays on the Goodness of God, the Freedom of Man and the Origin of Evil" },
+    { file: "leibniz_complete_works.txt", title: "The Collected Works of Gottfried Wilhelm Leibniz" },
   ],
   "william-james": [
     { file: "james_collected_works.txt", title: "The Collected Works of William James" },
