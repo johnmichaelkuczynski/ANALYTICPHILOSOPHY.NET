@@ -140,6 +140,7 @@ const figuresPapers = {
     { file: "lenin_materialism_empirio_criticism.txt", title: "Materialism and Empirio-Criticism" },
   ],
   "hegel": [
+    { file: "hegel_science_of_logic.txt", title: "The Logic of Hegel (Science of Logic)" },
     { file: "hegel_philosophy_of_mind.txt", title: "Philosophy of Mind" },
   ],
   "hobbes": [
