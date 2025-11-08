@@ -137,6 +137,7 @@ const figuresPapers = {
     { file: "descartes_principles_of_philosophy.txt", title: "Principles of Philosophy" },
   ],
   "lenin": [
+    { file: "lenin_collected_works.txt", title: "Collected Works of Vladimir Lenin (25+ Texts)" },
     { file: "lenin_materialism_empirio_criticism.txt", title: "Materialism and Empirio-Criticism" },
   ],
   "hegel": [
