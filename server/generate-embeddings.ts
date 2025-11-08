@@ -139,7 +139,7 @@ const figuresPapers = {
     { file: "kant_kuczynski_analysis.txt", title: "Kuczynski's Analysis: Kant on God and Theology" },
   ],
   "descartes": [
-    { file: "descartes_principles_of_philosophy.txt", title: "Principles of Philosophy" },
+    { file: "descartes_collected_works.txt", title: "The Collected Works of René Descartes" },
   ],
   "lenin": [
     { file: "lenin_collected_works.txt", title: "Collected Works of Vladimir Lenin (25+ Texts)" },
