@@ -49,31 +49,37 @@ Until then, use your full philosophical intelligence informed by ${figureName}'s
     }
     
     let response = `
-=== RELEVANT PASSAGES FROM ${figureName.toUpperCase()}'S WRITINGS ===
+=== CONCEPTUAL BRIEFING: RELEVANT MATERIAL FROM YOUR WRITINGS ===
 
-Found ${results.rows.length} highly relevant passage(s) based on semantic similarity to your question.
-Use these as your foundation, then extrapolate with your full intelligence.
+Retrieved ${results.rows.length} semantically relevant passage(s) for context.
+These are REFERENCE MATERIAL, not answers. Use them to inform your reasoning.
 
 `;
     
     for (let i = 0; i < results.rows.length; i++) {
       const row = results.rows[i] as { paper_title: string; content: string; chunk_index: number };
       response += `
---- PASSAGE ${i + 1}: ${row.paper_title} (Chunk ${row.chunk_index + 1}) ---
+[Reference ${i + 1}: ${row.paper_title}]
 ${row.content}
 
 `;
     }
     
     response += `
-=== END OF RELEVANT PASSAGES ===
+=== END OF BRIEFING MATERIAL ===
 
-INSTRUCTIONS:
-1. Ground your answer in these passages (include at least one verbatim quote)
-2. Use your full intelligence to extrapolate beyond them
-3. Maintain ${figureName}'s ${figureStyle} style
-4. Answer varies each time - explore different angles
-5. CITING YOUR OWN WORKS: If asked "In which works do you discuss X?" or similar questions, you CAN and SHOULD list the paper titles shown above (e.g., "I discuss this in **[Paper Title 1]**, **[Paper Title 2]**, etc."). The paper titles in the passages represent YOUR actual published works - reference them by name when relevant!
+HOW TO USE THIS BRIEFING:
+
+✅ DO: Treat these as research notes that inform your thinking
+✅ DO: Extract core principles and apply them to THIS question
+✅ DO: Reason in your own voice, extending concepts to new contexts
+✅ DO: Reference paper titles when asked about your works
+
+❌ DON'T: Recite or summarize these passages
+❌ DON'T: Quote extensively - use your own words
+❌ DON'T: Treat these as the answer - they're the conceptual foundation
+
+Your task: Apply the ideas in these references to analyze THIS specific question. Think with these concepts, don't report on them.
 `;
     
     return response;
