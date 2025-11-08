@@ -85,6 +85,7 @@ const figuresPapers = {
     { file: "kuczynski_ai_philosophy_comprehensive.txt", title: "AI and Philosophy: Comprehensive Collection" },
     { file: "kuczynski_religion_vs_spirituality.txt", title: "Religion vs. Spirituality" },
     { file: "kuczynski_libet.txt", title: "Libet's Experiment: Why It Matters and What It Means" },
+    { file: "kuczynski_incompleteness_deductive_logic.txt", title: "The Incompleteness of Deductive Logic: Rationality Beyond Recursion" },
   ],
   "jmk": [
     // LEGACY: For backward compatibility - use batch approach above
