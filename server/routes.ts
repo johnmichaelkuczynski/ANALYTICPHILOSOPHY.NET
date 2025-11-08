@@ -883,42 +883,50 @@ You are a living intellect attacking problems, NOT a textbook summarizing views.
       // VECTOR SEARCH: Find highly relevant chunks from this figure's writings
       const relevantPassages = await findRelevantChunks(topic, 12, figureId); // More chunks for longer paper
 
-      // Build paper writing prompt
+      // Build paper writing prompt with aggressive attack mode
       const paperPrompt = `${figure.systemPrompt}
 
 RELEVANT PASSAGES FROM YOUR WRITINGS:
 ${relevantPassages}
 
-🎯 CRITICAL: PARSE THE LOGICAL STRUCTURE OF THE TOPIC
+⚔️ PAPER WRITING TASK - ATTACK MODE:
 
-Before writing, IDENTIFY what this topic is ACTUALLY asking for:
-- Is it asking for a DEFINITION? → Define the concept precisely
-- Is it asking for a MECHANISM explanation? → Explain HOW it works step-by-step
-- Is it asking for a DISTINCTION between concepts? → Explain the difference explicitly
-- Is it asking about a DERIVATION or logical argument? → Address that specific reasoning
-- Is it asking for your POSITION on a debate? → Present your stance with supporting arguments
-
-❌ DO NOT write generic talking points about the topic
-✅ DO address the SPECIFIC logical structure of what's being asked
-✅ EVERY component of the topic must be explored thoroughly
-
-🎯 PAPER WRITING TASK:
-
-You have been asked to write an original philosophical paper on the following topic:
-
-"${topic}"
+You have been asked to write an original philosophical paper on: "${topic}"
 
 REQUIREMENTS:
-- Write a comprehensive paper of approximately 1000-1500 words
+- 1000-1500 words of direct philosophical engagement
 - Write in YOUR authentic voice as ${figure.name}
-- Draw on YOUR philosophical knowledge and the passages above
-- Include verbatim quotes when they genuinely advance your argument (quality over quantity)
-- Structure: Introduction → Main Arguments → Conclusion
-- Be thorough and substantive - this is a serious academic paper
-- Use plain text (no markdown formatting)
-- Maintain philosophical rigor while being accessible
-- Address the SPECIFIC logical structure of the topic (not just general remarks)
-- DO philosophy, don't TEACH about your philosophy
+- Plain text only (no markdown formatting)
+
+CRITICAL APPROACH - IMMEDIATE ATTACK:
+
+❌ FORBIDDEN OPENINGS:
+"This paper will explore..."
+"In this essay, I will examine..."
+"To understand this topic, we must first..."
+"It is important to recognize..."
+
+✅ ATTACK IMMEDIATELY:
+Start with your thesis, your objection, your reframing, or your mechanism.
+NO preambles about what you're going to do - DO IT.
+
+STRUCTURE:
+Opening → Immediate engagement with the problem/thesis
+Body → Deploy your conceptual apparatus with visible mechanism
+Conclusion → Decisive verdict (no hedging or "balance")
+
+COMMIT WITHOUT HEDGING:
+If something is wrong, say it's wrong. If something follows, say it follows.
+Ban: "Perhaps...", "Might...", "Could be said...", "It seems..."
+
+SHOW MECHANISM:
+Demonstrate HOW and WHY through visible reasoning. Walk through logical structure step by step.
+
+QUOTES AS WEAPONS:
+Include quotes ONLY when they advance your argument. Each quote should be a logical move, not decoration.
+
+REFRAME IF NEEDED:
+If the topic accepts false premises, reject them first and show why the question itself needs reformulation.
 
 ${personaSettings ? `
 STYLE ADAPTATION:
@@ -927,7 +935,7 @@ STYLE ADAPTATION:
 - Formality: ${personaSettings.formality}
 ` : ''}
 
-Now write your paper on "${topic}":`;
+You are a living intellect attacking this problem. Write the paper NOW - no narration, no stage-setting, just direct philosophical work:`;
 
       // Setup SSE headers
       res.setHeader("Content-Type", "text/event-stream");
