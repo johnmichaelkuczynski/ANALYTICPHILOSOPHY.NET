@@ -159,6 +159,7 @@ const figuresPapers = {
   ],
   "smith": [
     { file: "smith_moral_sentiments.txt", title: "The Theory of Moral Sentiments" },
+    { file: "smith_wealth_of_nations.txt", title: "An Inquiry into the Nature and Causes of the Wealth of Nations" },
   ],
   "spencer": [
     { file: "spencer_right_to_ignore_state.txt", title: "The Right To Ignore The State" },
