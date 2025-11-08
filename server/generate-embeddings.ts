@@ -191,6 +191,7 @@ const figuresPapers = {
   ],
   "poe": [
     { file: "poe_volume_1.txt", title: "The Works of Edgar Allan Poe — Volume 1" },
+    { file: "poe_volume_2.txt", title: "The Works of Edgar Allan Poe — Volume 2" },
     { file: "poe_volume_4.txt", title: "The Works of Edgar Allan Poe — Volume 4" },
     { file: "poe_volume_5.txt", title: "The Works of Edgar Allan Poe — Volume 5" },
   ]
