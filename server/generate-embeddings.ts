@@ -141,6 +141,7 @@ const figuresPapers = {
   ],
   "descartes": [
     { file: "descartes_collected_works.txt", title: "The Collected Works of René Descartes" },
+    { file: "descartes_meditations_guide.txt", title: "Kuczynski's Guide to Descartes' Meditations (Cartesian Epistemology)" },
   ],
   "lenin": [
     { file: "lenin_collected_works.txt", title: "Collected Works of Vladimir Lenin (25+ Texts)" },
