@@ -1,6 +1,7 @@
 # Ask A Philosopher - Philosophical Q&A Application
 
 ## Recent Changes (November 8, 2025)
+- **Compare Thinkers Download Feature**: Added download button to Compare Thinkers modal allowing users to export both responses as a formatted text file with questions and answers clearly labeled
 - **Russell The Analysis of Mind Training**: Added "The Analysis of Mind" (234 chunks, 89,179 words) - Russell's seminal 1921 work on philosophy of mind and psychology covering consciousness, neutral monism, behaviorism, introspection, memory, belief, desire, and the relationship between mind and matter. Total Russell corpus now 441 chunks across 5 major works.
 - **Marden The Secret of Achievement Training**: Added "The Secret of Achievement" (134 chunks, 51,256 words) - Marden's comprehensive guide to success principles, personal development, optimism, positive thinking, cultivating will-power and character, New Thought philosophy. Total Marden corpus now 416 chunks across 5 major works.
 - **Kuczynski AI & Philosophy Training Complete**: Added "AI and Philosophy: Logic, Epistemology, Mind & System L" (82 chunks, 31,451 words) - comprehensive treatise on AI Logic vs Classical Logic, System L (pattern recognition, meta-reasoning, defeasible inference), AI solutions to Gettier problem and induction, critique of Computational Theory of Mind, LLM evidence for semantics/grammar, Universal Grammar reconciliation with Connectionism, AI architecture and theories of self/truth/explanation

@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, X, Users } from "lucide-react";
+import { Send, X, Users, Download } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Figure, FigureMessage } from "@shared/schema";
 
@@ -149,6 +149,60 @@ export function ComparisonModal({ open, onOpenChange, figures }: ComparisonModal
     setStreaming2("");
   };
 
+  const handleDownload = () => {
+    if (!selectedFigure1 || !selectedFigure2) return;
+    
+    const timestamp = new Date().toLocaleString();
+    let content = `Philosophical Comparison: ${selectedFigure1.name} vs ${selectedFigure2.name}\n`;
+    content += `Generated: ${timestamp}\n`;
+    content += `${'='.repeat(80)}\n\n`;
+    
+    // Get all unique user questions
+    const userMessages = messages1.filter(m => m.role === 'user');
+    
+    userMessages.forEach((userMsg, index) => {
+      content += `QUESTION ${index + 1}:\n`;
+      content += `${userMsg.content}\n\n`;
+      content += `${'-'.repeat(80)}\n\n`;
+      
+      // Find corresponding responses
+      const response1 = messages1.find(m => 
+        m.role === 'assistant' && 
+        messages1.indexOf(m) > messages1.indexOf(userMsg) &&
+        (index === userMessages.length - 1 || messages1.indexOf(m) < messages1.indexOf(userMessages[index + 1]))
+      );
+      
+      const response2 = messages2.find(m => 
+        m.role === 'assistant' && 
+        messages2.indexOf(m) > messages2.indexOf(userMsg) &&
+        (index === userMessages.length - 1 || messages2.indexOf(m) < messages2.indexOf(userMessages[index + 1]))
+      );
+      
+      if (response1) {
+        content += `${selectedFigure1.name.toUpperCase()}'S RESPONSE:\n`;
+        content += `${response1.content}\n\n`;
+      }
+      
+      if (response2) {
+        content += `${selectedFigure2.name.toUpperCase()}'S RESPONSE:\n`;
+        content += `${response2.content}\n\n`;
+      }
+      
+      content += `${'='.repeat(80)}\n\n`;
+    });
+    
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const filename = `${selectedFigure1.name.replace(/\s+/g, '_')}_vs_${selectedFigure2.name.replace(/\s+/g, '_')}_comparison_${Date.now()}.txt`;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   useEffect(() => {
     if (messagesEndRef1.current) {
       messagesEndRef1.current.scrollIntoView({ behavior: "smooth" });
@@ -173,14 +227,27 @@ export function ComparisonModal({ open, onOpenChange, figures }: ComparisonModal
               <DialogTitle className="text-xl">Compare Two Thinkers</DialogTitle>
             </div>
             {!isSelectionMode && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleReset}
-                data-testid="button-change-thinkers"
-              >
-                Change Thinkers
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownload}
+                  disabled={messages1.length === 0 && messages2.length === 0}
+                  data-testid="button-download-comparison"
+                  title="Download both responses"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleReset}
+                  data-testid="button-change-thinkers"
+                >
+                  Change Thinkers
+                </Button>
+              </div>
             )}
           </div>
           <p className="text-sm text-muted-foreground mt-2">
