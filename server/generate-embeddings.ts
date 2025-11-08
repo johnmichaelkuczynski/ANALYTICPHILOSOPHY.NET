@@ -168,6 +168,7 @@ const figuresPapers = {
     { file: "mises_human_action.txt", title: "Human Action: A Treatise on Economics" },
     { file: "mises_theory_money_credit.txt", title: "The Theory of Money and Credit" },
     { file: "mises_liberalism.txt", title: "Liberalism: In The Classical Tradition" },
+    { file: "mises_bureaucracy.txt", title: "Bureaucracy" },
   ],
   "smith": [
     { file: "smith_moral_sentiments.txt", title: "The Theory of Moral Sentiments" },
