@@ -128,6 +128,7 @@ const figuresPapers = {
     { file: "russell_free_thought.txt", title: "Free Thought and Official Propaganda" },
     { file: "russell_time.txt", title: "On the Experience of Time" },
     { file: "russell_principles_mathematics.txt", title: "The Principles of Mathematics" },
+    { file: "russell_political_ideals.txt", title: "Political Ideals" },
   ],
   "darwin": [
     { file: "darwin_complete_works.txt", title: "On the Origin of Species, The Expression of the Emotions in Man and Animals & The Descent of Man" },
