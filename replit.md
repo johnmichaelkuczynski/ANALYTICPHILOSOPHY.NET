@@ -1,5 +1,10 @@
 # Ask A Philosopher - Philosophical Q&A Application
 
+## Recent Changes (November 8, 2025)
+- **Marden The Secret of Achievement Training**: Added "The Secret of Achievement" (134 chunks, 51,256 words) - Marden's comprehensive guide to success principles, personal development, optimism, positive thinking, cultivating will-power and character, New Thought philosophy. Total Marden corpus now 416 chunks across 5 major works.
+- **Kuczynski AI & Philosophy Training Complete**: Added "AI and Philosophy: Logic, Epistemology, Mind & System L" (82 chunks, 31,451 words) - comprehensive treatise on AI Logic vs Classical Logic, System L (pattern recognition, meta-reasoning, defeasible inference), AI solutions to Gettier problem and induction, critique of Computational Theory of Mind, LLM evidence for semantics/grammar, Universal Grammar reconciliation with Connectionism, AI architecture and theories of self/truth/explanation
+- **CRITICAL PRODUCTION BUG FIXED (v2)**: Resolved persistent race condition where streaming responses vanished in deployment. Root cause: refetch completed BEFORE server committed message to database, overwriting cache with old data. Fix: Keep message visible as `pendingAssistantMessage` until refetch confirms persistence (message count increase + content match), preventing blank screen during database write delay. Uses local accumulators to avoid stale state closure bugs. Applied to both main chat and figure chat.
+
 ## Overview
 "Ask A Philosopher" is a philosophical Q&A application designed for deep philosophical discourse with 44 philosophical and literary figures. It leverages their actual writings and advanced AI to provide nuanced and contextually rich responses. The platform integrates philosophical papers as foundational texts, enabling the AI to reason and adapt based on user sophistication. It supports multi-author conversations through a Retrieval-Augmented Generation (RAG) system, ensuring each figure's responses are grounded in their respective works. The project aims to offer an accessible and engaging way to explore complex philosophical ideas and literary works, with J.-M. Kuczynski as the default philosopher.
 
