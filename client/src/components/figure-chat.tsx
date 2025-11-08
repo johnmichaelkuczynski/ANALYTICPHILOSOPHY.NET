@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Download, FileText } from "lucide-react";
+import { Send, Download, FileText, Upload, X } from "lucide-react";
 import type { Figure, FigureMessage } from "@shared/schema";
 import { PaperWriter } from "@/components/paper-writer";
 
@@ -22,7 +22,9 @@ export function FigureChat({ figure, open, onOpenChange }: FigureChatProps) {
   const [messageCountBeforePending, setMessageCountBeforePending] = useState<number>(0);
   const [isStreaming, setIsStreaming] = useState(false);
   const [paperWriterOpen, setPaperWriterOpen] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<{ name: string; content: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: messages = [] } = useQuery<FigureMessage[]>({
     queryKey: [`/api/figures/${figure?.id}/messages`],
@@ -42,7 +44,13 @@ export function FigureChat({ figure, open, onOpenChange }: FigureChatProps) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ 
+          message,
+          uploadedDocument: uploadedFile ? {
+            name: uploadedFile.name,
+            content: uploadedFile.content
+          } : undefined
+        }),
       });
 
       if (!response.ok) {
@@ -138,6 +146,38 @@ export function FigureChat({ figure, open, onOpenChange }: FigureChatProps) {
     const message = input.trim();
     setInput("");
     sendMessageMutation.mutate(message);
+    setUploadedFile(null); // Clear uploaded file after sending
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Check file size (limit to 1MB)
+    if (file.size > 1024 * 1024) {
+      alert("File too large. Please upload a file smaller than 1MB.");
+      return;
+    }
+
+    // Check file type
+    const allowedTypes = [".txt", ".md", ".doc", ".docx", ".pdf"];
+    const fileExtension = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
+    
+    if (!allowedTypes.includes(fileExtension)) {
+      alert("Please upload a text file (.txt, .md, .doc, .docx, or .pdf)");
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      setUploadedFile({
+        name: file.name,
+        content: text
+      });
+    } catch (error) {
+      console.error("Error reading file:", error);
+      alert("Error reading file. Please try again.");
+    }
   };
 
   const handleDownload = () => {
@@ -309,7 +349,45 @@ export function FigureChat({ figure, open, onOpenChange }: FigureChatProps) {
         </ScrollArea>
 
         <div className="px-6 py-4 border-t">
+          {uploadedFile && (
+            <div className="mb-3 p-3 bg-muted rounded-lg flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium">{uploadedFile.name}</span>
+                <span className="text-xs text-muted-foreground">
+                  ({(uploadedFile.content.length / 1024).toFixed(1)}KB)
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setUploadedFile(null)}
+                data-testid="button-remove-upload"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
           <div className="flex gap-2 items-end">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".txt,.md,.doc,.docx,.pdf"
+              onChange={handleFileUpload}
+              className="hidden"
+              data-testid="input-file-upload"
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isStreaming}
+              data-testid="button-upload-file"
+              className="h-10 flex-shrink-0"
+              title="Upload document for analysis"
+            >
+              <Upload className="w-4 h-4" />
+            </Button>
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -319,7 +397,7 @@ export function FigureChat({ figure, open, onOpenChange }: FigureChatProps) {
                   handleSend();
                 }
               }}
-              placeholder={`Ask ${figure.name} a question...`}
+              placeholder={uploadedFile ? `Ask ${figure.name} to analyze, evaluate, or rewrite the uploaded document...` : `Ask ${figure.name} a question...`}
               disabled={isStreaming}
               data-testid="input-figure-message"
               className="min-h-[120px] resize-none"
@@ -329,7 +407,7 @@ export function FigureChat({ figure, open, onOpenChange }: FigureChatProps) {
               onClick={handleSend}
               disabled={!input.trim() || isStreaming}
               data-testid="button-send-figure-message"
-              className="h-10"
+              className="h-10 flex-shrink-0"
             >
               <Send className="w-4 h-4" />
             </Button>

@@ -641,7 +641,7 @@ Now engage with the user's question using the full power of philosophical reason
     try {
       const sessionId = await getSessionId(req);
       const figureId = req.params.figureId;
-      const { message } = req.body;
+      const { message, uploadedDocument } = req.body;
 
       if (!message || typeof message !== "string") {
         return res.status(400).json({ error: "Message is required" });
@@ -703,6 +703,33 @@ Adapt your complexity, vocabulary, tone, and length to match these settings.
       // VECTOR SEARCH: Find semantically relevant chunks from this figure's writings
       const relevantPassages = await findRelevantChunks(message, 6, figureId);
       
+      // Handle uploaded document if present
+      let documentContext = "";
+      if (uploadedDocument && uploadedDocument.content) {
+        const wordCount = uploadedDocument.content.split(/\s+/).length;
+        documentContext = `
+
+📄 UPLOADED DOCUMENT ANALYSIS REQUEST
+
+The user has uploaded a document titled "${uploadedDocument.name}" (${wordCount} words) and is asking you to analyze, evaluate, or potentially rewrite it.
+
+DOCUMENT CONTENT:
+${'-'.repeat(80)}
+${uploadedDocument.content}
+${'-'.repeat(80)}
+
+YOUR TASK:
+Based on the user's message, you should:
+- READ the document carefully and understand its argument/content
+- EVALUATE it using your philosophical framework
+- ANALYZE its strengths, weaknesses, logical structure, and assumptions
+- If requested and the document is SHORT (under 500 words), consider REWRITING it in your own style while preserving the core ideas
+- If the document is LONG (over 500 words), provide a detailed critique rather than a full rewrite
+
+Apply your philosophical perspective to assess this work as you would any piece of writing that comes before you.
+`;
+      }
+      
       // Logical structure parsing instructions for ALL figures
       const logicalStructureInstructions = `
 
@@ -728,7 +755,7 @@ You are a thinker engaging with a specific intellectual challenge, NOT a politic
 `;
       
       // Combine figure's system prompt with relevant passages from their writings
-      const enhancedSystemPrompt = figure.systemPrompt + "\n\n" + relevantPassages + logicalStructureInstructions + adaptiveInstructions;
+      const enhancedSystemPrompt = figure.systemPrompt + "\n\n" + relevantPassages + documentContext + logicalStructureInstructions + adaptiveInstructions;
 
       // Setup SSE
       res.setHeader("Content-Type", "text/event-stream");
