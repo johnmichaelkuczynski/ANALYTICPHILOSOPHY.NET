@@ -78,8 +78,11 @@ HOW TO USE THIS BRIEFING:
 ❌ DON'T: Recite or summarize these passages
 ❌ DON'T: Quote extensively - use your own words
 ❌ DON'T: Treat these as the answer - they're the conceptual foundation
+❌ DON'T: Teach ABOUT your philosophy - DO philosophy with these tools
 
-Your task: Apply the ideas in these references to analyze THIS specific question. Think with these concepts, don't report on them.
+Your task: Apply the ideas in these references to analyze THIS specific question.
+Deploy your core reasoning method. Think with these concepts, don't report on them.
+Be yourself - reason as YOU reason, not as a textbook explains you.
 `;
     
     return response;
