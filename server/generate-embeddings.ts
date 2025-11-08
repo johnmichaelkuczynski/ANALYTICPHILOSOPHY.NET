@@ -183,6 +183,9 @@ const figuresPapers = {
   ],
   "william-james": [
     { file: "james_meaning_of_truth.txt", title: "The Meaning of Truth: A Sequel to 'Pragmatism'" },
+  ],
+  "poincare": [
+    { file: "poincare_science_hypothesis.txt", title: "Science and Hypothesis" },
   ]
 };
 
