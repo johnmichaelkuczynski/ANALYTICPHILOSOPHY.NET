@@ -123,6 +123,9 @@ const figuresPapers = {
     { file: "russell_abc_relativity.txt", title: "The ABC of Relativity" },
     { file: "russell_mysticism_and_logic.txt", title: "Mysticism and Logic and Other Essays" },
     { file: "russell_human_knowledge.txt", title: "Human Knowledge: Its Scope and Value" },
+    { file: "russell_bolshevism.txt", title: "The Practice and Theory of Bolshevism" },
+    { file: "russell_free_thought.txt", title: "Free Thought and Official Propaganda" },
+    { file: "russell_time.txt", title: "On the Experience of Time" },
   ],
   "darwin": [
     { file: "darwin_complete_works.txt", title: "On the Origin of Species, The Expression of the Emotions in Man and Animals & The Descent of Man" },
