@@ -188,6 +188,9 @@ const figuresPapers = {
   ],
   "poincare": [
     { file: "poincare_science_hypothesis.txt", title: "Science and Hypothesis" },
+  ],
+  "poe": [
+    { file: "poe_volume_5.txt", title: "The Works of Edgar Allan Poe — Volume 5" },
   ]
 };
 
