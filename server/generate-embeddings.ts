@@ -84,6 +84,7 @@ const figuresPapers = {
     // BATCH 5: New texts - AI Philosophy Comprehensive & Religion vs. Spirituality
     { file: "kuczynski_ai_philosophy_comprehensive.txt", title: "AI and Philosophy: Comprehensive Collection" },
     { file: "kuczynski_religion_vs_spirituality.txt", title: "Religion vs. Spirituality" },
+    { file: "kuczynski_libet.txt", title: "Libet's Experiment: Why It Matters and What It Means" },
   ],
   "jmk": [
     // LEGACY: For backward compatibility - use batch approach above
@@ -164,6 +165,7 @@ const figuresPapers = {
   "mises": [
     { file: "mises_human_action.txt", title: "Human Action: A Treatise on Economics" },
     { file: "mises_theory_money_credit.txt", title: "The Theory of Money and Credit" },
+    { file: "mises_liberalism.txt", title: "Liberalism: In The Classical Tradition" },
   ],
   "smith": [
     { file: "smith_moral_sentiments.txt", title: "The Theory of Moral Sentiments" },
