@@ -180,6 +180,9 @@ const figuresPapers = {
   ],
   "leibniz": [
     { file: "leibniz_theodicy_utf8.txt", title: "Theodicy: Essays on the Goodness of God, the Freedom of Man and the Origin of Evil" },
+  ],
+  "william-james": [
+    { file: "james_meaning_of_truth.txt", title: "The Meaning of Truth: A Sequel to 'Pragmatism'" },
   ]
 };
 
