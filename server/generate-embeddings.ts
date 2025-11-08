@@ -169,6 +169,8 @@ const figuresPapers = {
     { file: "mises_theory_money_credit.txt", title: "The Theory of Money and Credit" },
     { file: "mises_liberalism.txt", title: "Liberalism: In The Classical Tradition" },
     { file: "mises_bureaucracy.txt", title: "Bureaucracy" },
+    { file: "mises_marxism_unmasked.txt", title: "Marxism Unmasked: From Delusion to Destruction" },
+    { file: "mises_ultimate_foundation.txt", title: "The Ultimate Foundation of Economic Science" },
   ],
   "smith": [
     { file: "smith_moral_sentiments.txt", title: "The Theory of Moral Sentiments" },
