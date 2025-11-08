@@ -184,6 +184,7 @@ const figuresPapers = {
   "william-james": [
     { file: "james_meaning_of_truth.txt", title: "The Meaning of Truth: A Sequel to 'Pragmatism'" },
     { file: "james_psychology_briefer.txt", title: "Psychology: Briefer Course" },
+    { file: "james_radical_empiricism.txt", title: "Essays in Radical Empiricism" },
   ],
   "poincare": [
     { file: "poincare_science_hypothesis.txt", title: "Science and Hypothesis" },
