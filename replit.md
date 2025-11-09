@@ -19,6 +19,7 @@
   - James Weir Jr.'s "The Dawn of Reason or, Mental Traits in the Lower Animals" (119 chunks, 57,185 words) - comparative psychology, animal cognition, evolution of mind, sensory perception in animals, instinct vs. reason, mental development across species, consciousness in lower animals
   - John Spargo's "Bolshevism: The Enemy of Political and Industrial Democracy" (243 chunks, 117,341 words) - critique of Bolshevism, Russian Revolution analysis, working-class movements, socialist perspectives, political democracy vs. authoritarianism
   - Eugen von Böhm-Bawerk's "Karl Marx and the Close of His System" (43 chunks, 20,553 words) - Austrian economics critique of Marxism, labor theory of value, transformation problem, economic theory debates
+  - "Clarifying Concepts in Physics: New Ideas & Answers in Quantum Cosmology" (200 chunks, 97,371 words) - advanced theoretical physics, quantum cosmology, string theory, M-theory, Big Bang/Big Crunch cosmology, multidimensional universes, black holes, fundamental constants, particle physics, cosmological models
 - **William James Training Expansion**: Added "Memories and Studies" (137 chunks, 65,441 words) to William James' corpus - includes essays on Louis Agassiz, Emerson, psychical research, earthquake psychology, human energies, moral equivalent of war, college education, and pluralistic mysticism.
 
 ## User Preferences

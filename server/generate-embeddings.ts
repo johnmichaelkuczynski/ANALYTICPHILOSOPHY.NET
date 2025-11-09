@@ -224,6 +224,7 @@ const figuresPapers = {
     { file: "weir_dawn_of_reason.txt", title: "The Dawn of Reason or, Mental Traits in the Lower Animals by James Weir, Jr." },
     { file: "spargo_bolshevism.txt", title: "Bolshevism: The Enemy of Political and Industrial Democracy by John Spargo" },
     { file: "bohm_bawerk_marx.txt", title: "Karl Marx and the Close of His System by Eugen von Böhm-Bawerk" },
+    { file: "physics_cosmology_concepts.txt", title: "Clarifying Concepts in Physics: New Ideas & Answers in Quantum Cosmology" },
   ]
 };
 
