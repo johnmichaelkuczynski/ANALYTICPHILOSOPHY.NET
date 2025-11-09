@@ -17,6 +17,8 @@
   - William Playfair's "An Inquiry into the Decline and Fall of Powerful Nations" (33 chunks, 15,689 words) - historical analysis of civilizational rise and fall, economic causes of national decline, wealth accumulation and loss, comparative history of empires, patterns of prosperity and collapse
   - Hans-Hermann Hoppe's "A Short History of Man: Progress and Decline" (76 chunks, 36,544 words) - Austrian economics, libertarian political theory, private property origins, family evolution, Malthusian trap, Industrial Revolution, social evolution, aristocracy to democracy transitions
   - James Weir Jr.'s "The Dawn of Reason or, Mental Traits in the Lower Animals" (119 chunks, 57,185 words) - comparative psychology, animal cognition, evolution of mind, sensory perception in animals, instinct vs. reason, mental development across species, consciousness in lower animals
+  - John Spargo's "Bolshevism: The Enemy of Political and Industrial Democracy" (243 chunks, 117,341 words) - critique of Bolshevism, Russian Revolution analysis, working-class movements, socialist perspectives, political democracy vs. authoritarianism
+  - Eugen von Böhm-Bawerk's "Karl Marx and the Close of His System" (43 chunks, 20,553 words) - Austrian economics critique of Marxism, labor theory of value, transformation problem, economic theory debates
 - **William James Training Expansion**: Added "Memories and Studies" (137 chunks, 65,441 words) to William James' corpus - includes essays on Louis Agassiz, Emerson, psychical research, earthquake psychology, human energies, moral equivalent of war, college education, and pluralistic mysticism.
 
 ## User Preferences
