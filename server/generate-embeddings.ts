@@ -209,6 +209,10 @@ const figuresPapers = {
     { file: "poe_volume_3.txt", title: "The Works of Edgar Allan Poe — Volume 3" },
     { file: "poe_volume_4.txt", title: "The Works of Edgar Allan Poe — Volume 4" },
     { file: "poe_volume_5.txt", title: "The Works of Edgar Allan Poe — Volume 5" },
+  ],
+  "common": [
+    // Common Fund of Knowledge - shared knowledge base accessible to ALL philosophers
+    { file: "lawrence_fantasia_unconscious.txt", title: "Fantasia of the Unconscious by D.H. Lawrence" },
   ]
 };
 
