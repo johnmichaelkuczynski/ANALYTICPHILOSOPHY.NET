@@ -13,6 +13,7 @@
   - "Outline of Physics" (173 chunks, 84,967 words) - comprehensive physics reference covering measurement, units, atoms, dynamics, electromagnetism, entropy, fluids, heat, quantum mechanics, relativity, space, time, waves, conservation laws, and mathematical physics
   - "The Sayings of Confucius" (65 chunks, 31,562 words) - Eastern philosophical wisdom on virtue, governance, learning, ritual, human relationships, self-cultivation, the Way (Dao), filial piety, moral conduct, education, justice, and the Superior Man (Junzi)
   - Ernst Mach's "Popular Scientific Lectures" (224 chunks, 108,098 words) - scientific methodology, epistemology, sensory analysis, mechanics, acoustics, optics, history of science, scientific thought, empiricism, phenomenalism, economy of thought principle
+  - Walter Lippmann's "A Preface to Politics" (139 chunks, 67,046 words) - political theory, democratic thought, public opinion, mass psychology, reform movements, political indifference, human nature in politics, pragmatic political philosophy
 - **William James Training Expansion**: Added "Memories and Studies" (137 chunks, 65,441 words) to William James' corpus - includes essays on Louis Agassiz, Emerson, psychical research, earthquake psychology, human energies, moral equivalent of war, college education, and pluralistic mysticism.
 
 ## User Preferences
