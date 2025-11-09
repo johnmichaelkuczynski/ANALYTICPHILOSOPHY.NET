@@ -22,6 +22,7 @@
   - "Clarifying Concepts in Physics: New Ideas & Answers in Quantum Cosmology" (200 chunks, 97,371 words) - advanced theoretical physics, quantum cosmology, string theory, M-theory, Big Bang/Big Crunch cosmology, multidimensional universes, black holes, fundamental constants, particle physics, cosmological models
   - "An Elementary Study of Chemistry" (240 chunks, 117,056 words) - comprehensive chemistry covering atomic theory, chemical reactions, periodic table, elements, compounds, acids, bases, salts, electrolytic dissociation, organic chemistry, inorganic chemistry, chemical laws
   - Bertrand Russell's "The Analysis of Mind" (186 chunks, 89,179 words) - analytical philosophy of mind, consciousness, perception, memory, belief, desire, feeling, psychology and philosophy integration, neutral monism, epistemology of mental phenomena
+  - Alfred Marshall's "Principles of Economics" (361 chunks, 174,526 words) - classical/neoclassical economics, supply and demand, marginal utility, market equilibrium, price theory, theory of value, distribution of income, economic laws, production, consumption, industrial organization, diminishing returns
 - **William James Training Expansion**: Added "Memories and Studies" (137 chunks, 65,441 words) to William James' corpus - includes essays on Louis Agassiz, Emerson, psychical research, earthquake psychology, human energies, moral equivalent of war, college education, and pluralistic mysticism.
 
 ## User Preferences
