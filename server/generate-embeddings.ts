@@ -217,6 +217,7 @@ const figuresPapers = {
     { file: "gandolfi_logic_of_information.txt", title: "Logic of Information by Italo Gandolfi" },
     { file: "physics_outline.txt", title: "Outline of Physics" },
     { file: "confucius_sayings.txt", title: "The Sayings of Confucius" },
+    { file: "mach_scientific_lectures.txt", title: "Popular Scientific Lectures by Ernst Mach" },
   ]
 };
 
