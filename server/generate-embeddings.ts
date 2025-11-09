@@ -220,6 +220,7 @@ const figuresPapers = {
     { file: "mach_scientific_lectures.txt", title: "Popular Scientific Lectures by Ernst Mach" },
     { file: "lippmann_preface_politics.txt", title: "A Preface to Politics by Walter Lippmann" },
     { file: "playfair_decline_fall_nations.txt", title: "An Inquiry into the Permanent Causes of the Decline and Fall of Powerful and Wealthy Nations by William Playfair" },
+    { file: "hoppe_short_history_man.txt", title: "A Short History of Man: Progress and Decline by Hans-Hermann Hoppe" },
   ]
 };
 

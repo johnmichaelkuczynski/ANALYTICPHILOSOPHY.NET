@@ -15,6 +15,7 @@
   - Ernst Mach's "Popular Scientific Lectures" (224 chunks, 108,098 words) - scientific methodology, epistemology, sensory analysis, mechanics, acoustics, optics, history of science, scientific thought, empiricism, phenomenalism, economy of thought principle
   - Walter Lippmann's "A Preface to Politics" (139 chunks, 67,046 words) - political theory, democratic thought, public opinion, mass psychology, reform movements, political indifference, human nature in politics, pragmatic political philosophy
   - William Playfair's "An Inquiry into the Decline and Fall of Powerful Nations" (33 chunks, 15,689 words) - historical analysis of civilizational rise and fall, economic causes of national decline, wealth accumulation and loss, comparative history of empires, patterns of prosperity and collapse
+  - Hans-Hermann Hoppe's "A Short History of Man: Progress and Decline" (76 chunks, 36,544 words) - Austrian economics, libertarian political theory, private property origins, family evolution, Malthusian trap, Industrial Revolution, social evolution, aristocracy to democracy transitions
 - **William James Training Expansion**: Added "Memories and Studies" (137 chunks, 65,441 words) to William James' corpus - includes essays on Louis Agassiz, Emerson, psychical research, earthquake psychology, human energies, moral equivalent of war, college education, and pluralistic mysticism.
 
 ## User Preferences
