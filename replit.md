@@ -10,6 +10,7 @@
 - **Common Fund Texts**: 
   - D.H. Lawrence's "Fantasia of the Unconscious" (130 chunks, 63,057 words) - psychological insights on the unconscious, human nature, consciousness, instinct, parent-child relationships, education, dreams
   - Italo Gandolfi's "Logic of Information" (163 chunks, 77,665 words) - logical foundations, information theory, solutions to logical paradoxes, set theory, axiomatization, alethics, conditionals, variables, indexicality, reflexive logic, incompleteness theorems
+  - "Outline of Physics" (173 chunks, 84,967 words) - comprehensive physics reference covering measurement, units, atoms, dynamics, electromagnetism, entropy, fluids, heat, quantum mechanics, relativity, space, time, waves, conservation laws, and mathematical physics
 - **William James Training Expansion**: Added "Memories and Studies" (137 chunks, 65,441 words) to William James' corpus - includes essays on Louis Agassiz, Emerson, psychical research, earthquake psychology, human energies, moral equivalent of war, college education, and pluralistic mysticism.
 
 ## User Preferences
