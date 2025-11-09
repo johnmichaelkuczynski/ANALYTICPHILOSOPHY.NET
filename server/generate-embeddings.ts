@@ -154,7 +154,7 @@ const figuresPapers = {
     { file: "hegel_philosophy_of_mind.txt", title: "Philosophy of Mind" },
   ],
   "hobbes": [
-    { file: "hobbes_leviathan.txt", title: "Leviathan" },
+    { file: "hobbes_collected_works.txt", title: "The Collected Works of Thomas Hobbes (Delphi Classics)" },
   ],
   "rousseau": [
     { file: "rousseau_complete_works.txt", title: "The Complete Works of Jean-Jacques Rousseau" },
