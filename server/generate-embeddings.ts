@@ -199,6 +199,7 @@ const figuresPapers = {
   ],
   "william-james": [
     { file: "james_collected_works.txt", title: "The Collected Works of William James" },
+    { file: "james_memories_and_studies.txt", title: "Memories and Studies" },
   ],
   "poincare": [
     { file: "poincare_science_hypothesis.txt", title: "Science and Hypothesis" },
