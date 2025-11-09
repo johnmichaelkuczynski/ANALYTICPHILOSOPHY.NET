@@ -221,6 +221,7 @@ const figuresPapers = {
     { file: "lippmann_preface_politics.txt", title: "A Preface to Politics by Walter Lippmann" },
     { file: "playfair_decline_fall_nations.txt", title: "An Inquiry into the Permanent Causes of the Decline and Fall of Powerful and Wealthy Nations by William Playfair" },
     { file: "hoppe_short_history_man.txt", title: "A Short History of Man: Progress and Decline by Hans-Hermann Hoppe" },
+    { file: "weir_dawn_of_reason.txt", title: "The Dawn of Reason or, Mental Traits in the Lower Animals by James Weir, Jr." },
   ]
 };
 
