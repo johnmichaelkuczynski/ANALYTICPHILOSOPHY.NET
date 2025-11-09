@@ -216,6 +216,7 @@ const figuresPapers = {
     { file: "lawrence_fantasia_unconscious.txt", title: "Fantasia of the Unconscious by D.H. Lawrence" },
     { file: "gandolfi_logic_of_information.txt", title: "Logic of Information by Italo Gandolfi" },
     { file: "physics_outline.txt", title: "Outline of Physics" },
+    { file: "confucius_sayings.txt", title: "The Sayings of Confucius" },
   ]
 };
 
