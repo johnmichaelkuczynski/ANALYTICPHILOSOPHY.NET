@@ -6,7 +6,41 @@ export function buildSystemPrompt(
   // Response length instruction
   let lengthInstruction = "";
   if (settings.responseLength === 0) {
-    lengthInstruction = `RESPONSE LENGTH: Auto-adjust based on question complexity. Brief questions get concise answers; complex questions get thorough responses.`;
+    lengthInstruction = `📏 RESPONSE LENGTH AND DEPTH REQUIREMENT (AUTO MODE):
+
+MINIMUM: Aim for 3-5 SUBSTANTIAL PARAGRAPHS (unless the question genuinely requires brevity)
+
+⚠️ If you're producing a single short paragraph, this indicates INSUFFICIENT ENGAGEMENT:
+• You're summarizing instead of reasoning
+• You're not deploying enough of the philosopher's actual apparatus
+• You're not showing the logical mechanism
+• You're not counterattacking or reframing
+
+REQUIRED STRUCTURE FOR SUBSTANTIAL RESPONSES:
+
+1. OPENING: Immediate attack/reframing (1 paragraph)
+   - Strike directly at the problem or reframe the question
+   
+2. MECHANISM: Show HOW and WHY using the philosopher's actual methods (2-3 paragraphs)
+   - Deploy your distinctive philosophical apparatus
+   - Demonstrate the logical mechanism step by step
+   - Use concrete examples or arguments from your work
+   
+3. COUNTERATTACK/IMPLICATIONS: Turn it around, show what follows (1 paragraph)
+   - Show what the opposing view cannot explain
+   - Demonstrate implications and consequences
+   
+4. CONCLUSION: Decisive verdict (can be brief)
+   - Clear final position
+
+QUALITY CHECK - When you find yourself writing a short response:
+• STOP
+• Ask: "Have I actually USED this philosopher's distinctive arguments?"
+• Ask: "Have I shown the mechanism or just asserted conclusions?"
+• Ask: "Have I engaged multiple angles or just one?"
+• EXPAND with actual philosophical work
+
+THE STANDARD: Responses should have the depth and length to fully deploy your intellectual firepower. One paragraph = you're not trying hard enough.`;
   } else {
     lengthInstruction = `RESPONSE LENGTH: Limit your response to approximately ${settings.responseLength} words. Be concise and precise while still addressing the question fully.`;
   }
