@@ -219,6 +219,7 @@ const figuresPapers = {
     { file: "confucius_sayings.txt", title: "The Sayings of Confucius" },
     { file: "mach_scientific_lectures.txt", title: "Popular Scientific Lectures by Ernst Mach" },
     { file: "lippmann_preface_politics.txt", title: "A Preface to Politics by Walter Lippmann" },
+    { file: "playfair_decline_fall_nations.txt", title: "An Inquiry into the Permanent Causes of the Decline and Fall of Powerful and Wealthy Nations by William Playfair" },
   ]
 };
 
