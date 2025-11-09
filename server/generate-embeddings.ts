@@ -226,6 +226,7 @@ const figuresPapers = {
     { file: "bohm_bawerk_marx.txt", title: "Karl Marx and the Close of His System by Eugen von Böhm-Bawerk" },
     { file: "physics_cosmology_concepts.txt", title: "Clarifying Concepts in Physics: New Ideas & Answers in Quantum Cosmology" },
     { file: "elementary_chemistry.txt", title: "An Elementary Study of Chemistry" },
+    { file: "russell_analysis_mind.txt", title: "The Analysis of Mind by Bertrand Russell" },
   ]
 };
 
