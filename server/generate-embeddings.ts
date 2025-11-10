@@ -258,6 +258,10 @@ const figuresPapers = {
     { file: "chinese_literature_confucius_mencius.txt", title: "Chinese Literature: The Analects of Confucius, The Sayings of Mencius, The Shi-King, and The Travels of Fâ-Hien" },
     { file: "dasgupta_economics_vsi.txt", title: "Economics: A Very Short Introduction by Partha Dasgupta" },
     { file: "binmore_game_theory_vsi.txt", title: "Game Theory: A Very Short Introduction by Ken Binmore" },
+    { file: "kuczynski_emotivism.txt", title: "Emotivism by J.-M. Kuczynski" },
+    { file: "kuczynski_freedom.txt", title: "Freedom by J.-M. Kuczynski" },
+    { file: "kuczynski_language.txt", title: "What Is a Language? by J.-M. Kuczynski" },
+    { file: "kuczynski_modality_nonexistence.txt", title: "Modality and Non-existence by J.-M. Kuczynski" },
   ]
 };
 
