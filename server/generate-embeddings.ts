@@ -254,6 +254,10 @@ const figuresPapers = {
     { file: "myerson_foundations_personality.txt", title: "The Foundations of Personality by Abraham Myerson" },
     { file: "woodworth_psychology_mental_life.txt", title: "Psychology: A Study of Mental Life by Robert S. Woodworth" },
     { file: "scott_increasing_human_efficiency.txt", title: "Increasing Human Efficiency in Business by Walter Dill Scott" },
+    { file: "smith_chaos_vsi.txt", title: "Chaos: A Very Short Introduction by Leonard Smith" },
+    { file: "chinese_literature_confucius_mencius.txt", title: "Chinese Literature: The Analects of Confucius, The Sayings of Mencius, The Shi-King, and The Travels of Fâ-Hien" },
+    { file: "dasgupta_economics_vsi.txt", title: "Economics: A Very Short Introduction by Partha Dasgupta" },
+    { file: "binmore_game_theory_vsi.txt", title: "Game Theory: A Very Short Introduction by Ken Binmore" },
   ]
 };
 
