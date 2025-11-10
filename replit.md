@@ -5,6 +5,9 @@
 
 ## Recent Changes
 
+### November 10, 2025
+- **J.-M. Kuczynski Training Expansion**: Added "Philosophy and Psychoanalysis: Selected Dialogues" (25 chunks, 11,770 words) - dialogue-based philosophical analysis covering analytic truth vs. formal truth, a priori knowledge, honesty and integrity, anger, knowledge of past/possible/future, determinism and personal freedom, laws of logic, rationality vs. intelligence, skepticism, justice, OCD, and neurotic anxiety. Provides practical philosophical methodology through dialectical exchanges.
+
 ### November 9, 2025 (Continued)
 - **Common Fund of Knowledge (Dual-Pool RAG System)**: Implemented shared knowledge base accessible to all 44 philosophers to eliminate artificial dataset constriction. Each query now retrieves from TWO pools simultaneously: (1) Philosopher's own writings (~67%) defining canonical positions; (2) Common knowledge pool (~33%) providing empirical evidence, historical context, broader perspectives. System ensures minimum representation from each pool when available, merges results, and re-sorts by semantic relevance. Clear source labeling ([YOUR WORK] vs [COMMON KNOWLEDGE]) in RAG briefings. System prompt explicitly prevents common knowledge from overriding canonical positions - common fund provides ENRICHMENT not REPLACEMENT. Integrated with epistemic humility protocols: when common knowledge conflicts with positions, philosophers acknowledge evidence and respond using their actual intellectual resources. To populate common fund: use existing embedding generation tools with `figureId='common'`. This allows philosophers to engage topics outside their specific works while maintaining distinctive voices grounded in their actual writings.
 - **Common Fund Texts**: 
