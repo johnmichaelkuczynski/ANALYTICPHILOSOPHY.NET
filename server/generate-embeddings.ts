@@ -250,6 +250,10 @@ const figuresPapers = {
     { file: "popper_quantum_schism.txt", title: "Quantum Theory and the Schism in Physics by Karl Popper" },
     { file: "bohm_quantum_theory.txt", title: "Quantum Theory by David Bohm" },
     { file: "oscar_wilde_aphorisms_soul_of_man.txt", title: "Miscellaneous Aphorisms and The Soul of Man by Oscar Wilde" },
+    { file: "pyle_science_human_nature.txt", title: "The Science of Human Nature: A Psychology for Beginners by William Henry Pyle" },
+    { file: "myerson_foundations_personality.txt", title: "The Foundations of Personality by Abraham Myerson" },
+    { file: "woodworth_psychology_mental_life.txt", title: "Psychology: A Study of Mental Life by Robert S. Woodworth" },
+    { file: "scott_increasing_human_efficiency.txt", title: "Increasing Human Efficiency in Business by Walter Dill Scott" },
   ]
 };
 
