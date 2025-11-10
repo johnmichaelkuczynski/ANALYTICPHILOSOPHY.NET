@@ -101,6 +101,9 @@ const figuresPapers = {
     { file: "kuczynski_neuroticism_neurosis.txt", title: "Neuroticism vs Neurosis: Distinguishing Trait and Structure" },
     { file: "kuczynski_terminal_humanities.txt", title: "The Terminal Humanities: Why Philosophy No Longer Generates Knowledge" },
     { file: "kuczynski_hegel_app.txt", title: "From Commentary to Code: Why an App Would Teach Hegel Better Than Hegel Scholars" },
+    { file: "kuczynski_hegel_illusion_depth.txt", title: "Hegel and the Illusion of Depth: How the Master-Slave Dialectic Reveals an Intellectual Real-Estate Problem" },
+    { file: "kuczynski_guardians_photo_album.txt", title: "Guardians of the Photo Album While the House Burns: The Collapse of the Humanities' Civilizational Role" },
+    { file: "kuczynski_philosophy_ai_without_ai.txt", title: "The Philosophy of AI Without AI: How a Discipline Preserves Itself by Substituting Placeholders for Thought" },
   ],
   "jmk": [
     // LEGACY: For backward compatibility - use batch approach above
