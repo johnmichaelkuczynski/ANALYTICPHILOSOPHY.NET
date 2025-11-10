@@ -249,6 +249,7 @@ const figuresPapers = {
     { file: "marshall_principles_economics.txt", title: "Principles of Economics by Alfred Marshall" },
     { file: "popper_quantum_schism.txt", title: "Quantum Theory and the Schism in Physics by Karl Popper" },
     { file: "bohm_quantum_theory.txt", title: "Quantum Theory by David Bohm" },
+    { file: "oscar_wilde_aphorisms_soul_of_man.txt", title: "Miscellaneous Aphorisms and The Soul of Man by Oscar Wilde" },
   ]
 };
 
