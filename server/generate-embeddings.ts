@@ -88,6 +88,7 @@ const figuresPapers = {
     { file: "kuczynski_incompleteness_deductive_logic.txt", title: "The Incompleteness of Deductive Logic: Rationality Beyond Recursion" },
     { file: "kuczynski_philosophy_psychoanalysis.txt", title: "Philosophy and Psychoanalysis: Selected Dialogues" },
     { file: "kuczynski_quantum_determinism.txt", title: "Quantum Physics and Universal Determinism: A Dialogue" },
+    { file: "kuczynski_quantum_determinism_essay.txt", title: "Quantum Determinism" },
   ],
   "jmk": [
     // LEGACY: For backward compatibility - use batch approach above
