@@ -105,6 +105,11 @@ const figuresPapers = {
     { file: "kuczynski_guardians_photo_album.txt", title: "Guardians of the Photo Album While the House Burns: The Collapse of the Humanities' Civilizational Role" },
     { file: "kuczynski_philosophy_ai_without_ai.txt", title: "The Philosophy of AI Without AI: How a Discipline Preserves Itself by Substituting Placeholders for Thought" },
     { file: "kuczynski_vietnam_epistemic_engines.txt", title: "When Victory Is Incoherent (Vietnam), I Refute It Thus (Epistemic Engines), and The Scarcity Trap (Philosophy's Hostility)" },
+    { file: "What is a formal language__ Philosophy Shorts Volume 24_1762816911377.txt", title: "What Is a Formal Language? Philosophy Shorts Volume 24" },
+    { file: "Functional vs. Structural Delusiveness_1762816911377.txt", title: "Functional vs. Structural Delusiveness" },
+    { file: "Straw Jobs Being Created to Fill in for Techno-obsolete Jobs_1762816911377.txt", title: "Straw Jobs Being Created to Fill in for Techno-obsolete Jobs" },
+    { file: "Determinism, Freedom, Psychopathy_1762816911378.txt", title: "Determinism, Freedom, Psychopathy" },
+    { file: "Ask Me Anything about Psychopathy!_ With Link to Video Version of Book!_1762816911378.txt", title: "Ask Me Anything about Psychopathy!" },
   ],
   "jmk": [
     // LEGACY: For backward compatibility - use batch approach above

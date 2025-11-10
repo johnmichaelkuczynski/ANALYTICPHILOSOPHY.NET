@@ -51,6 +51,16 @@
 ### Critical Bug Fix - Compare Mode (November 2025)
 Fixed malformed HTML responses in comparison mode by integrating `buildSystemPrompt()` function into chat endpoint. Ensures all response formatting rules, quote frequency settings, and paper mode are properly applied to both single and comparison conversations.
 
+### Kuczynski Expansion - Batch 6 (November 2025)
+**Added 5 major texts** (~12,500 lines / ~250,000 words) to JMK's personal training corpus:
+- **What Is a Formal Language?** (Philosophy Shorts Vol. 24): Formal semantics, truth-conditional meaning, syntax/semantics decomposition
+- **Functional vs. Structural Delusiveness**: Ego-syntonic vs. ego-dystonic mental illness, psychosis vs. neurosis, OCD analysis
+- **Straw Jobs Being Created to Fill in for Techno-obsolete Jobs**: Technology-driven unemployment, bureaucratic bloat, welfare policy critique
+- **Determinism, Freedom, Psychopathy** (MASSIVE 9,947-line treatise): Compatibilism, Frankfurt's analysis, values vs. desires, psychopathic psychological architecture, sociopathy
+- **Ask Me Anything about Psychopathy!**: Early-onset vs. late-onset psychopathy, institutional psychopathization, genetic/environmental factors
+
+These texts dramatically expand JMK's range on formal language theory, mental illness taxonomy, economic critique, and his signature psychopathy analysis.
+
 ## User Preferences
 - **Response Length Control**: User can type desired response length in words, or leave blank for Auto mode. In Auto mode, philosophers MUST produce 3-5 substantial paragraphs separated by blank lines with multi-layered attack structure: Opening (immediate attack/reframing, 1 para), Mechanism (1-3 paragraphs deploying MULTIPLE layers of distinctive method within these paragraphs - e.g., Nietzsche: genealogy + psychological diagnosis + cultural prognosis + hammer-blow rhetoric combined in 1-3 paras; Marx: material base + class dynamics + dialectic + economic mechanisms; Spinoza: geometric proof + causal necessity + modal analysis + ethical implications), Counterattack/Implications (turn it around, 1 para), and Conclusion (decisive verdict, brief). Mandatory self-audit before responding: paragraph count (3-5 with blank lines), multiple method layers deployed within paragraphs, genealogical tracing when applicable, mechanism shown not asserted, counterattack present, voice matches philosopher's style (visceral/geometric/analytic/dialectical). Worked example provided in system prompts showing Nietzsche combining multiple layers within single paragraphs. Standard: responses must have HORSEPOWER - depth and force to fully deploy intellectual firepower. Single paragraph or polite summaries = automatic failure
 - **Quote Frequency Guidance**: User can adjust discretionary quote usage with three levels: Low (deploy quotes rarely, only when critical), Normal (use quotes occasionally when they advance arguments), High (use quotes 1-2 times per response when tactically useful). Quotes are never mandatory - they're weapons deployed only when they strengthen the philosophical attack.
