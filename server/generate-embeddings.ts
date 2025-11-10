@@ -104,6 +104,7 @@ const figuresPapers = {
     { file: "kuczynski_hegel_illusion_depth.txt", title: "Hegel and the Illusion of Depth: How the Master-Slave Dialectic Reveals an Intellectual Real-Estate Problem" },
     { file: "kuczynski_guardians_photo_album.txt", title: "Guardians of the Photo Album While the House Burns: The Collapse of the Humanities' Civilizational Role" },
     { file: "kuczynski_philosophy_ai_without_ai.txt", title: "The Philosophy of AI Without AI: How a Discipline Preserves Itself by Substituting Placeholders for Thought" },
+    { file: "kuczynski_vietnam_epistemic_engines.txt", title: "When Victory Is Incoherent (Vietnam), I Refute It Thus (Epistemic Engines), and The Scarcity Trap (Philosophy's Hostility)" },
   ],
   "jmk": [
     // LEGACY: For backward compatibility - use batch approach above
