@@ -289,6 +289,10 @@ const figuresPapers = {
     { file: "Mathematical Logic for Computer Science_1762813953182.txt", title: "Mathematical Logic for Computer Science by Mordechai Ben-Ari" },
     { file: "Introductory Real Analysis (Dover Books on Mathematics)_1762813953182.txt", title: "Introductory Real Analysis by A. N. Kolmogorov and S. V. Fomin" },
     { file: "Contributions to the Founding of the Theory of Transfinite Numbers (Dover Books on Mathematics)_1762813953182.txt", title: "Contributions to the Founding of the Theory of Transfinite Numbers by Georg Cantor" },
+    { file: "The Complete Tacitus Anthology_ The Histories, The Annals, Germania, Agricola, A Dialogue on Oratory (Illustrated) (Texts From Ancient Rome)_1762813991727.txt", title: "The Complete Tacitus Anthology: The Histories, The Annals, Germania, Agricola, A Dialogue on Oratory" },
+    { file: "The Einstein Theory of Relativity A Concise Statement_1762813991728.txt", title: "The Einstein Theory of Relativity: A Concise Statement by H.A. Lorentz" },
+    { file: "The Golden Bough (Vol. 1 of 2)_1762814001536.txt", title: "The Golden Bough, Volume I: A Study in Comparative Religion by James George Frazer" },
+    { file: "The Principles of Economics With Applications to Practical Problems_1762814010740.txt", title: "The Principles of Economics With Applications to Practical Problems by Frank A. Fetter" },
   ]
 };
 

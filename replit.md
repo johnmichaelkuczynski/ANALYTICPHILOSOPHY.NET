@@ -6,13 +6,13 @@
 ## Recent Changes
 
 ### Common Fund Knowledge Expansion (November 2025)
-**Major Infrastructure Development:** Expanding the Common Fund from ~43 texts to **57 texts spanning 18+ disciplines**. This enables all philosophers to access cross-disciplinary knowledge while maintaining authentic voices grounded in their primary works.
+**Major Infrastructure Development:** Expanding the Common Fund from ~43 texts to **61 texts spanning 20+ disciplines**. This enables all philosophers to access cross-disciplinary knowledge while maintaining authentic voices grounded in their primary works.
 
 **Status:**
 - ✅ **49 texts fully embedded** in Common Fund vector database
-- 🔄 **Batch 1 (9 texts):** Currently processing Tacitus Histories (7/9 complete, ~542,000 words)
+- 🔄 **Batch 1 (9 texts):** Currently processing Tacitus Histories excerpt (7/9 complete, ~542,000 words)
   - Completed: Gibbon's Memoirs, Marcus Aurelius Meditations, Medieval Europe, Hebraic Literature, Book of Scoundrels, The Mob, Civilization of China
-  - In Progress: Tacitus Histories (chunk 41/252)
+  - In Progress: Tacitus Histories excerpt (chunk 41/252)
   - Remaining: 2 more texts (Ayer's Language Truth & Logic, Rashdall's Philosophy & Religion)
 - 📦 **Batch 2 (10 texts):** Configured and ready (~380,000 words)
   - Wittgenstein's Tractatus, Arrow's Social Choice, Bernays' Propaganda, Quantum Mechanics textbook, and 6 others
@@ -22,19 +22,25 @@
   - Ben-Ari's Mathematical Logic for Computer Science (25,627 lines)
   - Kolmogorov & Fomin's Introductory Real Analysis (32,856 lines)
   - Cantor's Theory of Transfinite Numbers (13,782 lines)
+- 📦 **Batch 4 (4 texts):** Just added (~1.5 million words)
+  - Complete Tacitus Anthology: Histories, Annals, Germania, Agricola, Dialogue on Oratory (34,309 lines)
+  - Einstein Theory of Relativity by Lorentz (1,168 lines)
+  - The Golden Bough Vol. I by James Frazer (25,241 lines)
+  - Principles of Economics by Frank Fetter (37,983 lines)
 
 **New Disciplines Added:**
-- Classical History (Gibbon, Tacitus, Medieval Europe)
+- Classical History (Gibbon, Medieval Europe, **Complete Tacitus Anthology**)
 - Theology & Religious Literature (Hebraic Literature, Marcus Aurelius)
 - Asian Civilization Studies (Civilization of China, Confucius)
 - Logical Positivism (Ayer, Wittgenstein's Tractatus)
 - Social Psychology & Propaganda (Bernays)
-- Economic Theory (Arrow's Social Choice)
-- Quantum Mechanics & Physics
+- Economic Theory (Arrow's Social Choice, **Fetter's Principles of Economics**)
+- Quantum Mechanics & Physics (**Einstein's Relativity**)
 - Medieval Church History (Lea's Inquisition)
 - Philosophy of Science (Frank)
 - Mathematical Logic & Foundations (Ben-Ari, Cantor)
 - Real Analysis & Advanced Mathematics (Kolmogorov & Fomin)
+- **Comparative Religion & Anthropology (Frazer's Golden Bough)**
 
 **Technical Implementation:**
 - Intelligent timeout recovery: System automatically resumes from last completed text
