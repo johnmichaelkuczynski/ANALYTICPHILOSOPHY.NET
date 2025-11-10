@@ -275,6 +275,15 @@ const figuresPapers = {
     { file: "clark_economic_theory.txt", title: "Essentials of Economic Theory by John Bates Clark" },
     { file: "klein_envy_gratitude.txt", title: "Envy and Gratitude and Other Works by Melanie Klein" },
     { file: "labossiere_42_fallacies.txt", title: "42 Fallacies by Michael C. LaBossiere" },
+    { file: "gibbon_memoirs.txt", title: "Memoirs of My Life and Writings by Edward Gibbon" },
+    { file: "marcus_aurelius_meditations.txt", title: "Meditations by Marcus Aurelius" },
+    { file: "davis_medieval_europe.txt", title: "Medieval Europe by H. W. C. Davis" },
+    { file: "hebraic_literature_talmud.txt", title: "Hebraic Literature: Translations from the Talmud, Midrashim and Kabbala" },
+    { file: "whibley_book_scoundrels.txt", title: "A Book of Scoundrels by Charles Whibley" },
+    { file: "galsworthy_the_mob.txt", title: "The Mob by John Galsworthy" },
+    { file: "giles_civilization_china.txt", title: "The Civilization of China by Herbert A. Giles" },
+    { file: "tacitus_histories.txt", title: "The Histories, Volumes I and II by Tacitus" },
+    { file: "rashdall_philosophy_religion.txt", title: "Philosophy and Religion: Six Lectures by Hastings Rashdall" },
   ]
 };
 
