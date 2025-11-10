@@ -89,6 +89,9 @@ const figuresPapers = {
     { file: "kuczynski_philosophy_psychoanalysis.txt", title: "Philosophy and Psychoanalysis: Selected Dialogues" },
     { file: "kuczynski_quantum_determinism.txt", title: "Quantum Physics and Universal Determinism: A Dialogue" },
     { file: "kuczynski_quantum_determinism_essay.txt", title: "Quantum Determinism" },
+    { file: "kuczynski_methodological_individualism.txt", title: "Beyond Methodological Individualism: The Primacy of Collective Psychology" },
+    { file: "kuczynski_frege_montague.txt", title: "The Spuriousness of Frege-Montague Grammar" },
+    { file: "kuczynski_personality_typology.txt", title: "A Ten-Dimensional Evolutionary Typology for Personality Assessment" },
   ],
   "jmk": [
     // LEGACY: For backward compatibility - use batch approach above
