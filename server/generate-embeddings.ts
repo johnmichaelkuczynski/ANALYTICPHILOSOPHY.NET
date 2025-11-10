@@ -268,6 +268,13 @@ const figuresPapers = {
     { file: "rumsey_statistics_essentials.txt", title: "Statistics Essentials For Dummies by Deborah Rumsey" },
     { file: "electronics_for_dummies.txt", title: "Electronics For Dummies" },
     { file: "freud_beyond_pleasure_principle.txt", title: "Beyond the Pleasure Principle by Sigmund Freud" },
+    { file: "bastiat_economics_freedom.txt", title: "The Economics of Freedom: Selected Works by Frédéric Bastiat" },
+    { file: "einstein_relativity.txt", title: "Relativity: The Special and General Theory by Albert Einstein" },
+    { file: "jevons_money_mechanism.txt", title: "Money and the Mechanism of Exchange by William Stanley Jevons" },
+    { file: "prescott_conquest_peru.txt", title: "History of the Conquest of Peru by William H. Prescott" },
+    { file: "clark_economic_theory.txt", title: "Essentials of Economic Theory by John Bates Clark" },
+    { file: "klein_envy_gratitude.txt", title: "Envy and Gratitude and Other Works by Melanie Klein" },
+    { file: "labossiere_42_fallacies.txt", title: "42 Fallacies by Michael C. LaBossiere" },
   ]
 };
 
