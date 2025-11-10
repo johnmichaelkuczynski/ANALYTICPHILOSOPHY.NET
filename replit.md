@@ -3,6 +3,38 @@
 ## Overview
 "Ask A Philosopher" is a philosophical Q&A application designed for deep philosophical discourse with 44 philosophical and literary figures. It leverages their actual writings and advanced AI to provide nuanced and contextually rich responses. The platform integrates philosophical papers as foundational texts, enabling the AI to reason and adapt based on user sophistication. It supports multi-author conversations through a Retrieval-Augmented Generation (RAG) system, ensuring each figure's responses are grounded in their respective works. The project aims to offer an accessible and engaging way to explore complex philosophical ideas and literary works, with J.-M. Kuczynski as the default philosopher. The project's ambition is to offer a robust platform for exploring complex philosophical and literary concepts, enhancing understanding through direct engagement with the 'minds' of history's great thinkers, and has significant market potential in education and intellectual discourse.
 
+## Recent Changes
+
+### Common Fund Knowledge Expansion (November 2025)
+**Major Infrastructure Development:** Expanding the Common Fund from ~43 texts to **52 texts spanning 15+ disciplines**. This enables all philosophers to access cross-disciplinary knowledge while maintaining authentic voices grounded in their primary works.
+
+**Status:**
+- ✅ **49 texts fully embedded** in Common Fund vector database
+- 🔄 **Batch 1 (9 texts):** Currently processing Tacitus Histories (7/9 complete, ~542,000 words)
+  - Completed: Gibbon's Memoirs, Marcus Aurelius Meditations, Medieval Europe, Hebraic Literature, Book of Scoundrels, The Mob, Civilization of China
+  - In Progress: Tacitus Histories (chunk 41/252)
+  - Remaining: 2 more texts
+- 📦 **Batch 2 (10 texts):** Configured and ready (~380,000 words)
+  - Ayer's Language Truth & Logic, Wittgenstein's Tractatus, Arrow's Social Choice, Bernays' Propaganda, Quantum Mechanics textbook, and 5 others
+
+**New Disciplines Added:**
+- Classical History (Gibbon, Tacitus, Medieval Europe)
+- Theology & Religious Literature (Hebraic Literature, Marcus Aurelius)
+- Asian Civilization Studies (Civilization of China, Confucius)
+- Logical Positivism (Ayer, Wittgenstein's Tractatus)
+- Social Psychology & Propaganda (Bernays)
+- Economic Theory (Arrow's Social Choice)
+- Quantum Mechanics & Physics
+
+**Technical Implementation:**
+- Intelligent timeout recovery: System automatically resumes from last completed text
+- Dual-pool retrieval: ~67% philosopher's own works, ~33% Common Fund enrichment
+- 1536-dimension vector embeddings via OpenAI text-embedding-ada-002
+- PostgreSQL with pgvector for semantic search
+
+### Critical Bug Fix - Compare Mode (November 2025)
+Fixed malformed HTML responses in comparison mode by integrating `buildSystemPrompt()` function into chat endpoint. Ensures all response formatting rules, quote frequency settings, and paper mode are properly applied to both single and comparison conversations.
+
 ## User Preferences
 - **Response Length Control**: User can type desired response length in words, or leave blank for Auto mode. In Auto mode, philosophers MUST produce 3-5 substantial paragraphs separated by blank lines with multi-layered attack structure: Opening (immediate attack/reframing, 1 para), Mechanism (1-3 paragraphs deploying MULTIPLE layers of distinctive method within these paragraphs - e.g., Nietzsche: genealogy + psychological diagnosis + cultural prognosis + hammer-blow rhetoric combined in 1-3 paras; Marx: material base + class dynamics + dialectic + economic mechanisms; Spinoza: geometric proof + causal necessity + modal analysis + ethical implications), Counterattack/Implications (turn it around, 1 para), and Conclusion (decisive verdict, brief). Mandatory self-audit before responding: paragraph count (3-5 with blank lines), multiple method layers deployed within paragraphs, genealogical tracing when applicable, mechanism shown not asserted, counterattack present, voice matches philosopher's style (visceral/geometric/analytic/dialectical). Worked example provided in system prompts showing Nietzsche combining multiple layers within single paragraphs. Standard: responses must have HORSEPOWER - depth and force to fully deploy intellectual firepower. Single paragraph or polite summaries = automatic failure
 - **Quote Frequency Guidance**: User can adjust discretionary quote usage with three levels: Low (deploy quotes rarely, only when critical), Normal (use quotes occasionally when they advance arguments), High (use quotes 1-2 times per response when tactically useful). Quotes are never mandatory - they're weapons deployed only when they strengthen the philosophical attack.
