@@ -92,6 +92,9 @@ const figuresPapers = {
     { file: "kuczynski_methodological_individualism.txt", title: "Beyond Methodological Individualism: The Primacy of Collective Psychology" },
     { file: "kuczynski_frege_montague.txt", title: "The Spuriousness of Frege-Montague Grammar" },
     { file: "kuczynski_personality_typology.txt", title: "A Ten-Dimensional Evolutionary Typology for Personality Assessment" },
+    { file: "kuczynski_white_knight_equality.txt", title: "White-Knight Equality: Rawls, Trafficking Rhetoric, and the Paternalism of Modern Protection" },
+    { file: "kuczynski_calhoun_zimbardo.txt", title: "Two Experiments in Human Nature: Calhoun and Zimbardo Compared" },
+    { file: "kuczynski_rawls_mouse_world.txt", title: "The Philosophy of the Full Stomach: Rawls-World and Mouse-World" },
   ],
   "jmk": [
     // LEGACY: For backward compatibility - use batch approach above
