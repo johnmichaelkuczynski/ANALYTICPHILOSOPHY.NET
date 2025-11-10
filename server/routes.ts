@@ -676,33 +676,14 @@ Now ATTACK this problem directly using your full philosophical firepower:
       // Get persona settings for response adaptation
       const personaSettings = await storage.getPersonaSettings(sessionId);
       
-      // Build adaptive instructions
-      let adaptiveInstructions = "";
-      if (personaSettings) {
-        const lengthInstruction = personaSettings.responseLength === 0 
-          ? 'Auto (respond at whatever length best serves the question - brief for simple questions, extensive for complex ones)'
-          : `Approximately ${personaSettings.responseLength} sentences (adjust as needed for clarity)`;
-        
-        adaptiveInstructions = `
-
-ADAPTIVE RESPONSE INSTRUCTIONS:
-Adjust your response to match the user's preferences:
-- Intelligence Level: ${personaSettings.intelligenceLevel}/10 → ${
-  personaSettings.intelligenceLevel >= 8 ? 'Highly sophisticated, technical discourse' :
-  personaSettings.intelligenceLevel >= 5 ? 'Balanced - clear but rigorous' :
-  'Accessible, explain complex ideas simply'
-}
-- Emotional Tone: ${personaSettings.emotionalTone}/10 → ${
-  personaSettings.emotionalTone >= 7 ? 'Warm, engaging, personable' :
-  personaSettings.emotionalTone >= 4 ? 'Balanced - professional yet approachable' :
-  'Formal, analytical, measured'
-}
-- Formality: ${personaSettings.formality} style
-- Response Length: ${lengthInstruction}
-
-Adapt your complexity, vocabulary, tone, and length to match these settings.
-`;
-      }
+      // Build the complete system prompt using centralized builder
+      const baseSystemPrompt = personaSettings 
+        ? buildSystemPrompt(personaSettings)
+        : buildSystemPrompt({
+            responseLength: 0,
+            writePaper: false,
+            quoteFrequency: 2,
+          });
 
       // VECTOR SEARCH: Find semantically relevant chunks from this figure's writings
       const relevantPassages = await findRelevantChunks(message, 6, figureId);
@@ -784,8 +765,8 @@ Quotes must do work - advancing arguments, not decorating them. Each quote shoul
 You are a living intellect attacking problems, NOT a textbook summarizing views.
 `;
       
-      // Combine figure's system prompt with relevant passages from their writings
-      const enhancedSystemPrompt = figure.systemPrompt + "\n\n" + relevantPassages + documentContext + attackModeInstructions + adaptiveInstructions;
+      // Combine all prompt components: philosopher identity + system rules + RAG + attack mode
+      const enhancedSystemPrompt = figure.systemPrompt + "\n\n" + baseSystemPrompt + "\n\n" + relevantPassages + documentContext + attackModeInstructions;
 
       // Setup SSE
       res.setHeader("Content-Type", "text/event-stream");
