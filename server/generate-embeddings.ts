@@ -98,6 +98,9 @@ const figuresPapers = {
     { file: "kuczynski_rawls_mouse_collapse.txt", title: "Rawls-World and Mouse-World: The Same Paradise, the Same Collapse" },
     { file: "kuczynski_stanford_prison_morality_play.txt", title: "The Stanford Prison Experiment: A Manufactured Morality Play" },
     { file: "kuczynski_incompleteness_logic.txt", title: "The Incompleteness of Logic: A Recursion-Theoretic Generalization of Gödel's Theorem" },
+    { file: "kuczynski_neuroticism_neurosis.txt", title: "Neuroticism vs Neurosis: Distinguishing Trait and Structure" },
+    { file: "kuczynski_terminal_humanities.txt", title: "The Terminal Humanities: Why Philosophy No Longer Generates Knowledge" },
+    { file: "kuczynski_hegel_app.txt", title: "From Commentary to Code: Why an App Would Teach Hegel Better Than Hegel Scholars" },
   ],
   "jmk": [
     // LEGACY: For backward compatibility - use batch approach above
