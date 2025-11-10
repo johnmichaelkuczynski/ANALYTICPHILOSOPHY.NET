@@ -262,6 +262,12 @@ const figuresPapers = {
     { file: "kuczynski_freedom.txt", title: "Freedom by J.-M. Kuczynski" },
     { file: "kuczynski_language.txt", title: "What Is a Language? by J.-M. Kuczynski" },
     { file: "kuczynski_modality_nonexistence.txt", title: "Modality and Non-existence by J.-M. Kuczynski" },
+    { file: "keyser_rigorous_thinking.txt", title: "The Human Worth of Rigorous Thinking: Essays and Addresses by Cassius J. Keyser" },
+    { file: "cochran_harpending_10000_year_explosion.txt", title: "The 10,000 Year Explosion: How Civilization Accelerated Human Evolution by Gregory Cochran and Henry Harpending" },
+    { file: "carroll_symbolic_logic.txt", title: "Symbolic Logic by Lewis Carroll" },
+    { file: "rumsey_statistics_essentials.txt", title: "Statistics Essentials For Dummies by Deborah Rumsey" },
+    { file: "electronics_for_dummies.txt", title: "Electronics For Dummies" },
+    { file: "freud_beyond_pleasure_principle.txt", title: "Beyond the Pleasure Principle by Sigmund Freud" },
   ]
 };
 
