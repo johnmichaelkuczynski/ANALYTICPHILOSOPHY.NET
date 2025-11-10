@@ -284,6 +284,11 @@ const figuresPapers = {
     { file: "giles_civilization_china.txt", title: "The Civilization of China by Herbert A. Giles" },
     { file: "tacitus_histories.txt", title: "The Histories, Volumes I and II by Tacitus" },
     { file: "rashdall_philosophy_religion.txt", title: "Philosophy and Religion: Six Lectures by Hastings Rashdall" },
+    { file: "A History of The Inquisition of The Middle Ages; volume I_1762813953180.txt", title: "A History of The Inquisition of The Middle Ages, Volume I by Henry Charles Lea" },
+    { file: "Philosophy of Science_ The Link Between Science and Philosophy_1762813953181.txt", title: "Philosophy of Science: The Link Between Science and Philosophy by Philipp Frank" },
+    { file: "Mathematical Logic for Computer Science_1762813953182.txt", title: "Mathematical Logic for Computer Science by Mordechai Ben-Ari" },
+    { file: "Introductory Real Analysis (Dover Books on Mathematics)_1762813953182.txt", title: "Introductory Real Analysis by A. N. Kolmogorov and S. V. Fomin" },
+    { file: "Contributions to the Founding of the Theory of Transfinite Numbers (Dover Books on Mathematics)_1762813953182.txt", title: "Contributions to the Founding of the Theory of Transfinite Numbers by Georg Cantor" },
   ]
 };
 

@@ -6,16 +6,22 @@
 ## Recent Changes
 
 ### Common Fund Knowledge Expansion (November 2025)
-**Major Infrastructure Development:** Expanding the Common Fund from ~43 texts to **52 texts spanning 15+ disciplines**. This enables all philosophers to access cross-disciplinary knowledge while maintaining authentic voices grounded in their primary works.
+**Major Infrastructure Development:** Expanding the Common Fund from ~43 texts to **57 texts spanning 18+ disciplines**. This enables all philosophers to access cross-disciplinary knowledge while maintaining authentic voices grounded in their primary works.
 
 **Status:**
 - ✅ **49 texts fully embedded** in Common Fund vector database
 - 🔄 **Batch 1 (9 texts):** Currently processing Tacitus Histories (7/9 complete, ~542,000 words)
   - Completed: Gibbon's Memoirs, Marcus Aurelius Meditations, Medieval Europe, Hebraic Literature, Book of Scoundrels, The Mob, Civilization of China
   - In Progress: Tacitus Histories (chunk 41/252)
-  - Remaining: 2 more texts
+  - Remaining: 2 more texts (Ayer's Language Truth & Logic, Rashdall's Philosophy & Religion)
 - 📦 **Batch 2 (10 texts):** Configured and ready (~380,000 words)
-  - Ayer's Language Truth & Logic, Wittgenstein's Tractatus, Arrow's Social Choice, Bernays' Propaganda, Quantum Mechanics textbook, and 5 others
+  - Wittgenstein's Tractatus, Arrow's Social Choice, Bernays' Propaganda, Quantum Mechanics textbook, and 6 others
+- 📦 **Batch 3 (5 texts):** Just added (~1.1 million words)
+  - Lea's History of the Inquisition (Vol I, 41,008 lines)
+  - Frank's Philosophy of Science (31,898 lines)
+  - Ben-Ari's Mathematical Logic for Computer Science (25,627 lines)
+  - Kolmogorov & Fomin's Introductory Real Analysis (32,856 lines)
+  - Cantor's Theory of Transfinite Numbers (13,782 lines)
 
 **New Disciplines Added:**
 - Classical History (Gibbon, Tacitus, Medieval Europe)
@@ -25,6 +31,10 @@
 - Social Psychology & Propaganda (Bernays)
 - Economic Theory (Arrow's Social Choice)
 - Quantum Mechanics & Physics
+- Medieval Church History (Lea's Inquisition)
+- Philosophy of Science (Frank)
+- Mathematical Logic & Foundations (Ben-Ari, Cantor)
+- Real Analysis & Advanced Mathematics (Kolmogorov & Fomin)
 
 **Technical Implementation:**
 - Intelligent timeout recovery: System automatically resumes from last completed text
