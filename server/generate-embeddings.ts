@@ -95,6 +95,9 @@ const figuresPapers = {
     { file: "kuczynski_white_knight_equality.txt", title: "White-Knight Equality: Rawls, Trafficking Rhetoric, and the Paternalism of Modern Protection" },
     { file: "kuczynski_calhoun_zimbardo.txt", title: "Two Experiments in Human Nature: Calhoun and Zimbardo Compared" },
     { file: "kuczynski_rawls_mouse_world.txt", title: "The Philosophy of the Full Stomach: Rawls-World and Mouse-World" },
+    { file: "kuczynski_rawls_mouse_collapse.txt", title: "Rawls-World and Mouse-World: The Same Paradise, the Same Collapse" },
+    { file: "kuczynski_stanford_prison_morality_play.txt", title: "The Stanford Prison Experiment: A Manufactured Morality Play" },
+    { file: "kuczynski_incompleteness_logic.txt", title: "The Incompleteness of Logic: A Recursion-Theoretic Generalization of Gödel's Theorem" },
   ],
   "jmk": [
     // LEGACY: For backward compatibility - use batch approach above
