@@ -21,8 +21,12 @@ export function ComparisonModal({ open, onOpenChange, figures }: ComparisonModal
   const [input, setInput] = useState("");
   const [streaming1, setStreaming1] = useState("");
   const [streaming2, setStreaming2] = useState("");
+  const [pending1, setPending1] = useState("");
+  const [pending2, setPending2] = useState("");
   const [isStreaming1, setIsStreaming1] = useState(false);
   const [isStreaming2, setIsStreaming2] = useState(false);
+  const [messageCount1BeforePending, setMessageCount1BeforePending] = useState<number>(0);
+  const [messageCount2BeforePending, setMessageCount2BeforePending] = useState<number>(0);
   const messagesEndRef1 = useRef<HTMLDivElement>(null);
   const messagesEndRef2 = useRef<HTMLDivElement>(null);
 
@@ -36,7 +40,14 @@ export function ComparisonModal({ open, onOpenChange, figures }: ComparisonModal
     enabled: !!selectedFigure2 && open,
   });
 
-  const streamResponse = async (figure: Figure, setStreaming: (msg: string) => void, setIsStreaming: (val: boolean) => void) => {
+  const streamResponse = async (
+    figure: Figure, 
+    setStreaming: (msg: string) => void, 
+    setIsStreaming: (val: boolean) => void,
+    setPending: (msg: string) => void,
+    setMessageCountBeforePending: (count: number) => void,
+    messagesQueryKey: string
+  ) => {
     if (!figure) {
       console.log("streamResponse: no figure provided");
       return;
@@ -45,6 +56,8 @@ export function ComparisonModal({ open, onOpenChange, figures }: ComparisonModal
     console.log(`Starting stream for ${figure.name}, message: "${input.trim()}"`);
     setIsStreaming(true);
     setStreaming("");
+    // DON'T clear pending here - let useEffect clear it once persisted
+    // setPending(""); // REMOVED - this would wipe out previous response before persistence
 
     try {
       const response = await fetch(`/api/figures/${figure.id}/chat`, {
@@ -52,7 +65,7 @@ export function ComparisonModal({ open, onOpenChange, figures }: ComparisonModal
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: 'include', // Ensure cookies are sent
+        credentials: 'include',
         body: JSON.stringify({ message: input.trim() }),
       });
 
@@ -85,14 +98,17 @@ export function ComparisonModal({ open, onOpenChange, figures }: ComparisonModal
             const data = line.slice(6);
             if (data === "[DONE]") {
               setIsStreaming(false);
-              // Invalidate the messages query to fetch the complete conversation including the new message
+              
+              // CRITICAL FIX: Keep streaming message visible as pending until persisted
+              const currentMessages = queryClient.getQueryData<FigureMessage[]>([messagesQueryKey]) || [];
+              setMessageCountBeforePending(currentMessages.length);
+              setPending(accumulatedText);
+              setStreaming("");
+              
+              // Refetch to get the real message from backend
               await queryClient.invalidateQueries({
-                queryKey: [`/api/figures/${figure.id}/messages`],
+                queryKey: [messagesQueryKey],
               });
-              // Clear streaming after a brief delay to prevent flicker
-              setTimeout(() => {
-                setStreaming("");
-              }, 100);
               return;
             }
 
@@ -112,7 +128,8 @@ export function ComparisonModal({ open, onOpenChange, figures }: ComparisonModal
       console.error(`Stream error for ${figure.name}:`, error);
       setIsStreaming(false);
       setStreaming("");
-      // Show error to user
+      setPending("");
+      // Show error to user (temporarily)
       setStreaming(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setTimeout(() => setStreaming(""), 3000);
     }
@@ -134,8 +151,22 @@ export function ComparisonModal({ open, onOpenChange, figures }: ComparisonModal
     
     // Send to both figures in parallel
     await Promise.all([
-      streamResponse(selectedFigure1, setStreaming1, setIsStreaming1),
-      streamResponse(selectedFigure2, setStreaming2, setIsStreaming2),
+      streamResponse(
+        selectedFigure1, 
+        setStreaming1, 
+        setIsStreaming1,
+        setPending1,
+        setMessageCount1BeforePending,
+        `/api/figures/${selectedFigure1.id}/messages`
+      ),
+      streamResponse(
+        selectedFigure2, 
+        setStreaming2, 
+        setIsStreaming2,
+        setPending2,
+        setMessageCount2BeforePending,
+        `/api/figures/${selectedFigure2.id}/messages`
+      ),
     ]);
 
     setInput("");
@@ -147,7 +178,41 @@ export function ComparisonModal({ open, onOpenChange, figures }: ComparisonModal
     setInput("");
     setStreaming1("");
     setStreaming2("");
+    setPending1("");
+    setPending2("");
+    setMessageCount1BeforePending(0);
+    setMessageCount2BeforePending(0);
   };
+
+  // Clear pending message 1 once it appears in the fetched messages
+  useEffect(() => {
+    if (pending1 && messages1.length > 0) {
+      if (messages1.length > messageCount1BeforePending) {
+        const lastMessage = messages1[messages1.length - 1];
+        // Use robust comparison to handle potential whitespace differences
+        if (lastMessage.role === "assistant" && 
+            lastMessage.content.trim() === pending1.trim()) {
+          setPending1("");
+          setMessageCount1BeforePending(0);
+        }
+      }
+    }
+  }, [messages1, pending1, messageCount1BeforePending]);
+
+  // Clear pending message 2 once it appears in the fetched messages
+  useEffect(() => {
+    if (pending2 && messages2.length > 0) {
+      if (messages2.length > messageCount2BeforePending) {
+        const lastMessage = messages2[messages2.length - 1];
+        // Use robust comparison to handle potential whitespace differences
+        if (lastMessage.role === "assistant" && 
+            lastMessage.content.trim() === pending2.trim()) {
+          setPending2("");
+          setMessageCount2BeforePending(0);
+        }
+      }
+    }
+  }, [messages2, pending2, messageCount2BeforePending]);
 
   const handleDownload = () => {
     if (!selectedFigure1 || !selectedFigure2) return;
@@ -207,13 +272,13 @@ export function ComparisonModal({ open, onOpenChange, figures }: ComparisonModal
     if (messagesEndRef1.current) {
       messagesEndRef1.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages1, streaming1]);
+  }, [messages1, streaming1, pending1]);
 
   useEffect(() => {
     if (messagesEndRef2.current) {
       messagesEndRef2.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages2, streaming2]);
+  }, [messages2, streaming2, pending2]);
 
   const isSelectionMode = !selectedFigure1 || !selectedFigure2;
 
@@ -462,6 +527,14 @@ export function ComparisonModal({ open, onOpenChange, figures }: ComparisonModal
                       </div>
                     )}
 
+                    {pending1 && !streaming1 && (
+                      <div className="flex justify-start">
+                        <div className="max-w-[90%] rounded-lg px-3 py-2 bg-muted">
+                          <p className="text-sm whitespace-pre-wrap">{pending1}</p>
+                        </div>
+                      </div>
+                    )}
+
                     <div ref={messagesEndRef1} />
                   </div>
                 </ScrollArea>
@@ -521,6 +594,14 @@ export function ComparisonModal({ open, onOpenChange, figures }: ComparisonModal
                         <div className="max-w-[90%] rounded-lg px-3 py-2 bg-muted">
                           <p className="text-sm whitespace-pre-wrap">{streaming2}</p>
                           <span className="inline-block w-1 h-4 bg-foreground/50 ml-0.5 animate-pulse" />
+                        </div>
+                      </div>
+                    )}
+
+                    {pending2 && !streaming2 && (
+                      <div className="flex justify-start">
+                        <div className="max-w-[90%] rounded-lg px-3 py-2 bg-muted">
+                          <p className="text-sm whitespace-pre-wrap">{pending2}</p>
                         </div>
                       </div>
                     )}

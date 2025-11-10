@@ -32,7 +32,9 @@ export default function Chat() {
   const [streamingMessage, setStreamingMessage] = useState<string>("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [pendingAssistantMessage, setPendingAssistantMessage] = useState<string>("");
+  const [pendingUserMessage, setPendingUserMessage] = useState<string>("");
   const [messageCountBeforePending, setMessageCountBeforePending] = useState<number>(0);
+  const [userMessageCountBeforePending, setUserMessageCountBeforePending] = useState<number>(0);
   const [selectedFigure, setSelectedFigure] = useState<Figure | null>(null);
   const [figureDialogOpen, setFigureDialogOpen] = useState(false);
   const [figureSearchQuery, setFigureSearchQuery] = useState("");
@@ -66,16 +68,10 @@ export default function Chat() {
     setStreamingMessage("");
     setPendingAssistantMessage("");
 
-    // Optimistically add user message to UI immediately
-    queryClient.setQueryData(["/api/messages"], (oldData: any) => {
-      const newUserMessage = {
-        id: Date.now(), // Temporary ID
-        content,
-        role: "user",
-        createdAt: new Date().toISOString(),
-      };
-      return oldData ? [...oldData, newUserMessage] : [newUserMessage];
-    });
+    // CRITICAL FIX: Track pending user message to keep it visible until persisted
+    const currentMessages = queryClient.getQueryData<Message[]>(["/api/messages"]) || [];
+    setUserMessageCountBeforePending(currentMessages.length);
+    setPendingUserMessage(content);
 
     try {
       const response = await fetch("/api/chat/stream", {
@@ -149,19 +145,37 @@ export default function Chat() {
       setIsStreaming(false);
       setStreamingMessage("");
       setPendingAssistantMessage("");
+      setPendingUserMessage("");
       setMessageCountBeforePending(0);
+      setUserMessageCountBeforePending(0);
     }
   };
 
+  // Clear pending user message once it appears in the fetched messages
+  useEffect(() => {
+    if (pendingUserMessage && messages.length > 0) {
+      if (messages.length > userMessageCountBeforePending) {
+        // Find the most recent user message that matches our pending content
+        const recentUserMessages = messages.filter(m => m.role === "user");
+        if (recentUserMessages.length > 0) {
+          const lastUserMessage = recentUserMessages[recentUserMessages.length - 1];
+          if (lastUserMessage.content.trim() === pendingUserMessage.trim()) {
+            setPendingUserMessage("");
+            setUserMessageCountBeforePending(0);
+          }
+        }
+      }
+    }
+  }, [messages, pendingUserMessage, userMessageCountBeforePending]);
 
-  // Clear pending message once it appears in the fetched messages
+  // Clear pending assistant message once it appears in the fetched messages
   useEffect(() => {
     if (pendingAssistantMessage && messages.length > 0) {
       // Only clear if message count has increased (confirming new message was persisted)
       // AND the last message matches our pending content
       if (messages.length > messageCountBeforePending) {
         const lastMessage = messages[messages.length - 1];
-        if (lastMessage.role === "assistant" && lastMessage.content === pendingAssistantMessage) {
+        if (lastMessage.role === "assistant" && lastMessage.content.trim() === pendingAssistantMessage.trim()) {
           setPendingAssistantMessage("");
           setMessageCountBeforePending(0);
         }
@@ -171,7 +185,7 @@ export default function Chat() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, streamingMessage, pendingAssistantMessage]);
+  }, [messages, streamingMessage, pendingAssistantMessage, pendingUserMessage]);
 
   if (settingsLoading) {
     return (
@@ -414,6 +428,20 @@ export default function Chat() {
                 {messages.map((message) => (
                   <ChatMessage key={message.id} message={message} />
                 ))}
+                {pendingUserMessage && (
+                  <ChatMessage
+                    message={{
+                      id: "pending-user",
+                      conversationId: "",
+                      role: "user",
+                      content: pendingUserMessage,
+                      verseText: null,
+                      verseReference: null,
+                      createdAt: new Date(),
+                    }}
+                    isStreaming={false}
+                  />
+                )}
                 {streamingMessage && (
                   <ChatMessage
                     message={{
