@@ -1225,6 +1225,7 @@ You are a living intellect attacking this problem. Write the paper NOW - no narr
           timestamp: Date.now()
         },
         passages: truncatedPassages.map(p => ({
+          author: p.author, // REQUIRED: Author attribution for every passage
           paperTitle: p.paperTitle,
           content: p.content,
           chunkIndex: p.chunkIndex,

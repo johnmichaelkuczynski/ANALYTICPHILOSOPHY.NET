@@ -91,6 +91,7 @@ export const figureMessages = pgTable("figure_messages", {
 export const paperChunks = pgTable("paper_chunks", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   figureId: varchar("figure_id").notNull().references(() => figures.id, { onDelete: "cascade" }),
+  author: text("author").notNull(), // REQUIRED: Explicit author attribution for every chunk
   paperTitle: text("paper_title").notNull(),
   content: text("content").notNull(),
   embedding: vector("embedding", { dimensions: 1536 }), // OpenAI ada-002 dimensions
@@ -98,6 +99,7 @@ export const paperChunks = pgTable("paper_chunks", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => [
   index("paper_chunks_figure_idx").on(table.figureId),
+  index("paper_chunks_author_idx").on(table.author),
 ]);
 
 export const usersRelations = relations(users, ({ one, many }) => ({

@@ -88,6 +88,7 @@ async function queryKnowledge(requestBody, appId = 'test-client') {
       if (data.passages && data.passages.length > 0) {
         console.log('\n--- PASSAGE SAMPLE ---');
         const sample = data.passages[0];
+        console.log('Author:', sample.author);
         console.log('Title:', sample.paperTitle);
         console.log('Source:', sample.source);
         console.log('Distance:', sample.semanticDistance.toFixed(4));

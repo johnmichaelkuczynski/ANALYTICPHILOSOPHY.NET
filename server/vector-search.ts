@@ -9,6 +9,7 @@ const openai = new OpenAI({
 
 // Structured chunk data for API responses
 export interface StructuredChunk {
+  author: string; // REQUIRED: Author attribution for every chunk
   paperTitle: string;
   content: string;
   chunkIndex: number;
@@ -40,7 +41,7 @@ export async function searchPhilosophicalChunks(
     // Query unified knowledge base (all texts stored with figure_id='common')
     const results = await db.execute(
       sql`
-        SELECT paper_title, content, chunk_index, 
+        SELECT author, paper_title, content, chunk_index, 
                embedding <=> ${JSON.stringify(queryEmbedding)}::vector as distance
         FROM ${paperChunks}
         WHERE figure_id = 'common'
@@ -51,8 +52,9 @@ export async function searchPhilosophicalChunks(
     
     // Convert to structured format
     return (results.rows || []).map(row => {
-      const r = row as { paper_title: string; content: string; chunk_index: number; distance: number };
+      const r = row as { author: string; paper_title: string; content: string; chunk_index: number; distance: number };
       return {
+        author: r.author,
         paperTitle: r.paper_title,
         content: r.content,
         chunkIndex: r.chunk_index,
@@ -106,7 +108,7 @@ These are REFERENCE MATERIAL, not answers. Use them to inform your reasoning.
   for (let i = 0; i < chunks.length; i++) {
     const chunk = chunks[i];
     response += `
-[Reference ${i + 1}] ${chunk.paperTitle}
+[Reference ${i + 1}] ${chunk.paperTitle} by ${chunk.author}
 ${chunk.content}
 
 `;
