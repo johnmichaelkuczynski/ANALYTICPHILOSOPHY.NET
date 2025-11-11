@@ -20,15 +20,18 @@ export interface StructuredChunk {
 }
 
 /**
- * UNIFIED KNOWLEDGE BASE: Core semantic search
+ * UNIFIED KNOWLEDGE BASE: Core semantic search with MANDATORY author prioritization
  * Returns structured chunk data from unified Common Fund containing ALL philosophical texts
  * Used by both chat UX (findRelevantChunks) and internal knowledge API
+ * 
+ * CRITICAL BEHAVIOR: When authorFilter is specified, ONLY returns that author's content.
+ * This ensures "KUCZYNSKI QUOTES" → 100% Kuczynski, never other authors.
  */
 export async function searchPhilosophicalChunks(
   question: string,
   topK: number = 6,
   figureId: string = "common", // Default to unified knowledge base
-  authorFilter?: string // Optional: filter by author name (partial match)
+  authorFilter?: string // Optional: filter by author name (partial match) - STRICTLY ENFORCED
 ): Promise<StructuredChunk[]> {
   try {
     // Generate embedding for the question
@@ -39,20 +42,52 @@ export async function searchPhilosophicalChunks(
     
     const queryEmbedding = embeddingResponse.data[0].embedding;
     
-    // Build dynamic SQL with optional author filtering
-    // Using ILIKE for case-insensitive partial matching (e.g., "Kuczynski" matches "J.-M. Kuczynski")
-    const authorCondition = authorFilter 
-      ? sql`AND author ILIKE ${'%' + authorFilter + '%'}` 
-      : sql``;
+    // TWO-TIER APPROACH: If author specified, ONLY search that author's content
+    // This guarantees author-specific requests return ONLY that author, never mixed results
+    if (authorFilter) {
+      console.log(`[Vector Search] STRICT author filter: "${authorFilter}" - will return ONLY this author's content`);
+      
+      // Search ONLY the specified author's chunks
+      const authorResults = await db.execute(
+        sql`
+          SELECT author, paper_title, content, chunk_index, 
+                 embedding <=> ${JSON.stringify(queryEmbedding)}::vector as distance
+          FROM ${paperChunks}
+          WHERE figure_id = 'common'
+            AND author ILIKE ${'%' + authorFilter + '%'}
+          ORDER BY distance
+          LIMIT ${topK}
+        `
+      );
+      
+      const authorChunks = (authorResults.rows || []).map((row: any) => {
+        const r = row as { author: string; paper_title: string; content: string; chunk_index: number; distance: number };
+        return {
+          author: r.author,
+          paperTitle: r.paper_title,
+          content: r.content,
+          chunkIndex: r.chunk_index,
+          distance: r.distance,
+          source: 'common' as const,
+          figureId: 'common',
+          tokens: Math.ceil(r.content.split(/\s+/).length * 1.3)
+        };
+      });
+      
+      console.log(`[Vector Search] Found ${authorChunks.length} chunks from author matching "${authorFilter}"`);
+      
+      // STRICT MODE: Return ONLY author's content, even if fewer than requested
+      // This prevents mixing in other authors' content when user explicitly requests one author
+      return authorChunks;
+    }
     
-    // Query unified knowledge base (all texts stored with figure_id='common')
+    // NO AUTHOR FILTER: Search all content (normal semantic search)
     const results = await db.execute(
       sql`
         SELECT author, paper_title, content, chunk_index, 
                embedding <=> ${JSON.stringify(queryEmbedding)}::vector as distance
         FROM ${paperChunks}
         WHERE figure_id = 'common'
-        ${authorCondition}
         ORDER BY distance
         LIMIT ${topK}
       `
