@@ -29,6 +29,50 @@ const batchToFigure: Record<string, string> = {
   "veblen_batch3": "common",
   "rousseau": "common",
   "leibniz": "common",
+  "hobbes_complete": "common",
+};
+
+// REQUIRED: Author attribution mapping for every chunk
+// Maps batchId to author name for explicit attribution in all API responses
+const batchToAuthor: Record<string, string> = {
+  "jmk_batch1": "J.-M. Kuczynski",
+  "jmk_batch2": "J.-M. Kuczynski",
+  "jmk_batch3": "J.-M. Kuczynski",
+  "jmk_missing": "J.-M. Kuczynski",
+  "jmk_literal_meaning": "J.-M. Kuczynski",
+  "jmk_new_texts": "J.-M. Kuczynski",
+  "jmk": "J.-M. Kuczynski",
+  "veblen_batch1": "Thorstein Veblen",
+  "veblen_batch2": "Thorstein Veblen",
+  "veblen_batch3": "Thorstein Veblen",
+  "veblen": "Thorstein Veblen",
+  "freud": "Sigmund Freud",
+  "bacon": "Francis Bacon",
+  "spinoza": "Baruch Spinoza",
+  "nietzsche": "Friedrich Nietzsche",
+  "russell": "Bertrand Russell",
+  "darwin": "Charles Darwin",
+  "dewey": "John Dewey",
+  "kant": "Immanuel Kant",
+  "descartes": "René Descartes",
+  "lenin": "Vladimir Lenin",
+  "hegel": "G.W.F. Hegel",
+  "hobbes": "Thomas Hobbes",
+  "hobbes_complete": "Thomas Hobbes",
+  "rousseau": "Jean-Jacques Rousseau",
+  "mill": "John Stuart Mill",
+  "engels": "Friedrich Engels",
+  "mises": "Ludwig von Mises",
+  "smith": "Adam Smith",
+  "spencer": "Herbert Spencer",
+  "marden": "Orison Swett Marden",
+  "adler": "Alfred Adler",
+  "peirce": "Charles Sanders Peirce",
+  "leibniz": "Gottfried Wilhelm Leibniz",
+  "william-james": "William James",
+  "poincare": "Henri Poincaré",
+  "poe": "Edgar Allan Poe",
+  "common": "Various Authors",
 };
 
 // Multi-author configuration: each figure has their own set of papers
@@ -184,6 +228,12 @@ const figuresPapers = {
   ],
   "hobbes": [
     { file: "hobbes_collected_works.txt", title: "The Collected Works of Thomas Hobbes (Delphi Classics)" },
+  ],
+  "hobbes_complete": [
+    // Project Gutenberg Complete Works - 3 volumes, ~90k lines total
+    { file: "hobbes_complete_vol01_elements.txt", title: "Elements of Philosophy (The English Works of Thomas Hobbes, Volume 1)" },
+    { file: "hobbes_complete_vol03_leviathan.txt", title: "Leviathan - The Matter, Form, and Power of a Commonwealth (The English Works of Thomas Hobbes, Volume 3)" },
+    { file: "hobbes_complete_vol05_liberty_necessity.txt", title: "Questions Concerning Liberty, Necessity, and Chance (The English Works of Thomas Hobbes, Volume 5)" },
   ],
   "rousseau": [
     { file: "rousseau_complete_works.txt", title: "The Complete Works of Jean-Jacques Rousseau" },
@@ -464,6 +514,7 @@ async function main() {
           
           await db.insert(paperChunks).values({
             figureId: actualFigureId,  // Use actual figure ID, not batch name
+            author: batchToAuthor[batchId] || "Unknown Author",  // REQUIRED: Explicit author attribution
             paperTitle: paper.title,
             content: chunk,
             embedding: embedding as any, // pgvector handles array conversion
