@@ -1007,6 +1007,7 @@ You are a living intellect attacking this problem. Write the paper NOW - no narr
   const knowledgeRequestSchema = z.object({
     query: z.string().min(1).max(1000),
     figureId: z.string().optional().default("common"), // All queries now search unified knowledge base
+    author: z.string().optional(), // NEW: Filter by author name (partial match via ILIKE)
     maxResults: z.number().int().min(1).max(20).optional().default(6),
     includeQuotes: z.boolean().optional().default(false),
     minQuoteLength: z.number().int().min(10).max(200).optional().default(50),
@@ -1180,14 +1181,14 @@ You are a living intellect attacking this problem. Write the paper NOW - no narr
         });
       }
       
-      const { query, figureId, maxResults, includeQuotes, minQuoteLength, maxCharacters } = validationResult.data;
+      const { query, figureId, author, maxResults, includeQuotes, minQuoteLength, maxCharacters } = validationResult.data;
       
       // Audit log
       const appId = (req as any).zhiAuth?.appId || "unknown";
-      console.log(`[Knowledge Provider] ${appId} querying unified knowledge base: "${query}" (results: ${maxResults})`);
+      console.log(`[Knowledge Provider] ${appId} querying unified knowledge base: "${query}" (results: ${maxResults}, author: ${author || 'all'})`);
       
-      // Perform semantic search
-      const passages = await searchPhilosophicalChunks(query, maxResults, figureId);
+      // Perform semantic search with optional author filtering
+      const passages = await searchPhilosophicalChunks(query, maxResults, figureId, author);
       
       // Truncate passages to respect maxCharacters limit
       let totalChars = 0;

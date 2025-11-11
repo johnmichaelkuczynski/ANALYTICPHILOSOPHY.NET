@@ -27,7 +27,8 @@ export interface StructuredChunk {
 export async function searchPhilosophicalChunks(
   question: string,
   topK: number = 6,
-  figureId: string = "common" // Default to unified knowledge base
+  figureId: string = "common", // Default to unified knowledge base
+  authorFilter?: string // Optional: filter by author name (partial match)
 ): Promise<StructuredChunk[]> {
   try {
     // Generate embedding for the question
@@ -38,6 +39,12 @@ export async function searchPhilosophicalChunks(
     
     const queryEmbedding = embeddingResponse.data[0].embedding;
     
+    // Build dynamic SQL with optional author filtering
+    // Using ILIKE for case-insensitive partial matching (e.g., "Kuczynski" matches "J.-M. Kuczynski")
+    const authorCondition = authorFilter 
+      ? sql`AND author ILIKE ${'%' + authorFilter + '%'}` 
+      : sql``;
+    
     // Query unified knowledge base (all texts stored with figure_id='common')
     const results = await db.execute(
       sql`
@@ -45,6 +52,7 @@ export async function searchPhilosophicalChunks(
                embedding <=> ${JSON.stringify(queryEmbedding)}::vector as distance
         FROM ${paperChunks}
         WHERE figure_id = 'common'
+        ${authorCondition}
         ORDER BY distance
         LIMIT ${topK}
       `
