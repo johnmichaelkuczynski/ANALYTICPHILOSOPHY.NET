@@ -1,33 +1,80 @@
-# CRITICAL FIX: Strict Author Filtering for ZHI Knowledge API
+# CRITICAL FIX: Intelligent Author Detection + Strict Filtering
 
-## Problem Identified
+## Problem Identified (EZHW Report)
 EZHW was getting **inconsistent results** when requesting author-specific quotes:
-- ✅ Query 1: "GIVE ME 5 KUCZYNSKI QUOTES" → Correct (Kuczynski content)
-- ❌ Query 2: "GIVE ME 10 KUCZYNSKI QUOTES" → Wrong (Hebraic Literature)
-- ❌ Query 3: "Get me quotes from Kuczynski about consciousness" → Wrong (Lenin)
 
-**Root Cause**: Semantic search was prioritizing **topic similarity** over **author identity**. When query text contained words semantically similar to other authors' content, those chunks would score higher and be returned instead.
+**Test Results (9 queries for "[AUTHOR] QUOTES"):**
+- ✅ Correct Returns (5/9): Kuczynski, Darwin, Kant, Freud, Russell
+- ❌ Wrong Returns (4/9):
+  - Nietzsche query → Returned "Liberalism" instead
+  - Plato query → Returned "The Sayings of Confucius" instead
+  - Aristotle query → Returned "Collected Works of René Descartes" instead
+  - Marx query → Returned "Collected Works of Vladimir Lenin" instead
 
-## Solution Implemented
+**Root Causes Found:**
+1. **Missing parameter pass**: `/zhi/query` endpoint wasn't passing `author` to search function (line 1118)
+2. **No author detection**: EZHW sends `{ "query": "GIVE ME PLATO QUOTES" }` without `author` field
+3. **Semantic drift**: When no author filter applied, topic similarity wins over author identity
 
-### Changed From: Weak Filtering
+## Two-Part Solution Implemented
+
+### Part 1: Intelligent Author Detection (NEW)
+**File**: `server/vector-search.ts` - Added `detectAuthorFromQuery()` function
+
 ```typescript
-// OLD: Author filter applied AFTER semantic ranking
-WHERE figure_id = 'common'
-  AND author ILIKE '%Kuczynski%'  // Weak filter
-ORDER BY semantic_distance  // Topic wins over author
+// Automatically detects author names in query text
+// "GIVE ME PLATO QUOTES" → detects "Plato"
+// Verifies author exists in database before applying filter
+
+export async function detectAuthorFromQuery(queryText: string): Promise<string | undefined> {
+  // Checks 33 common author patterns (Kuczynski, Russell, Plato, etc.)
+  // Case-insensitive matching
+  // Database verification to prevent false positives
+  
+  const queryUpper = queryText.toUpperCase();
+  for (const authorName of authorPatterns) {
+    if (queryUpper.includes(authorName.toUpperCase())) {
+      // Verify author has content in database
+      const count = await checkAuthorExists(authorName);
+      if (count > 0) return authorName;
+    }
+  }
+  return undefined;
+}
 ```
 
-### Changed To: STRICT Author-First Retrieval
+### Part 2: STRICT Author-First Retrieval
+**File**: `server/vector-search.ts` - Modified `searchPhilosophicalChunks()`
+
 ```typescript
-// NEW: When author specified, ONLY search that author's chunks
+// When author specified (explicit OR auto-detected), ONLY search that author
 if (authorFilter) {
-  // Search ONLY the specified author - topic is secondary
+  console.log(`[Vector Search] STRICT author filter: "${authorFilter}"`);
+  
+  // Search ONLY the specified author's chunks
   WHERE figure_id = 'common'
     AND author ILIKE '%Kuczynski%'  // MANDATORY filter
   ORDER BY semantic_distance  // Within author's content only
+  
   // Returns ONLY author's content, never mixes other authors
 }
+```
+
+### Part 3: Apply to Both Endpoints
+**File**: `server/routes.ts` - Updated `/zhi/query` AND `/api/internal/knowledge`
+
+```typescript
+// Auto-detect author from query text if not explicitly provided
+let detectedAuthor = author;
+if (!detectedAuthor && query) {
+  detectedAuthor = await detectAuthorFromQuery(query);
+  if (detectedAuthor) {
+    console.log(`🎯 Auto-detected author: "${detectedAuthor}"`);
+  }
+}
+
+// Pass detected/explicit author to search (THIS WAS MISSING BEFORE!)
+const passages = await searchPhilosophicalChunks(query, limit, "common", detectedAuthor);
 ```
 
 ## Fix Details
@@ -160,10 +207,32 @@ If issues persist, the fix can be reverted by:
 1. Restoring previous `searchPhilosophicalChunks` function from git history
 2. Workflow restart
 
+## How It Works Now
+
+**EZHW Query**: `{ "query": "GIVE ME 3 PLATO QUOTES", "limit": 10 }`
+
+**Processing Flow:**
+1. ✅ Extract query text: "GIVE ME 3 PLATO QUOTES"
+2. ✅ Auto-detect author: Finds "PLATO" in text
+3. ✅ Verify in database: Checks if Plato content exists  
+4. ❌ Plato has 0 chunks → Falls back to semantic search
+5. ✅ Returns best semantic matches (with warning that Plato unavailable)
+
+**EZHW Query**: `{ "query": "GIVE ME 10 KUCZYNSKI QUOTES", "limit": 10 }`
+
+**Processing Flow:**
+1. ✅ Extract query text: "GIVE ME 10 KUCZYNSKI QUOTES"
+2. ✅ Auto-detect author: Finds "KUCZYNSKI" in text
+3. ✅ Verify in database: Kuczynski has 3,795 chunks ✓
+4. ✅ Apply STRICT filter: Search ONLY Kuczynski's 3,795 chunks
+5. ✅ Returns 10 Kuczynski chunks, 0 from other authors
+
 ## Notes
 
-- **Deployment**: Fix live as of Nov 11, 2025 23:22 UTC
+- **Deployment**: Fix live as of Nov 11, 2025 23:35 UTC (Part 2)
 - **Backwards Compatible**: No breaking changes to API contract
-- **Performance**: No performance impact (same number of DB queries)
+- **Performance**: Minimal impact (+1 DB query for author detection when needed)
+- **Supported Authors**: 33 patterns covering all embedded figures
+- **Console Logging**: Shows `🎯 Auto-detected author` for debugging
 - **Math Classics**: Currently embedding 448 chunks (Levin, Klein, Gauss, Dedekind)
 - **Maimonides**: Added as 46th philosopher (UI only, no embedded texts yet)

@@ -1113,9 +1113,19 @@ You are a living intellect attacking this problem. Write the paper NOW - no narr
       const appId = (req as any).zhiAuth?.appId || "unknown";
       console.log(`[ZHI Query API] ${appId}: "${searchQuery}" (limit: ${limit})`);
       
-      // Perform semantic search across unified 25,697-chunk database
-      // Author/work terms already included in searchQuery for semantic relevance
-      const passages = await searchPhilosophicalChunks(searchQuery, limit, "common");
+      // CRITICAL FIX: Auto-detect author from query text if not explicitly provided
+      let detectedAuthor = author;
+      if (!detectedAuthor && query) {
+        const { detectAuthorFromQuery } = await import("./vector-search");
+        detectedAuthor = await detectAuthorFromQuery(query);
+        if (detectedAuthor) {
+          console.log(`[ZHI Query API] 🎯 Auto-detected author from query: "${detectedAuthor}"`);
+        }
+      }
+      
+      // Perform semantic search with STRICT author filtering
+      // When author detected/specified → returns ONLY that author's content
+      const passages = await searchPhilosophicalChunks(searchQuery, limit, "common", detectedAuthor);
       
       // No post-filtering - semantic search already handles author/work relevance
       const filteredPassages = passages;
@@ -1187,8 +1197,19 @@ You are a living intellect attacking this problem. Write the paper NOW - no narr
       const appId = (req as any).zhiAuth?.appId || "unknown";
       console.log(`[Knowledge Provider] ${appId} querying unified knowledge base: "${query}" (results: ${maxResults}, author: ${author || 'all'})`);
       
-      // Perform semantic search with optional author filtering
-      const passages = await searchPhilosophicalChunks(query, maxResults, figureId, author);
+      // CRITICAL FIX: Auto-detect author from query text if not explicitly provided
+      let detectedAuthor = author;
+      if (!detectedAuthor && query) {
+        const { detectAuthorFromQuery } = await import("./vector-search");
+        detectedAuthor = await detectAuthorFromQuery(query);
+        if (detectedAuthor) {
+          console.log(`[Knowledge Provider] 🎯 Auto-detected author from query: "${detectedAuthor}"`);
+        }
+      }
+      
+      // Perform semantic search with STRICT author filtering
+      // When author detected/specified → returns ONLY that author's content
+      const passages = await searchPhilosophicalChunks(query, maxResults, figureId, detectedAuthor);
       
       // Truncate passages to respect maxCharacters limit
       let totalChars = 0;

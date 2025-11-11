@@ -180,3 +180,39 @@ Be yourself - reason as YOU reason, not as a textbook explains you.
   
   return response;
 }
+
+/**
+ * Detect author name from query text using database lookup
+ * Returns author name if detected, undefined otherwise
+ */
+export async function detectAuthorFromQuery(queryText: string): Promise<string | undefined> {
+  // Common author names to check (covers most queries)
+  const authorPatterns = [
+    'Kuczynski', 'Russell', 'Nietzsche', 'Plato', 'Aristotle', 'Marx', 
+    'Kant', 'Hegel', 'Freud', 'Jung', 'James', 'Dewey', 'Leibniz',
+    'Newton', 'Darwin', 'Veblen', 'Lenin', 'Engels', 'Descartes',
+    'Spinoza', 'Hobbes', 'Berkeley', 'Rousseau', 'Mill', 'Poe',
+    'Mises', 'Smith', 'Spencer', 'Marden', 'Adler', 'Peirce',
+    'Poincare', 'Maimonides'
+  ];
+  
+  const queryUpper = queryText.toUpperCase();
+  
+  for (const authorName of authorPatterns) {
+    if (queryUpper.includes(authorName.toUpperCase())) {
+      // Verify this author exists in database
+      const chunks = await db.execute(
+        sql`SELECT COUNT(*) as count FROM ${paperChunks} 
+            WHERE figure_id = 'common' AND author ILIKE ${'%' + authorName + '%'} 
+            LIMIT 1`
+      );
+      
+      const count = (chunks.rows[0] as any)?.count;
+      if (count && parseInt(count) > 0) {
+        return authorName;
+      }
+    }
+  }
+  
+  return undefined;
+}
