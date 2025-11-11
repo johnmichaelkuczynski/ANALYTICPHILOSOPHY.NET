@@ -1112,25 +1112,12 @@ You are a living intellect attacking this problem. Write the paper NOW - no narr
       const appId = (req as any).zhiAuth?.appId || "unknown";
       console.log(`[ZHI Query API] ${appId}: "${searchQuery}" (limit: ${limit})`);
       
-      // Perform semantic search (author/work terms already included in searchQuery for better relevance)
-      // Semantic search across unified 25,697-chunk database automatically finds relevant content
-      const passages = await searchPhilosophicalChunks(searchQuery, limit * 3, "common"); // Get extra results for filtering
+      // Perform semantic search across unified 25,697-chunk database
+      // Author/work terms already included in searchQuery for semantic relevance
+      const passages = await searchPhilosophicalChunks(searchQuery, limit, "common");
       
-      // Optional post-filtering by exact work title match (for precision when needed)
-      let filteredPassages = passages;
-      if (work) {
-        const workLower = work.toLowerCase();
-        filteredPassages = passages.filter(p =>
-          p.paperTitle.toLowerCase().includes(workLower)
-        );
-        // If filter removed all results, fall back to unfiltered semantic results
-        if (filteredPassages.length === 0) {
-          filteredPassages = passages;
-        }
-      }
-      
-      // Trim to requested limit
-      filteredPassages = filteredPassages.slice(0, limit);
+      // No post-filtering - semantic search already handles author/work relevance
+      const filteredPassages = passages;
       
       // Extract quotes if requested
       const quotes = includeQuotes ? extractQuotes(filteredPassages, minQuoteLength) : [];
