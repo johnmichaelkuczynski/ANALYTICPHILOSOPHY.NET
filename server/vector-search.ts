@@ -159,13 +159,12 @@ export async function findRelevantChunks(
 ): Promise<string> {
   // Use the structured search helper
   const chunks = await searchPhilosophicalChunks(question, topK, figureId);
-    
-  if (chunks.length === 0) {
+  
   // Get figure name for messages
   const figureName = figureId === "freud" ? "Freud" : figureId === "jmk" ? "Kuczynski" : "this author";
   
   if (chunks.length === 0) {
-      return `
+    return `
 === NO EMBEDDINGS FOUND ===
 
 The vector database appears empty. Please run the embedding generation script:

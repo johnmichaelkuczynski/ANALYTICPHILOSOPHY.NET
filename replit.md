@@ -70,8 +70,46 @@ These texts dramatically expand JMK's range on formal language theory, mental il
 - **Anti-Chickenshit Directive**: Comprehensive 10-point protocol eliminating defensive, pedagogical, and generic responses. No defensive openings, no teaching about philosophy (USE it instead), no decorative quotes, engage actual challenges (not restate positions), reframe confused questions, counterattack when appropriate, show distinctive method visibly (Spinoza's geometric proofs, Russell's logical analysis, Nietzsche's psychological diagnosis, etc.), commit without hedging, eliminate generic academic voice, and when stuck admit it honestly. Every response tested against quality checklist: Did I attack immediately? Did I USE my philosophy or EXPLAIN it? Did I engage the challenge? Is my distinctive method visible? Could another philosopher have written this? Kuczynski bot serves as gold standard for potent, non-evasive responses.
 - **Epistemic Humility Override**: All philosophers are programmed with intellectual honesty protocols requiring them to acknowledge decisive evidence against their positions, admit logical contradictions they cannot resolve, show genuine understanding of challenges, attempt responses using their actual resources, and admit limits when stuck. Intellectual honesty comes FIRST, commitment to views SECOND. Great thinkers update beliefs; defending untenable positions is what mediocrities do.
 
+### ZHI Knowledge Provider Integration (November 2025)
+**Secure Internal API for ZHI Ecosystem**: Implemented `/api/internal/knowledge` endpoint enabling other ZHI applications (like EZHW) to securely access the philosophical and psychoanalytic knowledge base.
+
+**Features:**
+- **HMAC-SHA256 Authentication**: Shared private key (`ZHI_PRIVATE_KEY`) with timestamp validation, nonce-based replay prevention, constant-time signature comparison
+- **Structured Knowledge Retrieval**: Semantic search across 44 philosophical figures using dual-pool RAG system (philosopher's works + Common Fund)
+- **Quote Extraction**: Automatic extraction of relevant quotes from philosophical texts with configurable length thresholds
+- **Request Validation**: Zod schema validation for query parameters (query, figureId, maxResults, includeQuotes, maxCharacters)
+- **Response Format**: JSON with passages[], quotes[], and metadata (semantic distance, source, tokens, etc.)
+- **Security Controls**: Bounded nonce cache (10K max), audit logging, character limits (max 50K), request timeout protection
+- **Performance**: Reuses existing vector search infrastructure with no additional latency
+
+**API Signature**:
+```typescript
+POST /api/internal/knowledge
+Headers:
+  X-ZHI-App-Id: <app_identifier>
+  X-ZHI-Timestamp: <unix_timestamp_ms>
+  X-ZHI-Nonce: <unique_random_string>
+  X-ZHI-Signature: <base64_hmac_sha256>
+
+Body: {
+  query: string,
+  figureId?: string (default: "jmk"),
+  maxResults?: number (1-20, default: 6),
+  includeQuotes?: boolean (default: false),
+  minQuoteLength?: number (10-200, default: 50),
+  maxCharacters?: number (100-50000, default: 10000)
+}
+
+Response: {
+  success: true,
+  meta: { query, figureId, resultsReturned, totalCharacters, quotesExtracted, timestamp },
+  passages: Array<{ paperTitle, content, chunkIndex, semanticDistance, source, figureId, tokens }>,
+  quotes: Array<{ text, source, chunkIndex }>
+}
+```
+
 ## System Architecture
-The application features a 3-column layout without authentication, providing direct access to the chat interface.
+The application features a 3-column layout without authentication, providing direct access to the chat interface. It also functions as a secure knowledge provider for the ZHI ecosystem via internal API.
 
 ### UI/UX Decisions
 - **Layout**: A 3-column layout with a far-left column for philosophical figures, a narrow middle sidebar for settings, and a right area for the main chat.

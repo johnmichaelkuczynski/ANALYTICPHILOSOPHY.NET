@@ -8,7 +8,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import * as sdk from "microsoft-cognitiveservices-speech-sdk";
 import { buildSystemPrompt } from "./prompt-builder";
 import { findRelevantVerse } from "./bible-verses";
-import { findRelevantChunks } from "./vector-search";
+import { findRelevantChunks, searchPhilosophicalChunks, type StructuredChunk } from "./vector-search";
 import {
   insertPersonaSettingsSchema,
   insertGoalSchema,
@@ -16,6 +16,7 @@ import {
 import { readFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
+import { verifyZhiAuth } from "./internal-auth";
 
 // Get __dirname equivalent for ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -994,6 +995,152 @@ You are a living intellect attacking this problem. Write the paper NOW - no narr
       if (!res.headersSent) {
         res.status(500).json({ error: "Failed to generate paper" });
       }
+    }
+  });
+
+  // ========================================
+  // INTERNAL API: ZHI Knowledge Provider
+  // ========================================
+
+  // Request schema for knowledge queries
+  const knowledgeRequestSchema = z.object({
+    query: z.string().min(1).max(1000),
+    figureId: z.string().optional().default("jmk"),
+    maxResults: z.number().int().min(1).max(20).optional().default(6),
+    includeQuotes: z.boolean().optional().default(false),
+    minQuoteLength: z.number().int().min(10).max(200).optional().default(50),
+    maxCharacters: z.number().int().min(100).max(50000).optional().default(10000),
+  });
+
+  // Helper: Extract quotes from text passages
+  function extractQuotes(
+    passages: StructuredChunk[],
+    minLength: number = 50
+  ): Array<{ quote: string; source: string; chunkIndex: number }> {
+    const quotes: Array<{ quote: string; source: string; chunkIndex: number }> = [];
+    
+    for (const passage of passages) {
+      // Match quoted text within the passage
+      // Use dynamic RegExp to properly inject minLength
+      const quotePattern = new RegExp(`"([^"]{${minLength},})"`, 'g');
+      const matches = passage.content.matchAll(quotePattern);
+      
+      for (const match of matches) {
+        const quote = match[1];
+        if (quote && quote.length >= minLength) {
+          quotes.push({
+            quote,
+            source: passage.paperTitle,
+            chunkIndex: passage.chunkIndex
+          });
+        }
+      }
+      
+      // Also extract substantial single-sentence quotes (not in quotation marks)
+      // This helps find key philosophical statements
+      const sentences = passage.content.split(/[.!?]\s+/);
+      for (const sentence of sentences) {
+        if (sentence.length >= minLength && sentence.length <= 300) {
+          // Check if it's a substantial philosophical statement
+          // (contains key philosophical terms or proper names)
+          const hasPhilosophicalContent = /\b(consciousness|existence|knowledge|reality|truth|freedom|psyche|unconscious|neurosis|psychosis)\b/i.test(sentence);
+          if (hasPhilosophicalContent) {
+            quotes.push({
+              quote: sentence.trim(),
+              source: passage.paperTitle,
+              chunkIndex: passage.chunkIndex
+            });
+          }
+        }
+      }
+    }
+    
+    // Deduplicate and limit
+    const uniqueQuotes = Array.from(new Map(quotes.map(q => [q.quote, q])).values());
+    return uniqueQuotes.slice(0, 20); // Max 20 quotes
+  }
+
+  // Internal knowledge provider endpoint
+  app.post("/api/internal/knowledge", verifyZhiAuth, async (req, res) => {
+    try {
+      // Validate request body
+      const validationResult = knowledgeRequestSchema.safeParse(req.body);
+      
+      if (!validationResult.success) {
+        return res.status(400).json({
+          error: "Invalid request format",
+          details: validationResult.error.errors
+        });
+      }
+      
+      const { query, figureId, maxResults, includeQuotes, minQuoteLength, maxCharacters } = validationResult.data;
+      
+      // Audit log
+      const appId = (req as any).zhiAuth?.appId || "unknown";
+      console.log(`[Knowledge Provider] ${appId} querying: "${query}" (figure: ${figureId}, results: ${maxResults})`);
+      
+      // Perform semantic search
+      const passages = await searchPhilosophicalChunks(query, maxResults, figureId);
+      
+      // Truncate passages to respect maxCharacters limit
+      let totalChars = 0;
+      const truncatedPassages: StructuredChunk[] = [];
+      
+      for (const passage of passages) {
+        if (totalChars + passage.content.length <= maxCharacters) {
+          truncatedPassages.push(passage);
+          totalChars += passage.content.length;
+        } else {
+          // Include partial passage if there's room
+          const remainingChars = maxCharacters - totalChars;
+          if (remainingChars > 100) {
+            truncatedPassages.push({
+              ...passage,
+              content: passage.content.substring(0, remainingChars) + "..."
+            });
+          }
+          break;
+        }
+      }
+      
+      // Extract quotes if requested
+      const quotes = includeQuotes ? extractQuotes(truncatedPassages, minQuoteLength) : [];
+      
+      // Build response
+      const response = {
+        success: true,
+        meta: {
+          query,
+          figureId,
+          resultsReturned: truncatedPassages.length,
+          totalCharacters: totalChars,
+          quotesExtracted: quotes.length,
+          timestamp: Date.now()
+        },
+        passages: truncatedPassages.map(p => ({
+          paperTitle: p.paperTitle,
+          content: p.content,
+          chunkIndex: p.chunkIndex,
+          semanticDistance: p.distance,
+          source: p.source,
+          figureId: p.figureId,
+          tokens: p.tokens
+        })),
+        quotes: quotes.map(q => ({
+          text: q.quote,
+          source: q.source,
+          chunkIndex: q.chunkIndex
+        }))
+      };
+      
+      res.json(response);
+      
+    } catch (error) {
+      console.error("[Knowledge Provider] Error:", error);
+      res.status(500).json({ 
+        error: "Internal server error",
+        message: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 
