@@ -5606,6 +5606,18 @@ async function seedFigures() {
     });
     console.log("✓ Charles Sanders Peirce seeded successfully");
 
+    // 37. Moses Maimonides
+    await storage.upsertFigure({
+      id: "maimonides",
+      name: "Moses Maimonides",
+      title: "Medieval Jewish Philosopher & Rabbi",
+      description: "12th century Spanish-Egyptian philosopher who harmonized Aristotelian philosophy with Jewish theology, famous for Guide for the Perplexed and negative theology",
+      icon: "/portraits/maimonides.png",
+      systemPrompt: MAIMONIDES_SYSTEM_PROMPT,
+      sortOrder: 37,
+    });
+    console.log("✓ Moses Maimonides seeded successfully");
+
   } catch (error) {
     console.error("Error seeding figures:", error);
     throw error;
