@@ -41,6 +41,8 @@ const figuresPapers = {
     { file: "kuczynski_chomsky_contributions.txt", title: "Chomsky's Two Contributions (Latest)" },
     { file: "kuczynski_pragmatism.txt", title: "Pragmatism: Epistemology Posing as Metaphysics" },
     { file: "kuczynski_ocd_philosophy.txt", title: "OCD and Philosophy" },
+    { file: "kuczynski_ocd_philosophy_v2.txt", title: "OCD and Philosophy: Short Papers on Psychopathology" },
+    { file: "kuczynski_borderline_personality.txt", title: "What is Borderline Personality Disorder?" },
     { file: "kuczynski_ai_philosophy.txt", title: "AI and Philosophy" },
     { file: "kuczynski_apriori.txt", title: "A Priori Knowledge" },
     { file: "kuczynski_empiricism.txt", title: "Empiricism and Its Limits" },
