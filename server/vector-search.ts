@@ -7,11 +7,26 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export async function findRelevantChunks(
+// Structured chunk data for API responses
+export interface StructuredChunk {
+  paperTitle: string;
+  content: string;
+  chunkIndex: number;
+  distance: number;
+  source: 'own' | 'common';
+  figureId: string;
+  tokens: number;
+}
+
+/**
+ * Core semantic search - returns structured chunk data
+ * Used by both chat UX (findRelevantChunks) and internal knowledge API
+ */
+export async function searchPhilosophicalChunks(
   question: string,
   topK: number = 6,
   figureId: string = "jmk"
-): Promise<string> {
+): Promise<StructuredChunk[]> {
   try {
     // Generate embedding for the question
     const embeddingResponse = await openai.embeddings.create({
@@ -22,32 +37,25 @@ export async function findRelevantChunks(
     const queryEmbedding = embeddingResponse.data[0].embedding;
     
     // Calculate how many chunks to retrieve from each pool
-    // Ensure MINIMUM of 1 from each pool when available, then distribute remaining
     let ownWorksCount: number;
     let commonKnowledgeCount: number;
     
     if (topK >= 2) {
-      // Guarantee at least 1 from each pool
-      const guaranteedMin = 2; // 1 from own, 1 from common
+      const guaranteedMin = 2;
       const remaining = topK - guaranteedMin;
-      
-      // Distribute remaining with 67/33 ratio favoring own works
       const ownRemaining = Math.ceil(remaining * 0.67);
       const commonRemaining = remaining - ownRemaining;
       
       ownWorksCount = 1 + ownRemaining;
       commonKnowledgeCount = 1 + commonRemaining;
     } else {
-      // topK = 1: prioritize own works
       ownWorksCount = 1;
       commonKnowledgeCount = 0;
     }
     
-    // Retrieve MORE chunks than needed so we can merge and re-sort by similarity
-    // This ensures we get the best matches across both pools
     const retrievalMultiplier = 2;
     
-    // Search for most similar chunks from philosopher's own works
+    // Search philosopher's own works
     const ownResults = await db.execute(
       sql`
         SELECT paper_title, content, chunk_index, 
@@ -59,7 +67,7 @@ export async function findRelevantChunks(
       `
     );
     
-    // Search for most similar chunks from common knowledge pool
+    // Search common knowledge pool
     const commonResults = await db.execute(
       sql`
         SELECT paper_title, content, chunk_index,
@@ -71,7 +79,6 @@ export async function findRelevantChunks(
       `
     );
     
-    // Combine and re-sort by similarity (distance) while preserving source labels
     interface ChunkWithDistance {
       paper_title: string;
       content: string;
@@ -90,19 +97,14 @@ export async function findRelevantChunks(
       source: 'common' as const
     }));
     
-    // Merge all chunks
     const allChunks = [...ownChunks, ...commonChunks];
-    
-    // Sort by similarity (lower distance = more similar)
     allChunks.sort((a, b) => a.distance - b.distance);
     
-    // Take top K, but ensure minimum representation from each pool
     const finalChunks: ChunkWithDistance[] = [];
     const ownFinal: ChunkWithDistance[] = [];
     const commonFinal: ChunkWithDistance[] = [];
     
-    // First pass: collect chunks until BOTH minimums are satisfied
-    // Don't break early even if topK is reached - we must satisfy minimums first
+    // First pass: satisfy minimums
     for (const chunk of allChunks) {
       const ownNeedsMore = ownFinal.length < ownWorksCount;
       const commonNeedsMore = commonFinal.length < commonKnowledgeCount;
@@ -115,13 +117,11 @@ export async function findRelevantChunks(
         finalChunks.push(chunk);
       }
       
-      // Only break when BOTH minimums are satisfied (or we run out of candidates)
       const bothMinimaSatisfied = !ownNeedsMore && !commonNeedsMore;
       if (bothMinimaSatisfied && finalChunks.length >= topK) break;
     }
     
-    // Second pass: fill remaining slots with best matches regardless of source
-    // This only runs if we haven't reached topK after satisfying minimums
+    // Second pass: fill remaining slots
     if (finalChunks.length < topK) {
       for (const chunk of allChunks) {
         if (!finalChunks.includes(chunk)) {
@@ -133,15 +133,38 @@ export async function findRelevantChunks(
       }
     }
     
-    // Final sort: ensure results are truly ordered by semantic relevance
     finalChunks.sort((a, b) => a.distance - b.distance);
     
-    const allRows = finalChunks;
+    // Convert to structured format
+    return finalChunks.map(chunk => ({
+      paperTitle: chunk.paper_title,
+      content: chunk.content,
+      chunkIndex: chunk.chunk_index,
+      distance: chunk.distance,
+      source: chunk.source,
+      figureId: chunk.source === 'own' ? figureId : 'common',
+      tokens: Math.ceil(chunk.content.split(/\s+/).length * 1.3) // Rough token estimate
+    }));
     
-    // Get figure name for messages
-    const figureName = figureId === "freud" ? "Freud" : figureId === "jmk" ? "Kuczynski" : "this author";
+  } catch (error) {
+    console.error("Vector search error:", error);
+    return [];
+  }
+}
+
+export async function findRelevantChunks(
+  question: string,
+  topK: number = 6,
+  figureId: string = "jmk"
+): Promise<string> {
+  // Use the structured search helper
+  const chunks = await searchPhilosophicalChunks(question, topK, figureId);
     
-    if (allRows.length === 0) {
+  if (chunks.length === 0) {
+  // Get figure name for messages
+  const figureName = figureId === "freud" ? "Freud" : figureId === "jmk" ? "Kuczynski" : "this author";
+  
+  if (chunks.length === 0) {
       return `
 === NO EMBEDDINGS FOUND ===
 
@@ -150,34 +173,34 @@ npm run generate-embeddings
 
 Until then, use your full philosophical intelligence informed by ${figureName}'s overall approach.
 `;
-    }
-    
-    const ownCount = ownFinal.length;
-    const commonCount = commonFinal.length;
-    
-    let response = `
+  }
+  
+  const ownCount = chunks.filter(c => c.source === 'own').length;
+  const commonCount = chunks.filter(c => c.source === 'common').length;
+  
+  let response = `
 === CONCEPTUAL BRIEFING: RELEVANT MATERIAL ===
 
-Retrieved ${finalChunks.length} semantically relevant passage(s):
+Retrieved ${chunks.length} semantically relevant passage(s):
 ${ownCount} from YOUR OWN WRITINGS, ${commonCount} from the COMMON FUND OF KNOWLEDGE.
 Results are sorted by semantic relevance to your question.
 
 These are REFERENCE MATERIAL, not answers. Use them to inform your reasoning.
 
 `;
-    
-    // Display chunks in order of semantic relevance, with source labels
-    for (let i = 0; i < finalChunks.length; i++) {
-      const chunk = finalChunks[i];
-      const sourceLabel = chunk.source === 'own' ? '[YOUR WORK]' : '[COMMON KNOWLEDGE]';
-      response += `
-${sourceLabel} Reference ${i + 1}: ${chunk.paper_title}
+  
+  // Display chunks in order of semantic relevance, with source labels
+  for (let i = 0; i < chunks.length; i++) {
+    const chunk = chunks[i];
+    const sourceLabel = chunk.source === 'own' ? '[YOUR WORK]' : '[COMMON KNOWLEDGE]';
+    response += `
+${sourceLabel} Reference ${i + 1}: ${chunk.paperTitle}
 ${chunk.content}
 
 `;
-    }
-    
-    response += `
+  }
+  
+  response += `
 === END OF BRIEFING MATERIAL ===
 
 HOW TO USE THIS BRIEFING:
@@ -201,21 +224,6 @@ Your task: Apply the ideas in these references to analyze THIS specific question
 Deploy your core reasoning method. Think with these concepts, don't report on them.
 Be yourself - reason as YOU reason, not as a textbook explains you.
 `;
-    
-    return response;
-  } catch (error) {
-    console.error("Vector search error:", error);
-    
-    // Get figure name for fallback message (before catching errors from query)
-    const figureName = figureId === "freud" ? "Freud" : figureId === "jmk" ? "Kuczynski" : "this author";
-    
-    // Fallback: return a message that tells the LLM to work without specific passages
-    return `
-=== VECTOR SEARCH UNAVAILABLE ===
-
-Could not retrieve relevant passages due to a technical error.
-Use your full philosophical intelligence informed by ${figureName}'s overall approach and methods.
-Extrapolate and reason philosophically in their style.
-`;
-  }
+  
+  return response;
 }
