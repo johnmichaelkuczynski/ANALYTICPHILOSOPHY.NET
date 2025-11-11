@@ -1025,7 +1025,7 @@ You are a living intellect attacking this problem. Write the paper NOW - no narr
       // Match quoted text within the passage
       // Use dynamic RegExp to properly inject minLength
       const quotePattern = new RegExp(`"([^"]{${minLength},})"`, 'g');
-      const matches = passage.content.matchAll(quotePattern);
+      const matches = Array.from(passage.content.matchAll(quotePattern));
       
       for (const match of matches) {
         const quote = match[1];
