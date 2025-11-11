@@ -19,13 +19,14 @@ export interface StructuredChunk {
 }
 
 /**
- * Core semantic search - returns structured chunk data
+ * UNIFIED KNOWLEDGE BASE: Core semantic search
+ * Returns structured chunk data from unified Common Fund containing ALL philosophical texts
  * Used by both chat UX (findRelevantChunks) and internal knowledge API
  */
 export async function searchPhilosophicalChunks(
   question: string,
   topK: number = 6,
-  figureId: string = "jmk"
+  figureId: string = "common" // Default to unified knowledge base
 ): Promise<StructuredChunk[]> {
   try {
     // Generate embedding for the question
@@ -36,115 +37,31 @@ export async function searchPhilosophicalChunks(
     
     const queryEmbedding = embeddingResponse.data[0].embedding;
     
-    // Calculate how many chunks to retrieve from each pool
-    let ownWorksCount: number;
-    let commonKnowledgeCount: number;
-    
-    if (topK >= 2) {
-      const guaranteedMin = 2;
-      const remaining = topK - guaranteedMin;
-      const ownRemaining = Math.ceil(remaining * 0.67);
-      const commonRemaining = remaining - ownRemaining;
-      
-      ownWorksCount = 1 + ownRemaining;
-      commonKnowledgeCount = 1 + commonRemaining;
-    } else {
-      ownWorksCount = 1;
-      commonKnowledgeCount = 0;
-    }
-    
-    const retrievalMultiplier = 2;
-    
-    // Search philosopher's own works
-    const ownResults = await db.execute(
+    // Query unified knowledge base (all texts stored with figure_id='common')
+    const results = await db.execute(
       sql`
         SELECT paper_title, content, chunk_index, 
                embedding <=> ${JSON.stringify(queryEmbedding)}::vector as distance
         FROM ${paperChunks}
-        WHERE figure_id = ${figureId}
-        ORDER BY distance
-        LIMIT ${ownWorksCount * retrievalMultiplier}
-      `
-    );
-    
-    // Search common knowledge pool
-    const commonResults = await db.execute(
-      sql`
-        SELECT paper_title, content, chunk_index,
-               embedding <=> ${JSON.stringify(queryEmbedding)}::vector as distance
-        FROM ${paperChunks}
         WHERE figure_id = 'common'
         ORDER BY distance
-        LIMIT ${commonKnowledgeCount * retrievalMultiplier}
+        LIMIT ${topK}
       `
     );
     
-    interface ChunkWithDistance {
-      paper_title: string;
-      content: string;
-      chunk_index: number;
-      distance: number;
-      source: 'own' | 'common';
-    }
-    
-    const ownChunks: ChunkWithDistance[] = (ownResults.rows || []).map(row => ({
-      ...(row as { paper_title: string; content: string; chunk_index: number; distance: number }),
-      source: 'own' as const
-    }));
-    
-    const commonChunks: ChunkWithDistance[] = (commonResults.rows || []).map(row => ({
-      ...(row as { paper_title: string; content: string; chunk_index: number; distance: number }),
-      source: 'common' as const
-    }));
-    
-    const allChunks = [...ownChunks, ...commonChunks];
-    allChunks.sort((a, b) => a.distance - b.distance);
-    
-    const finalChunks: ChunkWithDistance[] = [];
-    const ownFinal: ChunkWithDistance[] = [];
-    const commonFinal: ChunkWithDistance[] = [];
-    
-    // First pass: satisfy minimums
-    for (const chunk of allChunks) {
-      const ownNeedsMore = ownFinal.length < ownWorksCount;
-      const commonNeedsMore = commonFinal.length < commonKnowledgeCount;
-      
-      if (chunk.source === 'own' && ownNeedsMore) {
-        ownFinal.push(chunk);
-        finalChunks.push(chunk);
-      } else if (chunk.source === 'common' && commonNeedsMore) {
-        commonFinal.push(chunk);
-        finalChunks.push(chunk);
-      }
-      
-      const bothMinimaSatisfied = !ownNeedsMore && !commonNeedsMore;
-      if (bothMinimaSatisfied && finalChunks.length >= topK) break;
-    }
-    
-    // Second pass: fill remaining slots
-    if (finalChunks.length < topK) {
-      for (const chunk of allChunks) {
-        if (!finalChunks.includes(chunk)) {
-          finalChunks.push(chunk);
-          if (chunk.source === 'own') ownFinal.push(chunk);
-          else commonFinal.push(chunk);
-        }
-        if (finalChunks.length >= topK) break;
-      }
-    }
-    
-    finalChunks.sort((a, b) => a.distance - b.distance);
-    
     // Convert to structured format
-    return finalChunks.map(chunk => ({
-      paperTitle: chunk.paper_title,
-      content: chunk.content,
-      chunkIndex: chunk.chunk_index,
-      distance: chunk.distance,
-      source: chunk.source,
-      figureId: chunk.source === 'own' ? figureId : 'common',
-      tokens: Math.ceil(chunk.content.split(/\s+/).length * 1.3) // Rough token estimate
-    }));
+    return (results.rows || []).map(row => {
+      const r = row as { paper_title: string; content: string; chunk_index: number; distance: number };
+      return {
+        paperTitle: r.paper_title,
+        content: r.content,
+        chunkIndex: r.chunk_index,
+        distance: r.distance,
+        source: 'common' as const,
+        figureId: 'common',
+        tokens: Math.ceil(r.content.split(/\s+/).length * 1.3) // Rough token estimate
+      };
+    });
     
   } catch (error) {
     console.error("Vector search error:", error);
@@ -174,26 +91,22 @@ Until then, use your full philosophical intelligence informed by ${figureName}'s
 `;
   }
   
-  const ownCount = chunks.filter(c => c.source === 'own').length;
-  const commonCount = chunks.filter(c => c.source === 'common').length;
-  
   let response = `
 === CONCEPTUAL BRIEFING: RELEVANT MATERIAL ===
 
-Retrieved ${chunks.length} semantically relevant passage(s):
-${ownCount} from YOUR OWN WRITINGS, ${commonCount} from the COMMON FUND OF KNOWLEDGE.
+Retrieved ${chunks.length} semantically relevant passage(s) from the UNIFIED KNOWLEDGE BASE.
+This includes works from ALL philosophical figures (Kuczynski, Freud, James, Veblen, Russell, and 40+ others).
 Results are sorted by semantic relevance to your question.
 
 These are REFERENCE MATERIAL, not answers. Use them to inform your reasoning.
 
 `;
   
-  // Display chunks in order of semantic relevance, with source labels
+  // Display chunks in order of semantic relevance
   for (let i = 0; i < chunks.length; i++) {
     const chunk = chunks[i];
-    const sourceLabel = chunk.source === 'own' ? '[YOUR WORK]' : '[COMMON KNOWLEDGE]';
     response += `
-${sourceLabel} Reference ${i + 1}: ${chunk.paperTitle}
+[Reference ${i + 1}] ${chunk.paperTitle}
 ${chunk.content}
 
 `;
@@ -204,20 +117,16 @@ ${chunk.content}
 
 HOW TO USE THIS BRIEFING:
 
-✅ DO: Ground your POSITION in YOUR OWN writings (primary sources)
-✅ DO: Use COMMON KNOWLEDGE to enrich arguments, provide evidence, engage with broader context
 ✅ DO: Treat these as research notes that inform your thinking
 ✅ DO: Extract core principles and apply them to THIS question
-✅ DO: Reason in your own voice, extending concepts to new contexts
-✅ DO: Reference paper titles when asked about your works
+✅ DO: Reason in your authentic philosophical voice
+✅ DO: Reference paper titles when relevant
+✅ DO: Synthesize ideas from multiple sources when appropriate
 
-❌ DON'T: Let common knowledge override your distinctive positions
 ❌ DON'T: Recite or summarize these passages
 ❌ DON'T: Quote extensively - use your own words
 ❌ DON'T: Treat these as the answer - they're the conceptual foundation
-❌ DON'T: Teach ABOUT your philosophy - DO philosophy with these tools
-
-CRITICAL: Your philosophical positions should align with YOUR WRITINGS. The common fund is for enrichment, not replacement.
+❌ DON'T: Teach ABOUT philosophy - DO philosophy with these tools
 
 Your task: Apply the ideas in these references to analyze THIS specific question.
 Deploy your core reasoning method. Think with these concepts, don't report on them.

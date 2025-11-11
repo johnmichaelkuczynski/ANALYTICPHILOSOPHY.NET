@@ -13,19 +13,22 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Batch -> actual figure ID mapping
+// UNIFIED KNOWLEDGE BASE: ALL texts go into Common Fund
+// This makes all philosophical texts available to ANY querying app via the /api/internal/knowledge endpoint
+// Previous architecture: Each philosopher had separate embeddings (jmk, freud, veblen, etc.)
+// New architecture: Everything stored in unified 'common' pool for centralized knowledge serving
 const batchToFigure: Record<string, string> = {
-  "jmk_batch1": "jmk",
-  "jmk_batch2": "jmk",
-  "jmk_batch3": "jmk",
-  "jmk_missing": "jmk",
-  "jmk_literal_meaning": "jmk",
-  "jmk_new_texts": "jmk",
-  "veblen_batch1": "veblen",
-  "veblen_batch2": "veblen",
-  "veblen_batch3": "veblen",
-  "rousseau": "rousseau",
-  "leibniz": "leibniz",
+  "jmk_batch1": "common",
+  "jmk_batch2": "common",
+  "jmk_batch3": "common",
+  "jmk_missing": "common",
+  "jmk_literal_meaning": "common",
+  "jmk_new_texts": "common",
+  "veblen_batch1": "common",
+  "veblen_batch2": "common",
+  "veblen_batch3": "common",
+  "rousseau": "common",
+  "leibniz": "common",
 };
 
 // Multi-author configuration: each figure has their own set of papers

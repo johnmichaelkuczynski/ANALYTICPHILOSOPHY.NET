@@ -1003,9 +1003,10 @@ You are a living intellect attacking this problem. Write the paper NOW - no narr
   // ========================================
 
   // Request schema for knowledge queries
+  // Note: figureId parameter retained for backward compatibility but queries unified 'common' pool
   const knowledgeRequestSchema = z.object({
     query: z.string().min(1).max(1000),
-    figureId: z.string().optional().default("jmk"),
+    figureId: z.string().optional().default("common"), // All queries now search unified knowledge base
     maxResults: z.number().int().min(1).max(20).optional().default(6),
     includeQuotes: z.boolean().optional().default(false),
     minQuoteLength: z.number().int().min(10).max(200).optional().default(50),
@@ -1077,7 +1078,7 @@ You are a living intellect attacking this problem. Write the paper NOW - no narr
       
       // Audit log
       const appId = (req as any).zhiAuth?.appId || "unknown";
-      console.log(`[Knowledge Provider] ${appId} querying: "${query}" (figure: ${figureId}, results: ${maxResults})`);
+      console.log(`[Knowledge Provider] ${appId} querying unified knowledge base: "${query}" (results: ${maxResults})`);
       
       // Perform semantic search
       const passages = await searchPhilosophicalChunks(query, maxResults, figureId);

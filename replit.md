@@ -13,6 +13,13 @@
 - **Epistemic Humility Override**: All philosophers are programmed with intellectual honesty protocols requiring them to acknowledge decisive evidence against their positions, admit logical contradictions they cannot resolve, show genuine understanding of challenges, attempt responses using their actual resources, and admit limits when stuck. Intellectual honesty comes FIRST, commitment to views SECOND. Great thinkers update beliefs; defending untenable positions is what mediocrities do.
 
 ## System Architecture
+**Primary Function**: Centralized knowledge server providing unified access to philosophical and psychoanalytic texts via secure internal API.
+
+**Architecture Transformation (November 2025)**: 
+- **Previous**: Dual-pool system with philosopher-specific embeddings (jmk, freud, veblen) + separate Common Fund
+- **Current**: Unified knowledge base where ALL texts consolidated into Common Fund (figureId='common')
+- **Benefit**: Single source of truth for all ZHI applications to query comprehensive philosophical knowledge
+
 The application features a 3-column layout without authentication, providing direct access to the chat interface. It also functions as a secure knowledge provider for the ZHI ecosystem via internal API.
 
 ### UI/UX Decisions
@@ -31,7 +38,7 @@ The application features a 3-column layout without authentication, providing dir
 - **Paper Writing Feature**: Allows philosophers to write original papers (up to 1500 words) in their authentic voice, utilizing RAG retrieval, with streaming generation and text file download options.
 - **Guest User Management**: Session-based storage with auto-generated guest user IDs maintains state without authentication.
 - **RAG System**: Papers are chunked, embedded into 1536-dimension vectors, and stored in a PostgreSQL database with pgvector. Semantic search retrieves relevant chunks for the LLM.
-- **Dual-Pool RAG System (Common Fund of Knowledge)**: Maintains separate vector embeddings for each author, plus a shared "common knowledge" pool accessible to ALL philosophers. Each query retrieves from BOTH pools: ~67% from philosopher's own writings (primary source defining canonical positions) and ~33% from common fund (secondary source for empirical evidence, historical context, broader perspectives). Results merged and sorted by semantic relevance with clear source labeling. System prevents common knowledge from overriding canonical positions - it provides enrichment, not replacement. Integrated with epistemic humility protocols.
+- **Unified Knowledge Base**: ALL philosophical texts (Kuczynski, Freud, James, Veblen, Hegel, Russell, and 40+ other figures) consolidated into single Common Fund with figureId='common'. Enables comprehensive cross-philosopher semantic search for knowledge serving to external applications. Previous dual-pool architecture replaced with streamlined single-pool retrieval.
 - **Integrated Philosophical and Literary Works**: Extensive works from 44 philosophers and literary figures are integrated, with continuous expansion of the Common Fund knowledge base.
 - **Document Upload Feature**: Users can upload text documents (.txt, .md, .doc, .docx, .pdf up to 1MB) for analysis, evaluation, or rewriting by philosophers.
 - **ZHI Knowledge Provider Integration**: Secure internal API (`/api/internal/knowledge`) for other ZHI applications to access the philosophical and psychoanalytic knowledge base using HMAC-SHA256 authentication and structured knowledge retrieval.
