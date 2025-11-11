@@ -1061,6 +1061,125 @@ You are a living intellect attacking this problem. Write the paper NOW - no narr
     return uniqueQuotes.slice(0, 20); // Max 20 quotes
   }
 
+  // ========================================
+  // ZHI QUERY API: Structured knowledge queries
+  // ========================================
+  
+  // Request schema for /zhi/query endpoint
+  const zhiQuerySchema = z.object({
+    query: z.string().min(1).max(1000).optional(),
+    author: z.string().optional(), // Filter by author/philosopher name
+    work: z.string().optional(), // Filter by specific work/paper title
+    keywords: z.array(z.string()).optional(), // Array of keywords to search
+    limit: z.number().int().min(1).max(50).optional().default(10),
+    includeQuotes: z.boolean().optional().default(false),
+    minQuoteLength: z.number().int().min(10).max(200).optional().default(50),
+  });
+
+  app.post("/zhi/query", verifyZhiAuth, async (req, res) => {
+    try {
+      // Validate request body
+      const validationResult = zhiQuerySchema.safeParse(req.body);
+      
+      if (!validationResult.success) {
+        return res.status(400).json({
+          error: "Invalid request format",
+          details: validationResult.error.errors
+        });
+      }
+      
+      const { query, author, work, keywords, limit, includeQuotes, minQuoteLength } = validationResult.data;
+      
+      // Build search query from available fields
+      let searchQuery = query || '';
+      if (keywords && keywords.length > 0) {
+        searchQuery = searchQuery ? `${searchQuery} ${keywords.join(' ')}` : keywords.join(' ');
+      }
+      if (author) {
+        searchQuery = searchQuery ? `${searchQuery} ${author}` : author;
+      }
+      if (work) {
+        searchQuery = searchQuery ? `${searchQuery} ${work}` : work;
+      }
+      
+      if (!searchQuery) {
+        return res.status(400).json({
+          error: "Must provide at least one of: query, author, work, or keywords"
+        });
+      }
+      
+      // Audit log
+      const appId = (req as any).zhiAuth?.appId || "unknown";
+      console.log(`[ZHI Query API] ${appId}: "${searchQuery}" (limit: ${limit})`);
+      
+      // Perform semantic search
+      const passages = await searchPhilosophicalChunks(searchQuery, limit, "common");
+      
+      // Filter by author if specified
+      let filteredPassages = passages;
+      if (author) {
+        const authorLower = author.toLowerCase();
+        filteredPassages = passages.filter(p => 
+          p.paperTitle.toLowerCase().includes(authorLower)
+        );
+      }
+      
+      // Filter by work if specified
+      if (work) {
+        const workLower = work.toLowerCase();
+        filteredPassages = filteredPassages.filter(p =>
+          p.paperTitle.toLowerCase().includes(workLower)
+        );
+      }
+      
+      // Extract quotes if requested
+      const quotes = includeQuotes ? extractQuotes(filteredPassages, minQuoteLength) : [];
+      
+      // Build structured response with citations
+      const results = filteredPassages.map(passage => ({
+        excerpt: passage.content,
+        citation: {
+          author: passage.paperTitle.split(':')[0].trim(), // Extract author from title
+          work: passage.paperTitle,
+          chunkIndex: passage.chunkIndex,
+        },
+        relevance: 1 - passage.distance, // Convert distance to relevance score (0-1)
+        tokens: passage.tokens
+      }));
+      
+      const response = {
+        results,
+        quotes: quotes.map(q => ({
+          text: q.quote,
+          citation: {
+            work: q.source,
+            chunkIndex: q.chunkIndex
+          }
+        })),
+        meta: {
+          resultsReturned: results.length,
+          limitApplied: limit,
+          queryProcessed: searchQuery,
+          filters: {
+            author: author || null,
+            work: work || null,
+            keywords: keywords || null
+          },
+          timestamp: Date.now()
+        }
+      };
+      
+      res.json(response);
+      
+    } catch (error) {
+      console.error("[ZHI Query API] Error:", error);
+      res.status(500).json({ 
+        error: "Internal server error",
+        message: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Internal knowledge provider endpoint
   app.post("/api/internal/knowledge", verifyZhiAuth, async (req, res) => {
     try {
