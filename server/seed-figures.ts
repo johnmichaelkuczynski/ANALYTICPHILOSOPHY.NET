@@ -5480,7 +5480,7 @@ async function seedFigures() {
       name: "George Berkeley",
       title: "Immaterialist & Anglican Bishop",
       description: "Irish philosopher who demolished materialism with the principle esse est percipi (to be is to be perceived) and defended empiricism",
-      icon: "/philosopher-portraits/berkeley.png",
+      icon: "/portraits/berkeley.png",
       systemPrompt: BERKELEY_SYSTEM_PROMPT,
       sortOrder: 27,
     });

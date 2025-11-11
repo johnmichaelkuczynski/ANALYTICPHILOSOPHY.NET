@@ -59,7 +59,7 @@ export async function searchPhilosophicalChunks(
     );
     
     // Convert to structured format
-    return (results.rows || []).map(row => {
+    return (results.rows || []).map((row: any) => {
       const r = row as { author: string; paper_title: string; content: string; chunk_index: number; distance: number };
       return {
         author: r.author,
