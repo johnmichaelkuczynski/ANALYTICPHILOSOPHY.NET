@@ -30,6 +30,7 @@ const batchToFigure: Record<string, string> = {
   "rousseau": "common",
   "leibniz": "common",
   "hobbes_complete": "common",
+  "berkeley": "common",
 };
 
 // REQUIRED: Author attribution mapping for every chunk
@@ -59,6 +60,7 @@ const batchToAuthor: Record<string, string> = {
   "hegel": "G.W.F. Hegel",
   "hobbes": "Thomas Hobbes",
   "hobbes_complete": "Thomas Hobbes",
+  "berkeley": "George Berkeley",
   "rousseau": "Jean-Jacques Rousseau",
   "mill": "John Stuart Mill",
   "engels": "Friedrich Engels",
@@ -234,6 +236,10 @@ const figuresPapers = {
     { file: "hobbes_complete_vol01_elements.txt", title: "Elements of Philosophy (The English Works of Thomas Hobbes, Volume 1)" },
     { file: "hobbes_complete_vol03_leviathan.txt", title: "Leviathan - The Matter, Form, and Power of a Commonwealth (The English Works of Thomas Hobbes, Volume 3)" },
     { file: "hobbes_complete_vol05_liberty_necessity.txt", title: "Questions Concerning Liberty, Necessity, and Chance (The English Works of Thomas Hobbes, Volume 5)" },
+  ],
+  "berkeley": [
+    // Three Dialogues Between Hylas and Philonous (34,228 lines - Project Gutenberg)
+    { file: "berkeley_three_dialogues.txt", title: "Three Dialogues Between Hylas and Philonous, in Opposition to Sceptics and Atheists" },
   ],
   "rousseau": [
     { file: "rousseau_complete_works.txt", title: "The Complete Works of Jean-Jacques Rousseau" },
@@ -476,19 +482,12 @@ async function main() {
     
     for (const paper of papers) {
       try {
-        // Check if this paper already exists for this figure
+        // Check if this paper already exists - get count to enable resume
         const existing = await db.select().from(paperChunks)
           .where(and(
             eq(paperChunks.figureId, actualFigureId),
             eq(paperChunks.paperTitle, paper.title)
-          ))
-          .limit(1);
-        
-        if (existing.length > 0) {
-          console.log(`📄 ${paper.title} - Already exists, skipping`);
-          totalPapers++;
-          continue;
-        }
+          ));
         
         console.log(`📄 Processing: ${paper.title}`);
         
@@ -499,6 +498,19 @@ async function main() {
         
         console.log(`   Found ${chunks.length} chunks`);
         
+        // Check if paper is complete by verifying contiguous sequence 0…n-1
+        const existingIndices = existing.map(e => e.chunkIndex).sort((a, b) => a - b);
+        const isComplete = existing.length === chunks.length && 
+                          existingIndices.every((idx, i) => idx === i);
+        
+        if (isComplete) {
+          console.log(`   ✓ Already complete (${existing.length}/${chunks.length} chunks), skipping`);
+          totalPapers++;
+          continue;
+        } else if (existing.length > 0) {
+          console.log(`   ⚠️  Resuming: ${existing.length}/${chunks.length} chunks already embedded`);
+        }
+        
         for (let i = 0; i < chunks.length; i++) {
           const chunk = chunks[i];
           
@@ -508,10 +520,11 @@ async function main() {
           
           // Skip chunks that are too large
           if (embedding === null) {
-            process.stdout.write(` skipped\n`);
+            process.stdout.write(` skipped (too large)\n`);
             continue;
           }
           
+          // Use ON CONFLICT DO NOTHING for idempotent inserts (unique constraint on figureId + paperTitle + chunkIndex)
           await db.insert(paperChunks).values({
             figureId: actualFigureId,  // Use actual figure ID, not batch name
             author: batchToAuthor[batchId] || "Unknown Author",  // REQUIRED: Explicit author attribution
@@ -519,7 +532,7 @@ async function main() {
             content: chunk,
             embedding: embedding as any, // pgvector handles array conversion
             chunkIndex: i,
-          });
+          }).onConflictDoNothing();
           
           process.stdout.write(` ✓\n`);
           totalChunks++;

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, timestamp, index, jsonb, vector, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp, index, uniqueIndex, jsonb, vector, boolean } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -100,6 +100,8 @@ export const paperChunks = pgTable("paper_chunks", {
 }, (table) => [
   index("paper_chunks_figure_idx").on(table.figureId),
   index("paper_chunks_author_idx").on(table.author),
+  // Unique constraint prevents duplicate chunks and enables idempotent resume
+  uniqueIndex("paper_chunks_unique_idx").on(table.figureId, table.paperTitle, table.chunkIndex),
 ]);
 
 export const usersRelations = relations(users, ({ one, many }) => ({
