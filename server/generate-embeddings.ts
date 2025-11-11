@@ -31,6 +31,7 @@ const batchToFigure: Record<string, string> = {
   "leibniz": "common",
   "hobbes_complete": "common",
   "berkeley": "common",
+  "math_classics": "common",
 };
 
 // REQUIRED: Author attribution mapping for every chunk
@@ -74,6 +75,7 @@ const batchToAuthor: Record<string, string> = {
   "william-james": "William James",
   "poincare": "Henri Poincaré",
   "poe": "Edgar Allan Poe",
+  "math_classics": "Various Mathematicians",
   "common": "Various Authors",
 };
 
@@ -240,6 +242,13 @@ const figuresPapers = {
   "berkeley": [
     // Three Dialogues Between Hylas and Philonous (34,228 lines - Project Gutenberg)
     { file: "berkeley_three_dialogues.txt", title: "Three Dialogues Between Hylas and Philonous, in Opposition to Sceptics and Atheists" },
+  ],
+  "math_classics": [
+    // Classical Mathematical Texts: Discrete Math, Analysis, Geometry, Number Theory
+    { file: "DISCRETE MATH LEVIN_1762900474631.txt", title: "Discrete Mathematics: An Open Introduction by Oscar Levin" },
+    { file: "RIEMANN_1762900474631.txt", title: "On Riemann's Theory of Algebraic Functions and their Integrals by Felix Klein" },
+    { file: "GAUSS_1762900474632.txt", title: "General Investigations of Curved Surfaces of 1827 and 1825 by Karl Friedrich Gauss" },
+    { file: "DEDEKIND_1762900474632.txt", title: "Essays on the Theory of Numbers by Richard Dedekind" },
   ],
   "rousseau": [
     { file: "rousseau_complete_works.txt", title: "The Complete Works of Jean-Jacques Rousseau" },
