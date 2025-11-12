@@ -24,6 +24,7 @@ const batchToFigure: Record<string, string> = {
   "jmk_missing": "common",
   "jmk_literal_meaning": "common",
   "jmk_new_texts": "common",
+  "jmk_intentions_legal": "common",
   "veblen_batch1": "common",
   "veblen_batch2": "common",
   "veblen_batch3": "common",
@@ -44,6 +45,7 @@ const batchToAuthor: Record<string, string> = {
   "jmk_missing": "J.-M. Kuczynski",
   "jmk_literal_meaning": "J.-M. Kuczynski",
   "jmk_new_texts": "J.-M. Kuczynski",
+  "jmk_intentions_legal": "J.-M. Kuczynski",
   "jmk": "J.-M. Kuczynski",
   "veblen_batch1": "Thorstein Veblen",
   "veblen_batch2": "Thorstein Veblen",
@@ -166,6 +168,11 @@ const figuresPapers = {
     { file: "Straw Jobs Being Created to Fill in for Techno-obsolete Jobs_1762816911377.txt", title: "Straw Jobs Being Created to Fill in for Techno-obsolete Jobs" },
     { file: "Determinism, Freedom, Psychopathy_1762816911378.txt", title: "Determinism, Freedom, Psychopathy" },
     { file: "Ask Me Anything about Psychopathy!_ With Link to Video Version of Book!_1762816911378.txt", title: "Ask Me Anything about Psychopathy!" },
+  ],
+  "jmk_intentions_legal": [
+    // BATCH 6: Philosophy of Mind and Legal Philosophy - November 2025
+    { file: "kuczynski_what_is_intention.txt", title: "What Is an Intention?" },
+    { file: "kuczynski_moral_structure_legal_obligation.txt", title: "The Moral Structure of Legal Obligation" },
   ],
   "jmk": [
     // LEGACY: For backward compatibility - use batch approach above
