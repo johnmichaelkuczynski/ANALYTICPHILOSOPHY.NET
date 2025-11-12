@@ -484,6 +484,7 @@ export default function Chat() {
 
       {/* Figure Chat Dialog */}
       <FigureChat 
+        key={selectedFigure?.id} // CRITICAL: Force remount when figure changes to clear React Query cache
         figure={selectedFigure} 
         open={figureDialogOpen} 
         onOpenChange={setFigureDialogOpen} 
