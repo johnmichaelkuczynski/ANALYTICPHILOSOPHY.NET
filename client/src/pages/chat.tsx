@@ -308,25 +308,25 @@ export default function Chat() {
 
               <div className="space-y-2 pt-3 border-t">
                 <Label htmlFor="quote-frequency" className="text-sm font-medium">
-                  Quote Frequency
+                  Number of Quotes
                 </Label>
-                <Select
-                  value={(personaSettings.quoteFrequency || 2).toString()}
-                  onValueChange={(value) =>
-                    updatePersonaMutation.mutate({ quoteFrequency: parseInt(value, 10) })
-                  }
-                >
-                  <SelectTrigger id="quote-frequency" data-testid="select-quote-frequency" className="text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">Low (1 quote)</SelectItem>
-                    <SelectItem value="2">Normal (1-2 quotes)</SelectItem>
-                    <SelectItem value="3">High (2-3 quotes)</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="quote-frequency"
+                  type="number"
+                  placeholder="0"
+                  value={personaSettings.quoteFrequency === 0 ? '' : personaSettings.quoteFrequency || ''}
+                  onChange={(e) => {
+                    const value = e.target.value === '' ? 0 : parseInt(e.target.value, 10);
+                    if (!isNaN(value) && value >= 0) {
+                      updatePersonaMutation.mutate({ quoteFrequency: value });
+                    }
+                  }}
+                  min={0}
+                  data-testid="input-quote-frequency"
+                  className="text-sm"
+                />
                 <p className="text-xs text-muted-foreground">
-                  Control how many quotes appear in responses
+                  Type the exact number of quotes per response (0 for none)
                 </p>
               </div>
 
