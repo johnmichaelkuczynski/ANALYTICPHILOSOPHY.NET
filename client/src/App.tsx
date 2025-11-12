@@ -5,15 +5,17 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import Chat from "@/pages/chat";
-import ModelBuilder from "@/pages/model-builder";
-import PaperWriter from "@/pages/paper-writer";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Chat} />
-      <Route path="/model-builder" component={ModelBuilder} />
-      <Route path="/paper-writer" component={PaperWriter} />
+      <Route path="/model-builder">
+        <Redirect to="/" />
+      </Route>
+      <Route path="/paper-writer">
+        <Redirect to="/" />
+      </Route>
       <Route path="*">
         <Redirect to="/" />
       </Route>
