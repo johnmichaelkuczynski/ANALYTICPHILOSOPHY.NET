@@ -19,6 +19,8 @@ import { Sparkles, Search, Users } from "lucide-react";
 import type { Message, PersonaSettings, Figure } from "@shared/schema";
 import kuczynskiIcon from "/jmk-photo.png";
 import { ComparisonModal } from "@/components/comparison-modal";
+import { ModelBuilderSection } from "@/components/model-builder-section";
+import { PaperWriterSection } from "@/components/paper-writer-section";
 
 const DEFAULT_PERSONA_SETTINGS: Partial<PersonaSettings> = {
   responseLength: 0,
@@ -330,37 +332,6 @@ export default function Chat() {
                 </p>
               </div>
 
-              <div className="pt-3 border-t space-y-2">
-                <Label className="text-sm font-medium">Tools</Label>
-                <div className="space-y-2">
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-sm h-auto py-2"
-                    onClick={() => window.location.href = '/model-builder'}
-                    data-testid="button-model-builder"
-                  >
-                    <span className="text-left">
-                      <div className="font-medium">Model Builder</div>
-                      <div className="text-xs text-muted-foreground font-normal">
-                        Validate theories & find reinterpretations
-                      </div>
-                    </span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-sm h-auto py-2"
-                    onClick={() => window.location.href = '/paper-writer'}
-                    data-testid="button-paper-writer"
-                  >
-                    <span className="text-left">
-                      <div className="font-medium">Paper Writer</div>
-                      <div className="text-xs text-muted-foreground font-normal">
-                        Generate formal philosophical papers
-                      </div>
-                    </span>
-                  </Button>
-                </div>
-              </div>
             </CardContent>
           </Card>
         </div>
@@ -489,6 +460,16 @@ export default function Chat() {
           {/* Input */}
           <div className="relative">
             <ChatInput onSend={handleSendMessage} disabled={isStreaming} />
+          </div>
+
+          {/* Model Builder Section */}
+          <div className="px-4 py-8">
+            <ModelBuilderSection />
+          </div>
+
+          {/* Paper Writer Section */}
+          <div className="px-4 py-8">
+            <PaperWriterSection />
           </div>
         </div>
       </main>
