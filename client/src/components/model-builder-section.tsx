@@ -1,16 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Loader2, Sparkles } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Loader2, Sparkles, ArrowRight } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
-export function ModelBuilderSection() {
+interface ModelBuilderSectionProps {
+  onRegisterInput?: (setter: (text: string) => void) => void;
+  onTransferContent?: (content: string, target: 'chat' | 'model' | 'paper') => void;
+}
+
+export function ModelBuilderSection({ onRegisterInput, onTransferContent }: ModelBuilderSectionProps) {
   const [originalText, setOriginalText] = useState("");
   const [customInstructions, setCustomInstructions] = useState("");
   const [generatedModel, setGeneratedModel] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Register input setter with parent
+  useEffect(() => {
+    if (onRegisterInput) {
+      onRegisterInput(setOriginalText);
+    }
+  }, [onRegisterInput]);
 
   const handleGenerate = async () => {
     if (!originalText.trim()) {
@@ -138,7 +151,38 @@ export function ModelBuilderSection() {
 
           {/* Output Column */}
           <div className="space-y-2">
-            <Label>Generated Model</Label>
+            <div className="flex items-center justify-between">
+              <Label>Generated Model</Label>
+              {generatedModel && !isGenerating && onTransferContent && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs gap-1"
+                      data-testid="button-transfer-model"
+                    >
+                      Send to
+                      <ArrowRight className="h-3 w-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem 
+                      onClick={() => onTransferContent(generatedModel, 'chat')}
+                      data-testid="menu-transfer-to-chat"
+                    >
+                      Chat Input
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => onTransferContent(generatedModel, 'paper')}
+                      data-testid="menu-transfer-to-paper"
+                    >
+                      Paper Writer
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
             <div className="border rounded-lg p-4 min-h-[300px] max-h-[500px] overflow-y-auto bg-muted/30">
               {!generatedModel && !isGenerating ? (
                 <div className="h-full flex items-center justify-center text-muted-foreground text-center">

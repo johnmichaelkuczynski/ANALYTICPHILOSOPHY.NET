@@ -1,19 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useQuery } from "@tanstack/react-query";
-import { FileText, Download, Loader2 } from "lucide-react";
+import { FileText, Download, Loader2, ArrowRight } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import type { Figure } from "@shared/schema";
 
-export function PaperWriterSection() {
+interface PaperWriterSectionProps {
+  onRegisterInput?: (setter: (topic: string) => void) => void;
+  onTransferContent?: (content: string, target: 'chat' | 'model' | 'paper') => void;
+}
+
+export function PaperWriterSection({ onRegisterInput, onTransferContent }: PaperWriterSectionProps) {
   const [topic, setTopic] = useState("");
   const [selectedPhilosopher, setSelectedPhilosopher] = useState("");
   const [generatedPaper, setGeneratedPaper] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+
+  // Register input setter with parent
+  useEffect(() => {
+    if (onRegisterInput) {
+      onRegisterInput(setTopic);
+    }
+  }, [onRegisterInput]);
 
   const { data: figures = [] } = useQuery<Figure[]>({
     queryKey: ["/api/figures"],
@@ -168,15 +181,46 @@ export function PaperWriterSection() {
             <div className="flex items-center justify-between">
               <Label>Generated Paper</Label>
               {generatedPaper && !isGenerating && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDownload}
-                  data-testid="button-download-paper"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Download
-                </Button>
+                <div className="flex items-center gap-2">
+                  {onTransferContent && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs gap-1"
+                          data-testid="button-transfer-paper"
+                        >
+                          Send to
+                          <ArrowRight className="h-3 w-3" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem 
+                          onClick={() => onTransferContent(generatedPaper, 'chat')}
+                          data-testid="menu-transfer-to-chat"
+                        >
+                          Chat Input
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => onTransferContent(generatedPaper, 'model')}
+                          data-testid="menu-transfer-to-model"
+                        >
+                          Model Builder
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDownload}
+                    data-testid="button-download-paper"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download
+                  </Button>
+                </div>
               )}
             </div>
             <div className="border rounded-lg p-4 min-h-[300px] max-h-[500px] overflow-y-auto bg-muted/30">

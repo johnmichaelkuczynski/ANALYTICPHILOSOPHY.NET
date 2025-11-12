@@ -1,22 +1,17 @@
 import { BibleVerseCard } from "./bible-verse-card";
 import { Button } from "./ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { ArrowRight } from "lucide-react";
-import { useLocation } from "wouter";
 import type { Message } from "@shared/schema";
 
 interface ChatMessageProps {
   message: Message;
   isStreaming?: boolean;
+  onTransferContent?: (content: string, target: 'chat' | 'model' | 'paper') => void;
 }
 
-export function ChatMessage({ message, isStreaming }: ChatMessageProps) {
+export function ChatMessage({ message, isStreaming, onTransferContent }: ChatMessageProps) {
   const isUser = message.role === "user";
-  const [, setLocation] = useLocation();
-
-  const handleSendToModelBuilder = () => {
-    const encodedText = encodeURIComponent(message.content);
-    setLocation(`/model-builder?text=${encodedText}`);
-  };
 
   return (
     <div
@@ -46,17 +41,34 @@ export function ChatMessage({ message, isStreaming }: ChatMessageProps) {
           />
         )}
 
-        {!isUser && !isStreaming && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSendToModelBuilder}
-            className="self-end text-xs"
-            data-testid="button-send-to-model-builder"
-          >
-            Send to Model Builder
-            <ArrowRight className="h-3 w-3 ml-1" />
-          </Button>
+        {!isUser && !isStreaming && onTransferContent && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="self-end text-xs gap-1"
+                data-testid="button-transfer-response"
+              >
+                Send to
+                <ArrowRight className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem 
+                onClick={() => onTransferContent(message.content, 'model')}
+                data-testid="menu-transfer-to-model"
+              >
+                Model Builder
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => onTransferContent(message.content, 'paper')}
+                data-testid="menu-transfer-to-paper"
+              >
+                Paper Writer
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </div>
     </div>

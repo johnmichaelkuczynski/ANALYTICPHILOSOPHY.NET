@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Send, Paperclip, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,13 +7,27 @@ import { useToast } from "@/hooks/use-toast";
 interface ChatInputProps {
   onSend: (message: string, documentText?: string) => void;
   disabled?: boolean;
+  externalContent?: { text: string; version: number };
 }
 
-export function ChatInput({ onSend, disabled }: ChatInputProps) {
+export function ChatInput({ onSend, disabled, externalContent }: ChatInputProps) {
   const [message, setMessage] = useState("");
   const [uploadedDocument, setUploadedDocument] = useState<{ name: string; text: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
+
+  // Effect-driven external content injection with version tracking
+  useEffect(() => {
+    if (externalContent && externalContent.version > 0) {
+      setMessage(externalContent.text);
+      // Focus and scroll to textarea
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        textareaRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [externalContent?.version]);
 
   const handleSend = () => {
     if (message.trim() && !disabled) {
@@ -96,6 +110,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
         <div className="flex gap-3 items-end">
           <div className="flex-1 relative">
             <Textarea
+              ref={textareaRef}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}

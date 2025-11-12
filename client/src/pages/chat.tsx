@@ -42,6 +42,28 @@ export default function Chat() {
   const [figureSearchQuery, setFigureSearchQuery] = useState("");
   const [comparisonModalOpen, setComparisonModalOpen] = useState(false);
 
+  // Content transfer system: refs to input setters
+  const [chatInputContent, setChatInputContent] = useState<{ text: string; version: number }>({ text: "", version: 0 });
+  const modelBuilderInputRef = useRef<(text: string) => void>(() => {});
+  const paperWriterTopicRef = useRef<(topic: string) => void>(() => {});
+
+  // Transfer handler for cross-section content flow
+  const handleContentTransfer = (content: string, target: 'chat' | 'model' | 'paper') => {
+    if (target === 'chat') {
+      setChatInputContent(prev => ({ text: content, version: prev.version + 1 }));
+      // Scroll to chat input
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (target === 'model') {
+      modelBuilderInputRef.current(content);
+      // Scroll to model builder section
+      document.getElementById('model-builder-section')?.scrollIntoView({ behavior: 'smooth' });
+    } else if (target === 'paper') {
+      paperWriterTopicRef.current(content);
+      // Scroll to paper writer section
+      document.getElementById('paper-writer-section')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const { data: fetchedSettings, isLoading: settingsLoading } = useQuery<PersonaSettings>({
     queryKey: ["/api/persona-settings"],
   });
@@ -409,7 +431,11 @@ export default function Chat() {
             ) : (
               <div className="max-w-4xl mx-auto px-4 py-8">
                 {messages.map((message) => (
-                  <ChatMessage key={message.id} message={message} />
+                  <ChatMessage 
+                    key={message.id} 
+                    message={message}
+                    onTransferContent={handleContentTransfer}
+                  />
                 ))}
                 {pendingUserMessage && (
                   <ChatMessage
@@ -423,6 +449,7 @@ export default function Chat() {
                       createdAt: new Date(),
                     }}
                     isStreaming={false}
+                    onTransferContent={handleContentTransfer}
                   />
                 )}
                 {streamingMessage && (
@@ -437,6 +464,7 @@ export default function Chat() {
                       createdAt: new Date(),
                     }}
                     isStreaming={true}
+                    onTransferContent={handleContentTransfer}
                   />
                 )}
                 {pendingAssistantMessage && !streamingMessage && (
@@ -451,6 +479,7 @@ export default function Chat() {
                       createdAt: new Date(),
                     }}
                     isStreaming={false}
+                    onTransferContent={handleContentTransfer}
                   />
                 )}
                 <div ref={messagesEndRef} />
@@ -460,17 +489,27 @@ export default function Chat() {
 
           {/* Chat Input - Fixed at bottom of chat section */}
           <div className="sticky bottom-0 bg-background/95 backdrop-blur-md border-t relative z-10">
-            <ChatInput onSend={handleSendMessage} disabled={isStreaming} />
+            <ChatInput 
+              onSend={handleSendMessage} 
+              disabled={isStreaming}
+              externalContent={chatInputContent}
+            />
           </div>
 
           {/* Model Builder Section */}
-          <div className="px-4 py-8 border-t-4 border-primary/20">
-            <ModelBuilderSection />
+          <div id="model-builder-section" className="px-4 py-8 border-t-4 border-primary/20">
+            <ModelBuilderSection 
+              onRegisterInput={(setter) => { modelBuilderInputRef.current = setter; }}
+              onTransferContent={handleContentTransfer}
+            />
           </div>
 
           {/* Paper Writer Section */}
-          <div className="px-4 py-8 border-t-4 border-primary/20">
-            <PaperWriterSection />
+          <div id="paper-writer-section" className="px-4 py-8 border-t-4 border-primary/20">
+            <PaperWriterSection 
+              onRegisterInput={(setter) => { paperWriterTopicRef.current = setter; }}
+              onTransferContent={handleContentTransfer}
+            />
           </div>
         </div>
       </main>
