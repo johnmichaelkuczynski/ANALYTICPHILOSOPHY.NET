@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,11 +17,21 @@ export function ModelBuilderSection({ onRegisterInput, onTransferContent }: Mode
   const [customInstructions, setCustomInstructions] = useState("");
   const [generatedModel, setGeneratedModel] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Register input setter with parent
+  // Register input setter with parent (includes focus)
   useEffect(() => {
     if (onRegisterInput) {
-      onRegisterInput(setOriginalText);
+      onRegisterInput((text: string) => {
+        setOriginalText(text);
+        // Focus textarea after content is set
+        setTimeout(() => {
+          if (textareaRef.current) {
+            textareaRef.current.focus();
+            textareaRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 100);
+      });
     }
   }, [onRegisterInput]);
 
@@ -108,6 +118,7 @@ export function ModelBuilderSection({ onRegisterInput, onTransferContent }: Mode
             <div className="space-y-2">
               <Label htmlFor="original-theory">Philosophical Response</Label>
               <Textarea
+                ref={textareaRef}
                 id="original-theory"
                 placeholder="Paste the philosopher's response here, or click the arrow button on any response..."
                 value={originalText}

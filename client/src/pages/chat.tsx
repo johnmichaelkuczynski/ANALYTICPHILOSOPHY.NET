@@ -54,13 +54,17 @@ export default function Chat() {
       // Scroll to chat input
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (target === 'model') {
-      modelBuilderInputRef.current(content);
-      // Scroll to model builder section
-      document.getElementById('model-builder-section')?.scrollIntoView({ behavior: 'smooth' });
+      if (modelBuilderInputRef.current) {
+        modelBuilderInputRef.current(content);
+        // Scroll to model builder section
+        document.getElementById('model-builder-section')?.scrollIntoView({ behavior: 'smooth' });
+      }
     } else if (target === 'paper') {
-      paperWriterTopicRef.current(content);
-      // Scroll to paper writer section
-      document.getElementById('paper-writer-section')?.scrollIntoView({ behavior: 'smooth' });
+      if (paperWriterTopicRef.current) {
+        paperWriterTopicRef.current(content);
+        // Scroll to paper writer section
+        document.getElementById('paper-writer-section')?.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 

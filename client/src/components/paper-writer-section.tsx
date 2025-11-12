@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,11 +20,21 @@ export function PaperWriterSection({ onRegisterInput, onTransferContent }: Paper
   const [selectedPhilosopher, setSelectedPhilosopher] = useState("");
   const [generatedPaper, setGeneratedPaper] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Register input setter with parent
+  // Register input setter with parent (includes focus)
   useEffect(() => {
     if (onRegisterInput) {
-      onRegisterInput(setTopic);
+      onRegisterInput((topic: string) => {
+        setTopic(topic);
+        // Focus textarea after content is set
+        setTimeout(() => {
+          if (textareaRef.current) {
+            textareaRef.current.focus();
+            textareaRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 100);
+      });
     }
   }, [onRegisterInput]);
 
@@ -147,6 +157,7 @@ export function PaperWriterSection({ onRegisterInput, onTransferContent }: Paper
             <div className="space-y-2">
               <Label htmlFor="topic-input-paper">Paper Topic or Question</Label>
               <Textarea
+                ref={textareaRef}
                 id="topic-input-paper"
                 placeholder="e.g., 'The nature of consciousness' or 'Can we prove the existence of God?'"
                 value={topic}
