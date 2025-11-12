@@ -15,6 +15,7 @@
   - Fixed conversation leak bug where messages appeared across all philosophers (added React key prop to force remounting)
   - Fixed input persistence bug where questions stuck when switching figures (added state reset on figure change)
   - Fixed quote refusal bug with mandatory quote provision rule (philosophers must provide quotes when requested)
+  - Fixed Leibniz interface infinite loading bug (server restart resolved)
   - **DEPLOYMENT PENDING**: Local fix for /zhi/query author attribution bug complete but not yet pushed to production (analyticphilosophy.net)
 
 ## Overview
