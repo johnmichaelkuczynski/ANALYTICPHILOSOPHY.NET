@@ -343,50 +343,51 @@ export default function Chat() {
       >
         <div className="absolute inset-0 bg-background/60 dark:bg-background/70 backdrop-blur-sm" />
 
-        <div className="relative z-10 flex flex-col h-full">
-          {/* Header */}
-          <header className="border-b bg-background/95 backdrop-blur-md">
-            <div className="px-4 py-3 flex items-center justify-between">
-              <a
-                href="mailto:contact@zhisystems.ai"
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                data-testid="link-contact"
-              >
-                Contact Us
-              </a>
-              <div className="flex items-center gap-4 absolute left-1/2 -translate-x-1/2">
-                <div className="relative">
-                  <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg border-2 border-primary/20">
-                    <img
-                      src={kuczynskiIcon}
-                      alt="J.-M. Kuczynski"
-                      className={`w-full h-full object-contain scale-75 -translate-y-1 transition-transform duration-500 ${isStreaming ? 'animate-spin' : ''}`}
-                      data-testid="icon-kuczynski"
-                    />
-                  </div>
-                  {isStreaming && (
-                    <div className="absolute -inset-1 rounded-full border-2 border-primary/50 animate-ping" />
-                  )}
+        {/* Header - Fixed */}
+        <header className="border-b bg-background/95 backdrop-blur-md relative z-20">
+          <div className="px-4 py-3 flex items-center justify-between">
+            <a
+              href="mailto:contact@zhisystems.ai"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              data-testid="link-contact"
+            >
+              Contact Us
+            </a>
+            <div className="flex items-center gap-4 absolute left-1/2 -translate-x-1/2">
+              <div className="relative">
+                <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg border-2 border-primary/20">
+                  <img
+                    src={kuczynskiIcon}
+                    alt="J.-M. Kuczynski"
+                    className={`w-full h-full object-contain scale-75 -translate-y-1 transition-transform duration-500 ${isStreaming ? 'animate-spin' : ''}`}
+                    data-testid="icon-kuczynski"
+                  />
                 </div>
-                <h1 className="font-display text-2xl font-light">
-                  Ask A Philosopher
-                </h1>
+                {isStreaming && (
+                  <div className="absolute -inset-1 rounded-full border-2 border-primary/50 animate-ping" />
+                )}
               </div>
-              <Button
-                onClick={() => setComparisonModalOpen(true)}
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                data-testid="button-compare-thinkers"
-              >
-                <Users className="w-4 h-4" />
-                Compare Thinkers
-              </Button>
+              <h1 className="font-display text-2xl font-light">
+                Ask A Philosopher
+              </h1>
             </div>
-          </header>
+            <Button
+              onClick={() => setComparisonModalOpen(true)}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              data-testid="button-compare-thinkers"
+            >
+              <Users className="w-4 h-4" />
+              Compare Thinkers
+            </Button>
+          </div>
+        </header>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto">
+        {/* Scrollable Content Area with All Three Sections */}
+        <div className="relative z-10 flex-1 overflow-y-auto">
+          {/* Chat Messages Section */}
+          <div className="min-h-[400px]">
             {messages.length === 0 && !streamingMessage && !pendingAssistantMessage ? (
               <div className="h-full flex items-center justify-center p-8">
                 <Card className="max-w-md">
@@ -457,18 +458,18 @@ export default function Chat() {
             )}
           </div>
 
-          {/* Input */}
-          <div className="relative">
+          {/* Chat Input - Fixed at bottom of chat section */}
+          <div className="sticky bottom-0 bg-background/95 backdrop-blur-md border-t relative z-10">
             <ChatInput onSend={handleSendMessage} disabled={isStreaming} />
           </div>
 
           {/* Model Builder Section */}
-          <div className="px-4 py-8">
+          <div className="px-4 py-8 border-t-4 border-primary/20">
             <ModelBuilderSection />
           </div>
 
           {/* Paper Writer Section */}
-          <div className="px-4 py-8">
+          <div className="px-4 py-8 border-t-4 border-primary/20">
             <PaperWriterSection />
           </div>
         </div>
