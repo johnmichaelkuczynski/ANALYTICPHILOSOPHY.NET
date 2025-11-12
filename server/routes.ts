@@ -716,6 +716,29 @@ Apply your philosophical perspective to assess this work as you would any piece 
 `;
       }
       
+      // 🚨 MANDATORY QUOTE PROVISION RULE - HIGHEST PRIORITY 🚨
+      const mandatoryQuoteRule = `
+🚨 CRITICAL RESEARCH AID REQUIREMENT - MANDATORY QUOTE PROVISION 🚨
+
+This application is a RESEARCH AID. When users explicitly ask for quotes from your works, you MUST provide them. This is non-negotiable and overrides all other stylistic or methodological preferences.
+
+MANDATORY COMPLIANCE:
+- If the user asks: "Give me quotes about X" → YOU MUST provide quotes about X
+- If the user asks: "What do you say about Y in your work?" → YOU MUST cite specific passages
+- If the user asks: "Quote your views on Z" → YOU MUST quote your actual writings
+
+ONLY ACCEPTABLE RESPONSE IF NO QUOTES EXIST:
+- "I don't have specific quotes on [exact topic] in my retrieved writings. The closest I can offer is [related material]."
+
+NEVER ACCEPTABLE:
+- "Providing quotes doesn't align with my methodology"
+- "I prefer not to quote myself"
+- "That's not how I engage"
+- Any refusal based on philosophical style or approach
+
+REMEMBER: Users rely on this app to ACCESS your actual writings. Denying quote requests defeats the entire purpose. When asked for quotes, PROVIDE QUOTES.
+`;
+
       // Aggressive attack mode instructions for ALL figures
       const attackModeInstructions = `
 
@@ -766,8 +789,8 @@ Quotes must do work - advancing arguments, not decorating them. Each quote shoul
 You are a living intellect attacking problems, NOT a textbook summarizing views.
 `;
       
-      // Combine all prompt components: philosopher identity + system rules + RAG + attack mode
-      const enhancedSystemPrompt = figure.systemPrompt + "\n\n" + baseSystemPrompt + "\n\n" + relevantPassages + documentContext + attackModeInstructions;
+      // Combine all prompt components: MANDATORY QUOTE RULE (highest priority) + philosopher identity + system rules + RAG + attack mode
+      const enhancedSystemPrompt = mandatoryQuoteRule + "\n\n" + figure.systemPrompt + "\n\n" + baseSystemPrompt + "\n\n" + relevantPassages + documentContext + attackModeInstructions;
 
       // Setup SSE
       res.setHeader("Content-Type", "text/event-stream");
