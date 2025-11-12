@@ -68,6 +68,23 @@ export default function Chat() {
     }
   };
 
+  // Delete message mutation
+  const deleteMessageMutation = useMutation({
+    mutationFn: async (messageId: number) => {
+      return await apiRequest(`/api/messages/${messageId}`, {
+        method: "DELETE",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/messages"] });
+    },
+  });
+
+  // Delete message handler
+  const handleDeleteMessage = (messageId: number) => {
+    deleteMessageMutation.mutate(messageId);
+  };
+
   const { data: fetchedSettings, isLoading: settingsLoading } = useQuery<PersonaSettings>({
     queryKey: ["/api/persona-settings"],
   });
@@ -440,6 +457,7 @@ export default function Chat() {
                     key={message.id} 
                     message={message}
                     onTransferContent={handleContentTransfer}
+                    onDeleteMessage={handleDeleteMessage}
                   />
                 ))}
                 {pendingUserMessage && (

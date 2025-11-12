@@ -1,17 +1,38 @@
 import { BibleVerseCard } from "./bible-verse-card";
 import { Button } from "./ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Copy, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import type { Message } from "@shared/schema";
 
 interface ChatMessageProps {
   message: Message;
   isStreaming?: boolean;
   onTransferContent?: (content: string, target: 'chat' | 'model' | 'paper') => void;
+  onDeleteMessage?: (messageId: number) => void;
 }
 
-export function ChatMessage({ message, isStreaming, onTransferContent }: ChatMessageProps) {
+export function ChatMessage({ message, isStreaming, onTransferContent, onDeleteMessage }: ChatMessageProps) {
   const isUser = message.role === "user";
+  const { toast } = useToast();
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(message.content);
+    toast({
+      title: "Copied to clipboard",
+      description: "Message content has been copied.",
+    });
+  };
+
+  const handleDelete = () => {
+    if (onDeleteMessage) {
+      onDeleteMessage(message.id);
+      toast({
+        title: "Message deleted",
+        description: "The message has been removed.",
+      });
+    }
+  };
 
   return (
     <div
@@ -19,6 +40,32 @@ export function ChatMessage({ message, isStreaming, onTransferContent }: ChatMes
       data-testid={`message-${message.id}`}
     >
       <div className={`max-w-[85%] md:max-w-[75%] space-y-3 ${isUser ? "items-end" : "items-start"} flex flex-col`}>
+        {!isUser && !isStreaming && (
+          <div className="flex items-center gap-2 self-start">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCopy}
+              className="h-7 px-2"
+              data-testid="button-copy-message"
+            >
+              <Copy className="h-3 w-3 mr-1" />
+              Copy
+            </Button>
+            {onDeleteMessage && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDelete}
+                className="h-7 px-2 text-destructive hover:text-destructive"
+                data-testid="button-delete-message"
+              >
+                <Trash2 className="h-3 w-3 mr-1" />
+                Delete
+              </Button>
+            )}
+          </div>
+        )}
         <div
           className={`px-4 py-3 md:px-6 md:py-4 rounded-2xl ${
             isUser

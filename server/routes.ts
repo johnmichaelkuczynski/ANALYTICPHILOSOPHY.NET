@@ -199,6 +199,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete a message
+  app.delete("/api/messages/:id", async (req: any, res) => {
+    try {
+      const sessionId = await getSessionId(req);
+      const messageId = parseInt(req.params.id, 10);
+      
+      if (isNaN(messageId)) {
+        return res.status(400).json({ error: "Invalid message ID" });
+      }
+      
+      // Get current user's conversation
+      const conversation = await storage.getCurrentConversation(sessionId);
+      if (!conversation) {
+        return res.status(404).json({ error: "No conversation found" });
+      }
+      
+      // Verify the message belongs to this conversation (ownership check)
+      const messages = await storage.getMessages(conversation.id);
+      const messageToDelete = messages.find(m => m.id === messageId);
+      
+      if (!messageToDelete) {
+        return res.status(404).json({ error: "Message not found" });
+      }
+      
+      // Only delete if ownership is verified
+      await storage.deleteMessage(messageId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting message:", error);
+      res.status(500).json({ error: "Failed to delete message" });
+    }
+  });
+
   // Streaming chat endpoint
   app.post("/api/chat/stream", async (req: any, res) => {
     try {

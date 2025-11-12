@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useQuery } from "@tanstack/react-query";
-import { FileText, Download, Loader2, ArrowRight } from "lucide-react";
+import { FileText, Download, Loader2, ArrowRight, Copy, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import type { Figure } from "@shared/schema";
 
@@ -21,6 +22,23 @@ export function PaperWriterSection({ onRegisterInput, onTransferContent }: Paper
   const [generatedPaper, setGeneratedPaper] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { toast } = useToast();
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(generatedPaper);
+    toast({
+      title: "Copied to clipboard",
+      description: "Paper has been copied.",
+    });
+  };
+
+  const handleDelete = () => {
+    setGeneratedPaper("");
+    toast({
+      title: "Output cleared",
+      description: "The generated paper has been cleared.",
+    });
+  };
 
   // Register input setter with parent (includes focus)
   useEffect(() => {
@@ -193,13 +211,33 @@ export function PaperWriterSection({ onRegisterInput, onTransferContent }: Paper
               <Label>Generated Paper</Label>
               {generatedPaper && !isGenerating && (
                 <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCopy}
+                    className="h-7 px-2"
+                    data-testid="button-copy-paper"
+                  >
+                    <Copy className="h-3 w-3 mr-1" />
+                    Copy
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleDelete}
+                    className="h-7 px-2 text-destructive hover:text-destructive"
+                    data-testid="button-delete-paper"
+                  >
+                    <Trash2 className="h-3 w-3 mr-1" />
+                    Delete
+                  </Button>
                   {onTransferContent && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-xs gap-1"
+                          className="h-7 px-2 gap-1"
                           data-testid="button-transfer-paper"
                         >
                           Send to
@@ -226,9 +264,10 @@ export function PaperWriterSection({ onRegisterInput, onTransferContent }: Paper
                     variant="outline"
                     size="sm"
                     onClick={handleDownload}
+                    className="h-7 px-2"
                     data-testid="button-download-paper"
                   >
-                    <Download className="w-4 h-4 mr-2" />
+                    <Download className="h-3 w-3 mr-1" />
                     Download
                   </Button>
                 </div>

@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Loader2, Sparkles, ArrowRight } from "lucide-react";
+import { Loader2, Sparkles, ArrowRight, Copy, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 
 interface ModelBuilderSectionProps {
@@ -18,6 +19,23 @@ export function ModelBuilderSection({ onRegisterInput, onTransferContent }: Mode
   const [generatedModel, setGeneratedModel] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { toast } = useToast();
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(generatedModel);
+    toast({
+      title: "Copied to clipboard",
+      description: "Model analysis has been copied.",
+    });
+  };
+
+  const handleDelete = () => {
+    setGeneratedModel("");
+    toast({
+      title: "Output cleared",
+      description: "The generated model has been cleared.",
+    });
+  };
 
   // Register input setter with parent (includes focus)
   useEffect(() => {
@@ -164,34 +182,58 @@ export function ModelBuilderSection({ onRegisterInput, onTransferContent }: Mode
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label>Generated Model</Label>
-              {generatedModel && !isGenerating && onTransferContent && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-xs gap-1"
-                      data-testid="button-transfer-model"
-                    >
-                      Send to
-                      <ArrowRight className="h-3 w-3" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem 
-                      onClick={() => onTransferContent(generatedModel, 'chat')}
-                      data-testid="menu-transfer-to-chat"
-                    >
-                      Chat Input
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => onTransferContent(generatedModel, 'paper')}
-                      data-testid="menu-transfer-to-paper"
-                    >
-                      Paper Writer
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+              {generatedModel && !isGenerating && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCopy}
+                    className="h-7 px-2"
+                    data-testid="button-copy-model"
+                  >
+                    <Copy className="h-3 w-3 mr-1" />
+                    Copy
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleDelete}
+                    className="h-7 px-2 text-destructive hover:text-destructive"
+                    data-testid="button-delete-model"
+                  >
+                    <Trash2 className="h-3 w-3 mr-1" />
+                    Delete
+                  </Button>
+                  {onTransferContent && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 gap-1"
+                          data-testid="button-transfer-model"
+                        >
+                          Send to
+                          <ArrowRight className="h-3 w-3" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem 
+                          onClick={() => onTransferContent(generatedModel, 'chat')}
+                          data-testid="menu-transfer-to-chat"
+                        >
+                          Chat Input
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => onTransferContent(generatedModel, 'paper')}
+                          data-testid="menu-transfer-to-paper"
+                        >
+                          Paper Writer
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </div>
               )}
             </div>
             <div className="border rounded-lg p-4 min-h-[300px] max-h-[500px] overflow-y-auto bg-muted/30">
