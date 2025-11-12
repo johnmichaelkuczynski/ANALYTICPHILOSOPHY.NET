@@ -16,6 +16,7 @@
   - Fixed input persistence bug where questions stuck when switching figures (added state reset on figure change)
   - Fixed quote refusal bug with mandatory quote provision rule (philosophers must provide quotes when requested)
   - Fixed Leibniz interface infinite loading bug (server restart resolved)
+  - **Fixed synthetic quote generation bug**: Philosophers were generating thematic "quotes" instead of verbatim text from writings. Updated mandatory quote rule to require VERBATIM extraction from RAG passages only, with explicit examples and prohibition against synthetic quotes
   - **DEPLOYMENT PENDING**: Local fix for /zhi/query author attribution bug complete but not yet pushed to production (analyticphilosophy.net)
 
 ## Overview
