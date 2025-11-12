@@ -330,24 +330,35 @@ export default function Chat() {
                 </p>
               </div>
 
-              <div className="pt-3 border-t">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <Label htmlFor="write-paper" className="text-sm font-medium cursor-pointer">
-                      Write a Paper
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Generate formal philosophical papers
-                    </p>
-                  </div>
-                  <Switch
-                    id="write-paper"
-                    checked={personaSettings.writePaper}
-                    onCheckedChange={(checked) =>
-                      updatePersonaMutation.mutate({ writePaper: checked })
-                    }
-                    data-testid="switch-write-paper"
-                  />
+              <div className="pt-3 border-t space-y-2">
+                <Label className="text-sm font-medium">Tools</Label>
+                <div className="space-y-2">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-sm h-auto py-2"
+                    onClick={() => window.location.href = '/model-builder'}
+                    data-testid="button-model-builder"
+                  >
+                    <span className="text-left">
+                      <div className="font-medium">Model Builder</div>
+                      <div className="text-xs text-muted-foreground font-normal">
+                        Validate theories & find reinterpretations
+                      </div>
+                    </span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-sm h-auto py-2"
+                    onClick={() => window.location.href = '/paper-writer'}
+                    data-testid="button-paper-writer"
+                  >
+                    <span className="text-left">
+                      <div className="font-medium">Paper Writer</div>
+                      <div className="text-xs text-muted-foreground font-normal">
+                        Generate formal philosophical papers
+                      </div>
+                    </span>
+                  </Button>
                 </div>
               </div>
             </CardContent>
