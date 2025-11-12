@@ -32,6 +32,7 @@ const batchToFigure: Record<string, string> = {
   "hobbes_complete": "common",
   "berkeley": "common",
   "math_classics": "common",
+  "reich": "common",
 };
 
 // REQUIRED: Author attribution mapping for every chunk
@@ -76,6 +77,7 @@ const batchToAuthor: Record<string, string> = {
   "poincare": "Henri Poincaré",
   "poe": "Edgar Allan Poe",
   "math_classics": "Various Mathematicians",
+  "reich": "Wilhelm Reich",
   "common": "Various Authors",
 };
 
@@ -250,6 +252,15 @@ const figuresPapers = {
     { file: "RIEMANN_1762900474631.txt", title: "On Riemann's Theory of Algebraic Functions and their Integrals by Felix Klein" },
     { file: "GAUSS_1762900474632.txt", title: "General Investigations of Curved Surfaces of 1827 and 1825 by Karl Friedrich Gauss" },
     { file: "DEDEKIND_1762900474632.txt", title: "Essays on the Theory of Numbers by Richard Dedekind" },
+  ],
+  "reich": [
+    // Wilhelm Reich - Psychoanalysis, Orgone Energy, Mass Psychology (123,812 lines total)
+    { file: "reich_character_analysis.txt", title: "Character Analysis" },
+    { file: "reich_cancer_biopathy.txt", title: "The Cancer Biopathy: Discovery of the Orgone Vol. II" },
+    { file: "reich_function_orgasm.txt", title: "The Function of the Orgasm: Discovery of the Orgone Vol. I" },
+    { file: "reich_people_in_trouble.txt", title: "People in Trouble: The Emotional Plague of Mankind Vol. II" },
+    { file: "reich_invasion_sex_morality.txt", title: "The Invasion of Compulsory Sex-Morality" },
+    { file: "reich_speaks_freud.txt", title: "Reich Speaks of Freud" },
   ],
   "rousseau": [
     { file: "rousseau_complete_works.txt", title: "The Complete Works of Jean-Jacques Rousseau" },
