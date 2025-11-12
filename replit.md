@@ -1,5 +1,12 @@
 # Ask A Philosopher - Philosophical Q&A Application
 
+## Recent Updates (November 2025)
+- **Wilhelm Reich Integration**: Added as 47th philosopher with complete works (1,456 chunks from 6 books covering character analysis, orgone energy, sexual economy, and mass psychology)
+- **Critical Production Fixes**: 
+  - Fixed conversation leak bug where messages appeared across all philosophers (added React key prop to force remounting)
+  - Fixed input persistence bug where questions stuck when switching figures (added state reset on figure change)
+  - Fixed quote refusal bug with mandatory quote provision rule (philosophers must provide quotes when requested)
+
 ## Overview
 "Ask A Philosopher" is a philosophical Q&A application designed for deep philosophical discourse with 47 philosophical and literary figures. It leverages their actual writings and advanced AI to provide nuanced and contextually rich responses. The platform integrates philosophical papers as foundational texts, enabling the AI to reason and adapt based on user sophistication. It supports multi-author conversations through a Retrieval-Augmented Generation (RAG) system, ensuring each figure's responses are grounded in their respective works. The project aims to offer an accessible and engaging way to explore complex philosophical ideas and literary works, with J.-M. Kuczynski as the default philosopher. The project's ambition is to offer a robust platform for exploring complex philosophical and literary concepts, enhancing understanding through direct engagement with the 'minds' of history's great thinkers, and has significant market potential in education and intellectual discourse.
 
