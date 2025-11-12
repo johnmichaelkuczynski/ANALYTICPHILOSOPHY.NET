@@ -1172,7 +1172,7 @@ You are a living intellect attacking this problem. Write the paper NOW - no narr
       const results = filteredPassages.map(passage => ({
         excerpt: passage.content,
         citation: {
-          author: passage.paperTitle.split(':')[0].trim(), // Extract author from title
+          author: passage.author, // CRITICAL: Use actual author field, not extracted from title
           work: passage.paperTitle,
           chunkIndex: passage.chunkIndex,
         },
