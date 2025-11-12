@@ -25,6 +25,7 @@ const batchToFigure: Record<string, string> = {
   "jmk_literal_meaning": "common",
   "jmk_new_texts": "common",
   "jmk_intentions_legal": "common",
+  "jmk_misc_essays": "common",
   "veblen_batch1": "common",
   "veblen_batch2": "common",
   "veblen_batch3": "common",
@@ -46,6 +47,7 @@ const batchToAuthor: Record<string, string> = {
   "jmk_literal_meaning": "J.-M. Kuczynski",
   "jmk_new_texts": "J.-M. Kuczynski",
   "jmk_intentions_legal": "J.-M. Kuczynski",
+  "jmk_misc_essays": "J.-M. Kuczynski",
   "jmk": "J.-M. Kuczynski",
   "veblen_batch1": "Thorstein Veblen",
   "veblen_batch2": "Thorstein Veblen",
@@ -173,6 +175,16 @@ const figuresPapers = {
     // BATCH 6: Philosophy of Mind and Legal Philosophy - November 2025
     { file: "kuczynski_what_is_intention.txt", title: "What Is an Intention?" },
     { file: "kuczynski_moral_structure_legal_obligation.txt", title: "The Moral Structure of Legal Obligation" },
+  ],
+  "jmk_misc_essays": [
+    // BATCH 7: Miscellaneous Essays - Kant, Political Philosophy, Logic, Psychopathology - November 2025
+    { file: "kuczynski_kant_god_conception.txt", title: "What Does Kant Conceive God to Be?" },
+    { file: "kuczynski_kant_god_belief.txt", title: "What Does Kant Believe God to Be?" },
+    { file: "kuczynski_goldman_rousseau_hayek_state.txt", title: "Goldman, Rousseau and von Hayek on the Ideal State" },
+    { file: "kuczynski_observations_aphorisms.txt", title: "Observations and Aphorisms" },
+    { file: "kuczynski_symbolic_logic_lie.txt", title: "The Lie of the Discipline of Symbolic Logic" },
+    { file: "kuczynski_late_onset_psychopathy.txt", title: "Two Kinds of Late-onset Psychopathy" },
+    { file: "kuczynski_panic_attacks.txt", title: "Panic Attacks Have an Objective Basis" },
   ],
   "jmk": [
     // LEGACY: For backward compatibility - use batch approach above
