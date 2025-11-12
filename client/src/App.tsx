@@ -5,11 +5,13 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import Chat from "@/pages/chat";
+import ModelBuilder from "@/pages/model-builder";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Chat} />
+      <Route path="/model-builder" component={ModelBuilder} />
       <Route path="*">
         <Redirect to="/" />
       </Route>

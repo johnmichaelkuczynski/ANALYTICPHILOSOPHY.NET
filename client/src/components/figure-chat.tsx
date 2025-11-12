@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Download, FileText, Upload, X } from "lucide-react";
+import { Send, Download, FileText, Upload, X, ArrowRight } from "lucide-react";
 import type { Figure, FigureMessage } from "@shared/schema";
 import { PaperWriter } from "@/components/paper-writer";
 
@@ -318,23 +318,44 @@ export function FigureChat({ figure, open, onOpenChange }: FigureChatProps) {
               </div>
             )}
 
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-                data-testid={`figure-message-${message.id}`}
-              >
+            {messages.map((message) => {
+              const isUser = message.role === "user";
+              
+              return (
                 <div
-                  className={`max-w-[80%] rounded-lg px-4 py-3 ${
-                    message.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted"
-                  }`}
+                  key={message.id}
+                  className={`flex ${isUser ? "justify-end" : "justify-start"}`}
+                  data-testid={`figure-message-${message.id}`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  <div className={`max-w-[80%] space-y-2 flex flex-col ${isUser ? "items-end" : "items-start"}`}>
+                    <div
+                      className={`rounded-lg px-4 py-3 ${
+                        isUser
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted"
+                      }`}
+                    >
+                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    </div>
+                    {!isUser && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const encodedText = encodeURIComponent(message.content);
+                          window.location.href = `/model-builder?text=${encodedText}`;
+                        }}
+                        className="text-xs"
+                        data-testid={`button-model-builder-${message.id}`}
+                      >
+                        Send to Model Builder
+                        <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {streamingMessage && (
               <div className="flex justify-start">

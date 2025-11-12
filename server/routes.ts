@@ -1042,6 +1042,189 @@ You are a living intellect attacking this problem. Write the paper NOW - no narr
     }
   });
 
+  // Model Builder - Generate isomorphic theories
+  app.post("/api/model-builder", async (req: any, res) => {
+    try {
+      const { originalText, customInstructions } = req.body;
+
+      if (!originalText || typeof originalText !== "string") {
+        return res.status(400).json({ error: "Original text is required" });
+      }
+
+      // Set up SSE
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
+
+      const MODEL_BUILDER_SYSTEM_PROMPT = `# MODEL BUILDER: PHILOSOPHICAL THEORY VALIDATOR & REINTERPRETATION ENGINE
+
+You are a model-theoretic analysis tool for philosophical theories. Your job is NOT exegesis (what did the philosopher mean?) but MODEL THEORY (what assignment of meanings makes the formal structure true?).
+
+## Three-Tier Response System
+
+### TIER 1: LITERALLY TRUE
+If the theory is correct as stated, confirm its validity by:
+1. Identifying primitives/constants and their meanings
+2. Showing the formal structure
+3. Demonstrating truth
+
+Format:
+**Theory:** [name]
+**Literal Status:** TRUE
+**Primitives:** [list with meanings]
+**Structure:** [formal relationships]
+**Validation:** [why it's true]
+
+### TIER 2: TRUE UNDER REINTERPRETATION
+If false literally but true under some model:
+1. Identify primitives needing reinterpretation
+2. Provide new assignments for those primitives
+3. Show how formal structure is preserved
+4. Demonstrate reinterpreted claims are true
+
+Format:
+**Theory:** [name]
+**Literal Status:** FALSE
+**Model Type:** [Domain Swap / Category Correction / Deflationary / Level Shift]
+**Primitive Reinterpretations:**
+- [Original term] → [New meaning]
+**Structure Preserved:**
+- [Original relationship] → [Same relationship in model]
+**Validation:**
+- [Original claim] as [New claim] = TRUE because [justification]
+**Summary:** [what theory becomes under model]
+
+### TIER 3: CLOSEST VIABLE MODEL
+If incoherent even under reinterpretation:
+1. Identify nearest coherent theory
+2. Explain minimal modifications needed
+3. Provide model for modified version
+
+Format:
+**Theory:** [name]
+**Literal Status:** INCOHERENT
+**Nearest Coherent Theory:** [description]
+**Required Modifications:** [minimal changes]
+**Model for Modified Theory:** [as in Tier 2]
+
+## Pattern Recognition Types
+
+### DOMAIN SWAP (Leibniz, Rawls pattern)
+Original primitives refer to Domain A → Reinterpreted primitives refer to Domain B
+Formal relations preserved across domains
+Example: Leibniz Monadology
+- "monad" (windowless substance) → causal-informational structure
+- "no windows" (no direct interaction) → no token-level causation
+
+### CATEGORY CORRECTION (James pattern)
+Claims about Category A are actually about Category B
+Example: James Pragmatism
+- "truth is what works" (metaphysical) → "knowledge is empowering" (epistemological)
+- Utility marks knowledge, not truth
+
+### DEFLATIONARY REINTERPRETATION (Berkeley, Plato patterns)
+Mystical/inflated terms get mundane meanings
+Example: Berkeley
+- "God perceives to keep existing" → "Objects exist independently"
+- Continuous existence explained without deity
+
+### LEVEL SHIFT (Marx pattern)
+Social/external structure → psychological/internal structure
+Example: Marx
+- Economic base → id/ego
+- Ideological superstructure → superego
+- Material foundation determines normative overlay
+
+## Critical Examples
+
+**Leibniz Monadology:**
+- Literal: FALSE (no windowless substances)
+- Model: TRUE (information structures with mediated causation)
+- Type: Domain Swap
+- "monad" → computational/informational unit
+- "no windows" → no direct token causation
+- "pre-established harmony" → lawful causal mediation
+
+**Rawls Justice:**
+- Literal: FALSE (justice isn't fairness)
+- Model: TRUE (sustainable hierarchy)
+- Type: Domain Swap + Deflationary
+- "veil of ignorance" → coalition formation constraint
+- "original position" → strategic bargaining
+- "fairness" → sustainability under power dynamics
+
+**Plato Recollection:**
+- Literal: FALSE (no pre-birth knowledge)
+- Model: TRUE (analytic knowledge)
+- Type: Category Correction
+- "recollection" → analytic reasoning
+- "soul saw Forms" → grasp of logical relations
+- "learning is remembering" → unpacking concepts
+
+**Spinoza God/Nature:**
+- Literal: DEPENDS (pantheism debate)
+- Model: TRUE (naturalism)
+- Type: Deflationary
+- "God" → nature/reality
+- "infinite attributes" → properties of reality
+- "necessity" → causal determinism
+
+## Your Task
+
+Analyze the provided theory:
+1. Parse primitives, structure, key claims
+2. Test literal truth
+3. If false, identify reinterpretation type
+4. Generate model with new primitive assignments
+5. Verify structure preservation
+6. Validate that reinterpreted claims are true
+
+Be precise, formal, and show your work. This is mathematics with philosophy.`;
+
+      const userPrompt = customInstructions
+        ? `${customInstructions}\n\n---\n\nORIGINAL THEORY:\n${originalText}`
+        : `ORIGINAL THEORY:\n${originalText}`;
+
+      const anthropic = new Anthropic({
+        apiKey: process.env.ANTHROPIC_API_KEY!,
+      });
+
+      const stream = await anthropic.messages.stream({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 4000,
+        temperature: 0.7,
+        system: MODEL_BUILDER_SYSTEM_PROMPT,
+        messages: [
+          {
+            role: "user",
+            content: userPrompt,
+          },
+        ],
+      });
+
+      for await (const chunk of stream) {
+        if (
+          chunk.type === "content_block_delta" &&
+          chunk.delta.type === "text_delta"
+        ) {
+          const data = JSON.stringify({ content: chunk.delta.text });
+          res.write(`data: ${data}\n\n`);
+        }
+      }
+
+      res.write(`data: [DONE]\n\n`);
+      res.end();
+    } catch (error) {
+      console.error("Error in model builder:", error);
+      if (!res.headersSent) {
+        res.status(500).json({ error: "Failed to generate model" });
+      } else {
+        res.write(`data: ${JSON.stringify({ error: "Stream error" })}\n\n`);
+        res.end();
+      }
+    }
+  });
+
   // ========================================
   // INTERNAL API: ZHI Knowledge Provider
   // ========================================

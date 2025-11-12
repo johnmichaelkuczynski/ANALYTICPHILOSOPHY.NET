@@ -1,4 +1,7 @@
 import { BibleVerseCard } from "./bible-verse-card";
+import { Button } from "./ui/button";
+import { ArrowRight } from "lucide-react";
+import { useLocation } from "wouter";
 import type { Message } from "@shared/schema";
 
 interface ChatMessageProps {
@@ -8,6 +11,12 @@ interface ChatMessageProps {
 
 export function ChatMessage({ message, isStreaming }: ChatMessageProps) {
   const isUser = message.role === "user";
+  const [, setLocation] = useLocation();
+
+  const handleSendToModelBuilder = () => {
+    const encodedText = encodeURIComponent(message.content);
+    setLocation(`/model-builder?text=${encodedText}`);
+  };
 
   return (
     <div
@@ -35,6 +44,19 @@ export function ChatMessage({ message, isStreaming }: ChatMessageProps) {
             verseText={message.verseText}
             verseReference={message.verseReference}
           />
+        )}
+
+        {!isUser && !isStreaming && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSendToModelBuilder}
+            className="self-end text-xs"
+            data-testid="button-send-to-model-builder"
+          >
+            Send to Model Builder
+            <ArrowRight className="h-3 w-3 ml-1" />
+          </Button>
         )}
       </div>
     </div>
