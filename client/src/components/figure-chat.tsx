@@ -33,13 +33,12 @@ export function FigureChat({ figure, open, onOpenChange }: FigureChatProps) {
 
   // CRITICAL FIX: Reset input and uploaded file when figure changes or dialog closes
   useEffect(() => {
-    if (!open) {
-      setInput("");
-      setUploadedFile(null);
-      setStreamingMessage("");
-      setPendingAssistantMessage("");
-    }
-  }, [open, figure?.id]);
+    // Clear state when dialog closes OR when figure changes (even if dialog stays open)
+    setInput("");
+    setUploadedFile(null);
+    setStreamingMessage("");
+    setPendingAssistantMessage("");
+  }, [figure?.id, open]);
 
   const sendMessageMutation = useMutation({
     mutationFn: async (message: string) => {
