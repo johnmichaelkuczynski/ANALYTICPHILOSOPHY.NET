@@ -35,6 +35,7 @@ const batchToFigure: Record<string, string> = {
   "berkeley": "common",
   "math_classics": "common",
   "reich": "common",
+  "orwell": "common",
 };
 
 // REQUIRED: Author attribution mapping for every chunk
@@ -82,6 +83,7 @@ const batchToAuthor: Record<string, string> = {
   "poe": "Edgar Allan Poe",
   "math_classics": "Various Mathematicians",
   "reich": "Wilhelm Reich",
+  "orwell": "George Orwell",
   "common": "Various Authors",
 };
 
@@ -280,6 +282,10 @@ const figuresPapers = {
     { file: "reich_people_in_trouble.txt", title: "People in Trouble: The Emotional Plague of Mankind Vol. II" },
     { file: "reich_invasion_sex_morality.txt", title: "The Invasion of Compulsory Sex-Morality" },
     { file: "reich_speaks_freud.txt", title: "Reich Speaks of Freud" },
+  ],
+  "orwell": [
+    // George Orwell - Political writing, dystopian fiction, essays on language and truth
+    { file: "orwell_collected_works.txt", title: "George Orwell: Collected Essays and Passages" },
   ],
   "rousseau": [
     { file: "rousseau_complete_works.txt", title: "The Complete Works of Jean-Jacques Rousseau" },
