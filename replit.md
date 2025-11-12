@@ -21,17 +21,19 @@ The application acts as a centralized knowledge server providing unified access 
 
 ### UI/UX Decisions
 - **Layout**: A 3-column layout: far-left for philosophical figures, a narrow middle for settings, and a right area for the main chat.
-- **Accessibility**: No login required; minimal, visible settings (Response Length, Write a Paper toggle).
+- **Accessibility**: No login required; minimal, visible settings (Response Length, Quote Frequency).
+- **Tools Section**: Settings panel includes dedicated navigation buttons for Model Builder and Paper Writer, replacing the previous "Write a Paper" toggle with full-featured pages.
 - **Visuals**: Animated Kuczynski icon, AI-generated portrait avatars, minimalistic design with elegant typography, and dark mode support.
-- **Features**: "Talk with X" for personalized conversations, and "Compare Thinkers" for side-by-side comparison of responses.
+- **Features**: "Talk with X" for personalized conversations, "Compare Thinkers" for side-by-side comparison of responses, Model Builder for theory validation, and Paper Writer for formal philosophical papers.
 
 ### Technical Implementations
 - **Frontend**: React, TypeScript, Wouter, TanStack Query, Shadcn UI, and Tailwind CSS.
 - **Backend**: Express.js with Node.js and Drizzle ORM.
 - **AI Interaction**: Anthropic Claude Sonnet 4.5 is the primary AI (0.7 temperature), configured for aggressive direct reasoning with a 6-point mandate (Immediate Attack, Commit Without Hedging, Name Specific Targets, Show Mechanism, Reframe Confused Questions, Quotes as Weapons). Philosophers act as maximally intelligent versions using their doctrines to attack novel problems. Conversation history is maintained, and philosophers can cite their own works.
 - **Streaming**: Server-Sent Events (SSE) for real-time word-by-word AI response streaming.
-- **Settings**: Users control response length, quote frequency, and toggle paper writing mode.
-- **Paper Writing Feature**: Allows philosophers to write original papers (up to 1500 words) in their authentic voice, using RAG retrieval, with streaming generation and text file download.
+- **Settings**: Users control response length and quote frequency via the settings panel.
+- **Paper Writer Page**: Dedicated page (accessible via Settings → Tools) with 2-column layout allowing users to select a philosopher and topic to generate original papers (up to 1500 words) in authentic voice, using RAG retrieval, with streaming generation and text file download.
+- **Model Builder Page**: Dedicated page (accessible via Settings → Tools and arrow buttons on philosopher responses) with 2-column layout for validating philosophical theories and generating isomorphic reinterpretations using model-theoretic analysis.
 - **Guest User Management**: Session-based storage with auto-generated guest user IDs maintains state without authentication.
 - **RAG System**: Papers are chunked (~250 words), embedded into 1536-dimension vectors using OpenAI's `text-embedding-ada-002`, and stored in a PostgreSQL database with `pgvector`. Semantic search retrieves relevant chunks for the LLM. Optimized batch processing (16 chunks per API call) for efficient embedding generation.
 - **Unified Knowledge Base**: All philosophical texts from 66 authors (~30,700 chunks across 201 unique works) are consolidated into a single "Common Fund" with `figureId='common'`. This enables comprehensive cross-philosopher semantic search. Author filtering is implemented with ILIKE partial matching and robust normalization for 33+ philosopher names, ensuring accurate, author-specific knowledge retrieval.
