@@ -321,6 +321,7 @@ const figuresPapers = {
   ],
   "leibniz": [
     { file: "leibniz_complete_works.txt", title: "The Collected Works of Gottfried Wilhelm Leibniz" },
+    { file: "leibniz_monadology_kuczynski.txt", title: "Analytic Summary of Leibniz's Monadology by J.-M. Kuczynski" },
   ],
   "william-james": [
     { file: "james_collected_works.txt", title: "The Collected Works of William James" },

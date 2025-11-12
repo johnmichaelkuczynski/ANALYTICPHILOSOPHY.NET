@@ -1,6 +1,7 @@
 # Ask A Philosopher - Philosophical Q&A Application
 
 ## Recent Updates (November 2025)
+- **NEW: Leibniz Monadology Analysis** (Nov 12): Added Kuczynski's "Analytic Summary of Leibniz's Monadology" (9 chunks) covering monads as simple substances, perception vs. consciousness, necessary vs. contingent truths, and pre-established harmony
 - **NEW: Kuczynski Expanded Collection** (Nov 12): Added 9 papers (103 chunks total):
   - Philosophy of Mind: "What Is an Intention?" (32 chunks)
   - Legal Philosophy: "The Moral Structure of Legal Obligation" (41 chunks)
