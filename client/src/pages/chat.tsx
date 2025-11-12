@@ -345,16 +345,17 @@ export default function Chat() {
                   value={personaSettings.quoteFrequency === 0 ? '' : personaSettings.quoteFrequency || ''}
                   onChange={(e) => {
                     const value = e.target.value === '' ? 0 : parseInt(e.target.value, 10);
-                    if (!isNaN(value) && value >= 0) {
+                    if (!isNaN(value) && value >= 0 && value <= 50) {
                       updatePersonaMutation.mutate({ quoteFrequency: value });
                     }
                   }}
                   min={0}
+                  max={50}
                   data-testid="input-quote-frequency"
                   className="text-sm"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Type the exact number of quotes per response (0 for none)
+                  Type any number from 0 to 50 (0 for none)
                 </p>
               </div>
 
