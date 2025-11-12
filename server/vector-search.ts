@@ -182,6 +182,79 @@ Be yourself - reason as YOU reason, not as a textbook explains you.
 }
 
 /**
+ * Author name normalization mapping
+ * Maps various forms of author names to their canonical database form
+ */
+const AUTHOR_ALIASES: Record<string, string> = {
+  // Full names to last names
+  'john-michael kuczynski': 'Kuczynski',
+  'j-m kuczynski': 'Kuczynski',
+  'j.m. kuczynski': 'Kuczynski',
+  'j.-m. kuczynski': 'Kuczynski',
+  'bertrand russell': 'Russell',
+  'william james': 'James',
+  'carl jung': 'Jung',
+  'c.g. jung': 'Jung',
+  'sigmund freud': 'Freud',
+  'friedrich nietzsche': 'Nietzsche',
+  'karl marx': 'Marx',
+  'john locke': 'Locke',
+  'immanuel kant': 'Kant',
+  'georg hegel': 'Hegel',
+  'g.w.f. hegel': 'Hegel',
+  'rené descartes': 'Descartes',
+  'rene descartes': 'Descartes',
+  'john dewey': 'Dewey',
+  'gottfried leibniz': 'Leibniz',
+  'isaac newton': 'Newton',
+  'charles darwin': 'Darwin',
+  'thorstein veblen': 'Veblen',
+  'vladimir lenin': 'Lenin',
+  'friedrich engels': 'Engels',
+  'baruch spinoza': 'Spinoza',
+  'thomas hobbes': 'Hobbes',
+  'george berkeley': 'Berkeley',
+  'jean-jacques rousseau': 'Rousseau',
+  'john stuart mill': 'Mill',
+  'edgar allan poe': 'Poe',
+  'ludwig von mises': 'Mises',
+  'adam smith': 'Smith',
+  'herbert spencer': 'Spencer',
+  'alfred adler': 'Adler',
+  'charles peirce': 'Peirce',
+  'charles sanders peirce': 'Peirce',
+  'henri poincare': 'Poincare',
+  'henri poincaré': 'Poincare',
+  'moses maimonides': 'Maimonides',
+};
+
+/**
+ * Normalize author name to canonical form for database lookup
+ * Handles full names, abbreviations, and various formats
+ */
+export function normalizeAuthorName(authorInput: string): string {
+  if (!authorInput) return authorInput;
+  
+  const normalized = authorInput.toLowerCase().trim();
+  
+  // Check alias map first
+  if (AUTHOR_ALIASES[normalized]) {
+    return AUTHOR_ALIASES[normalized];
+  }
+  
+  // If not in alias map, try to extract last name
+  // Split on spaces/hyphens and take the last significant word
+  const words = normalized.split(/[\s-]+/).filter(w => w.length > 2);
+  if (words.length > 0) {
+    // Capitalize first letter of last word
+    const lastName = words[words.length - 1];
+    return lastName.charAt(0).toUpperCase() + lastName.slice(1);
+  }
+  
+  return authorInput; // Return as-is if can't normalize
+}
+
+/**
  * Detect author name from query text using database lookup
  * Returns author name if detected, undefined otherwise
  */
@@ -193,7 +266,7 @@ export async function detectAuthorFromQuery(queryText: string): Promise<string |
     'Newton', 'Darwin', 'Veblen', 'Lenin', 'Engels', 'Descartes',
     'Spinoza', 'Hobbes', 'Berkeley', 'Rousseau', 'Mill', 'Poe',
     'Mises', 'Smith', 'Spencer', 'Marden', 'Adler', 'Peirce',
-    'Poincare', 'Maimonides'
+    'Poincare', 'Maimonides', 'Locke'
   ];
   
   const queryUpper = queryText.toUpperCase();

@@ -1113,8 +1113,20 @@ You are a living intellect attacking this problem. Write the paper NOW - no narr
       const appId = (req as any).zhiAuth?.appId || "unknown";
       console.log(`[ZHI Query API] ${appId}: "${searchQuery}" (limit: ${limit})`);
       
-      // CRITICAL FIX: Auto-detect author from query text if not explicitly provided
+      // CRITICAL FIX: Normalize author parameter + auto-detect from query text
       let detectedAuthor = author;
+      
+      // Step 1: Normalize explicit author parameter (handles "john-michael kuczynski" → "Kuczynski")
+      if (detectedAuthor) {
+        const { normalizeAuthorName } = await import("./vector-search");
+        const normalized = normalizeAuthorName(detectedAuthor);
+        if (normalized !== detectedAuthor) {
+          console.log(`[ZHI Query API] 📝 Normalized author: "${detectedAuthor}" → "${normalized}"`);
+          detectedAuthor = normalized;
+        }
+      }
+      
+      // Step 2: Auto-detect from query text if still no author
       if (!detectedAuthor && query) {
         const { detectAuthorFromQuery } = await import("./vector-search");
         detectedAuthor = await detectAuthorFromQuery(query);
@@ -1197,8 +1209,20 @@ You are a living intellect attacking this problem. Write the paper NOW - no narr
       const appId = (req as any).zhiAuth?.appId || "unknown";
       console.log(`[Knowledge Provider] ${appId} querying unified knowledge base: "${query}" (results: ${maxResults}, author: ${author || 'all'})`);
       
-      // CRITICAL FIX: Auto-detect author from query text if not explicitly provided
+      // CRITICAL FIX: Normalize author parameter + auto-detect from query text
       let detectedAuthor = author;
+      
+      // Step 1: Normalize explicit author parameter (handles "john-michael kuczynski" → "Kuczynski")
+      if (detectedAuthor) {
+        const { normalizeAuthorName } = await import("./vector-search");
+        const normalized = normalizeAuthorName(detectedAuthor);
+        if (normalized !== detectedAuthor) {
+          console.log(`[Knowledge Provider] 📝 Normalized author: "${detectedAuthor}" → "${normalized}"`);
+          detectedAuthor = normalized;
+        }
+      }
+      
+      // Step 2: Auto-detect from query text if still no author
       if (!detectedAuthor && query) {
         const { detectAuthorFromQuery } = await import("./vector-search");
         detectedAuthor = await detectAuthorFromQuery(query);
