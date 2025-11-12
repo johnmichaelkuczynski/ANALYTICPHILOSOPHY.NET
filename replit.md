@@ -20,11 +20,14 @@
 The application acts as a centralized knowledge server providing unified access to philosophical and psychoanalytic texts via a secure internal API. It features a 3-column layout without authentication, offering direct access to the chat interface. All philosophical texts are consolidated into a unified "Common Fund" knowledge base.
 
 ### UI/UX Decisions
-- **Layout**: A 3-column layout: far-left for philosophical figures, a narrow middle for settings, and a right area for the main chat.
-- **Accessibility**: No login required; minimal, visible settings (Response Length, Quote Frequency).
-- **Tools Section**: Settings panel includes dedicated navigation buttons for Model Builder and Paper Writer, replacing the previous "Write a Paper" toggle with full-featured pages.
-- **Visuals**: Animated Kuczynski icon, AI-generated portrait avatars, minimalistic design with elegant typography, and dark mode support.
-- **Features**: "Talk with X" for personalized conversations, "Compare Thinkers" for side-by-side comparison of responses, Model Builder for theory validation, and Paper Writer for formal philosophical papers.
+- **Layout**: A unified single-page layout with 3 columns (philosophers sidebar, settings, main content) containing three vertically stacked sections: Ask A Philosopher (chat), Model Builder, and Paper Writer. All sections accessible by scrolling on ONE page.
+- **Accessibility**: No login required; minimal settings (Response Length, Number of Quotes). No toggles, no separate pages - everything visible on one scrollable interface.
+- **Three-Section Design**: 
+  1. **Top**: Ask A Philosopher chat interface with fixed header and sticky input
+  2. **Middle**: Model Builder for theory validation and reinterpretations
+  3. **Bottom**: Paper Writer for formal philosophical papers
+- **Visuals**: Animated Kuczynski icon, AI-generated portrait avatars, minimalistic design with elegant typography, dark mode support, and visual section dividers.
+- **Features**: "Talk with X" for personalized conversations, "Compare Thinkers" for side-by-side comparisons, all integrated in one unified scrollable page.
 
 ### Technical Implementations
 - **Frontend**: React, TypeScript, Wouter, TanStack Query, Shadcn UI, and Tailwind CSS.
@@ -32,8 +35,9 @@ The application acts as a centralized knowledge server providing unified access 
 - **AI Interaction**: Anthropic Claude Sonnet 4.5 is the primary AI (0.7 temperature), configured for aggressive direct reasoning with a 6-point mandate (Immediate Attack, Commit Without Hedging, Name Specific Targets, Show Mechanism, Reframe Confused Questions, Quotes as Weapons). Philosophers act as maximally intelligent versions using their doctrines to attack novel problems. Conversation history is maintained, and philosophers can cite their own works.
 - **Streaming**: Server-Sent Events (SSE) for real-time word-by-word AI response streaming.
 - **Settings**: Users control response length and quote frequency via the settings panel.
-- **Paper Writer Page**: Dedicated page (accessible via Settings → Tools) with 2-column layout allowing users to select a philosopher and topic to generate original papers (up to 1500 words) in authentic voice, using RAG retrieval, with streaming generation and text file download.
-- **Model Builder Page**: Dedicated page (accessible via Settings → Tools and arrow buttons on philosopher responses) with 2-column layout for validating philosophical theories and generating isomorphic reinterpretations using model-theoretic analysis.
+- **Unified Single-Page Interface**: All three functions (Chat, Model Builder, Paper Writer) are integrated into ONE scrollable page with three distinct sections. No separate pages, no navigation buttons, no toggles - users simply scroll to access each function.
+- **Model Builder Section**: Integrated section below chat for validating philosophical theories and generating isomorphic reinterpretations using model-theoretic analysis. Features 2-column input/output layout with custom instructions support.
+- **Paper Writer Section**: Integrated section at bottom for generating formal philosophical papers (up to 1500 words) in authentic voice. Features 2-column layout with philosopher selection, topic input, streaming generation, and text file download.
 - **Guest User Management**: Session-based storage with auto-generated guest user IDs maintains state without authentication.
 - **RAG System**: Papers are chunked (~250 words), embedded into 1536-dimension vectors using OpenAI's `text-embedding-ada-002`, and stored in a PostgreSQL database with `pgvector`. Semantic search retrieves relevant chunks for the LLM. Optimized batch processing (16 chunks per API call) for efficient embedding generation.
 - **Unified Knowledge Base**: All philosophical texts from 66 authors (~30,700 chunks across 201 unique works) are consolidated into a single "Common Fund" with `figureId='common'`. This enables comprehensive cross-philosopher semantic search. Author filtering is implemented with ILIKE partial matching and robust normalization for 33+ philosopher names, ensuring accurate, author-specific knowledge retrieval.
