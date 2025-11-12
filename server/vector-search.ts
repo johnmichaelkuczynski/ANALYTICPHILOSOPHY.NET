@@ -182,76 +182,265 @@ Be yourself - reason as YOU reason, not as a textbook explains you.
 }
 
 /**
- * Author name normalization mapping
- * Maps various forms of author names to their canonical database form
+ * Author name normalization mapping - COMPREHENSIVE COVERAGE
+ * Maps ANY variation of author names to their canonical database form
+ * Handles: full names, abbreviated names, punctuation variants, case variants
  */
 const AUTHOR_ALIASES: Record<string, string> = {
-  // Full names to last names
+  // Kuczynski variants
   'john-michael kuczynski': 'Kuczynski',
+  'johnmichael kuczynski': 'Kuczynski',
   'j-m kuczynski': 'Kuczynski',
+  'jm kuczynski': 'Kuczynski',
   'j.m. kuczynski': 'Kuczynski',
   'j.-m. kuczynski': 'Kuczynski',
+  'j m kuczynski': 'Kuczynski',
+  
+  // Russell variants
   'bertrand russell': 'Russell',
-  'william james': 'James',
-  'carl jung': 'Jung',
-  'c.g. jung': 'Jung',
-  'sigmund freud': 'Freud',
+  'bertrand arthur william russell': 'Russell',
+  'b russell': 'Russell',
+  'b. russell': 'Russell',
+  
+  // Galileo variants
+  'galileo galilei': 'Galileo',
+  
+  // Nietzsche variants
   'friedrich nietzsche': 'Nietzsche',
-  'karl marx': 'Marx',
-  'john locke': 'Locke',
-  'immanuel kant': 'Kant',
-  'georg hegel': 'Hegel',
-  'g.w.f. hegel': 'Hegel',
-  'rené descartes': 'Descartes',
-  'rene descartes': 'Descartes',
-  'john dewey': 'Dewey',
+  'friedrich wilhelm nietzsche': 'Nietzsche',
+  'f nietzsche': 'Nietzsche',
+  'f. nietzsche': 'Nietzsche',
+  
+  // Freud variants
+  'sigmund freud': 'Freud',
+  's freud': 'Freud',
+  's. freud': 'Freud',
+  
+  // James variants
+  'william james': 'James',
+  'w james': 'James',
+  'w. james': 'James',
+  
+  // Leibniz variants
   'gottfried leibniz': 'Leibniz',
-  'isaac newton': 'Newton',
+  'gottfried wilhelm leibniz': 'Leibniz',
+  'g leibniz': 'Leibniz',
+  'g. leibniz': 'Leibniz',
+  'g.w. leibniz': 'Leibniz',
+  
+  // Le Bon variants
+  'gustave le bon': 'Le Bon',
+  'le bon': 'Le Bon',
+  
+  // Darwin variants
   'charles darwin': 'Darwin',
-  'thorstein veblen': 'Veblen',
-  'vladimir lenin': 'Lenin',
-  'friedrich engels': 'Engels',
-  'baruch spinoza': 'Spinoza',
-  'thomas hobbes': 'Hobbes',
-  'george berkeley': 'Berkeley',
-  'jean-jacques rousseau': 'Rousseau',
-  'john stuart mill': 'Mill',
+  'charles robert darwin': 'Darwin',
+  'c darwin': 'Darwin',
+  'c. darwin': 'Darwin',
+  
+  // Kant variants
+  'immanuel kant': 'Kant',
+  'i kant': 'Kant',
+  'i. kant': 'Kant',
+  
+  // Schopenhauer variants
+  'arthur schopenhauer': 'Schopenhauer',
+  'a schopenhauer': 'Schopenhauer',
+  'a. schopenhauer': 'Schopenhauer',
+  
+  // Jung variants
+  'carl jung': 'Jung',
+  'carl gustav jung': 'Jung',
+  'c jung': 'Jung',
+  'c. jung': 'Jung',
+  'c.g. jung': 'Jung',
+  'cg jung': 'Jung',
+  
+  // Poe variants
   'edgar allan poe': 'Poe',
-  'ludwig von mises': 'Mises',
-  'adam smith': 'Smith',
-  'herbert spencer': 'Spencer',
-  'alfred adler': 'Adler',
-  'charles peirce': 'Peirce',
-  'charles sanders peirce': 'Peirce',
+  'edgar poe': 'Poe',
+  'e.a. poe': 'Poe',
+  'e. a. poe': 'Poe',
+  
+  // Marx variants
+  'karl marx': 'Marx',
+  'k marx': 'Marx',
+  'k. marx': 'Marx',
+  
+  // Keynes variants
+  'john maynard keynes': 'Keynes',
+  'j.m. keynes': 'Keynes',
+  'jm keynes': 'Keynes',
+  
+  // Locke variants
+  'john locke': 'Locke',
+  'j locke': 'Locke',
+  'j. locke': 'Locke',
+  
+  // Newton variants
+  'isaac newton': 'Newton',
+  'i newton': 'Newton',
+  'i. newton': 'Newton',
+  'sir isaac newton': 'Newton',
+  
+  // Hume variants
+  'david hume': 'Hume',
+  'd hume': 'Hume',
+  'd. hume': 'Hume',
+  
+  // Machiavelli variants
+  'niccolo machiavelli': 'Machiavelli',
+  'niccolò machiavelli': 'Machiavelli',
+  'n machiavelli': 'Machiavelli',
+  'n. machiavelli': 'Machiavelli',
+  
+  // Bierce variants
+  'ambrose bierce': 'Bierce',
+  'a bierce': 'Bierce',
+  'a. bierce': 'Bierce',
+  
+  // Poincare variants
   'henri poincare': 'Poincare',
   'henri poincaré': 'Poincare',
+  'h poincare': 'Poincare',
+  'h. poincare': 'Poincare',
+  'h. poincaré': 'Poincare',
+  
+  // Bergson variants
+  'henri bergson': 'Bergson',
+  'h bergson': 'Bergson',
+  'h. bergson': 'Bergson',
+  
+  // London variants
+  'jack london': 'London',
+  'john griffith london': 'London',
+  'j london': 'London',
+  'j. london': 'London',
+  
+  // Adler variants
+  'alfred adler': 'Adler',
+  'a adler': 'Adler',
+  'a. adler': 'Adler',
+  
+  // Engels variants
+  'friedrich engels': 'Engels',
+  'f engels': 'Engels',
+  'f. engels': 'Engels',
+  
+  // Rousseau variants
+  'jean-jacques rousseau': 'Rousseau',
+  'jeanjacques rousseau': 'Rousseau',
+  'j.j. rousseau': 'Rousseau',
+  'jj rousseau': 'Rousseau',
+  'j-j rousseau': 'Rousseau',
+  
+  // Von Mises variants
+  'ludwig von mises': 'Mises',
+  'von mises': 'Mises',
+  'l von mises': 'Mises',
+  'l. von mises': 'Mises',
+  
+  // Veblen variants
+  'thorstein veblen': 'Veblen',
+  'thorstein bunde veblen': 'Veblen',
+  't veblen': 'Veblen',
+  't. veblen': 'Veblen',
+  
+  // Swett variants
+  'sophia swett': 'Swett',
+  's swett': 'Swett',
+  's. swett': 'Swett',
+  
+  // Berkeley variants
+  'george berkeley': 'Berkeley',
+  'bishop berkeley': 'Berkeley',
+  'g berkeley': 'Berkeley',
+  'g. berkeley': 'Berkeley',
+  
+  // Maimonides variants
   'moses maimonides': 'Maimonides',
+  'rabbi moses ben maimon': 'Maimonides',
+  'rambam': 'Maimonides',
+  
+  // Additional common variants
+  'hegel': 'Hegel',
+  'georg hegel': 'Hegel',
+  'g.w.f. hegel': 'Hegel',
+  'gwf hegel': 'Hegel',
+  'descartes': 'Descartes',
+  'rené descartes': 'Descartes',
+  'rene descartes': 'Descartes',
+  'dewey': 'Dewey',
+  'john dewey': 'Dewey',
+  'lenin': 'Lenin',
+  'vladimir lenin': 'Lenin',
+  'vladimir ilyich lenin': 'Lenin',
+  'spinoza': 'Spinoza',
+  'baruch spinoza': 'Spinoza',
+  'benedict spinoza': 'Spinoza',
+  'hobbes': 'Hobbes',
+  'thomas hobbes': 'Hobbes',
+  'mill': 'Mill',
+  'john stuart mill': 'Mill',
+  'j.s. mill': 'Mill',
+  'smith': 'Smith',
+  'adam smith': 'Smith',
+  'spencer': 'Spencer',
+  'herbert spencer': 'Spencer',
+  'peirce': 'Peirce',
+  'charles peirce': 'Peirce',
+  'charles sanders peirce': 'Peirce',
+  'c.s. peirce': 'Peirce',
+  'plato': 'Plato',
+  'aristotle': 'Aristotle',
 };
 
 /**
+ * Strip diacritics/accents from string (é → e, ñ → n, etc.)
+ * Critical for matching "POINCARÉ" to database "Poincare"
+ */
+function stripDiacritics(str: string): string {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+/**
  * Normalize author name to canonical form for database lookup
- * Handles full names, abbreviations, and various formats
+ * ROBUST: Handles ANY variation - strips accents, punctuation, normalizes case, extracts last name
  */
 export function normalizeAuthorName(authorInput: string): string {
   if (!authorInput) return authorInput;
   
-  const normalized = authorInput.toLowerCase().trim();
+  // Step 1: Normalize to lowercase and remove extra whitespace
+  let normalized = authorInput.toLowerCase().trim();
   
-  // Check alias map first
+  // Step 2: Strip diacritics (é → e, ñ → n, etc.) - CRITICAL for "POINCARÉ" → "Poincare"
+  normalized = stripDiacritics(normalized);
+  
+  // Step 3: Strip all punctuation except hyphens (keep "jean-jacques")
+  normalized = normalized.replace(/[.,'";:]/g, '');
+  
+  // Step 4: Normalize multiple spaces to single space
+  normalized = normalized.replace(/\s+/g, ' ');
+  
+  // Step 5: Check alias map (exact match after normalization)
   if (AUTHOR_ALIASES[normalized]) {
     return AUTHOR_ALIASES[normalized];
   }
   
-  // If not in alias map, try to extract last name
-  // Split on spaces/hyphens and take the last significant word
-  const words = normalized.split(/[\s-]+/).filter(w => w.length > 2);
+  // Step 6: Fallback - extract last name intelligently
+  // Split on spaces and filter out common prefixes
+  const words = normalized.split(/\s+/).filter(w => 
+    w.length > 2 && !['von', 'van', 'de', 'del', 'della', 'le', 'la'].includes(w)
+  );
+  
   if (words.length > 0) {
-    // Capitalize first letter of last word
+    // Take the last significant word and capitalize
     const lastName = words[words.length - 1];
     return lastName.charAt(0).toUpperCase() + lastName.slice(1);
   }
   
-  return authorInput; // Return as-is if can't normalize
+  // Step 7: If still nothing, just capitalize the input
+  return authorInput.charAt(0).toUpperCase() + authorInput.slice(1).toLowerCase();
 }
 
 /**
