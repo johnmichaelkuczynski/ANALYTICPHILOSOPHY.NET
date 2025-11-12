@@ -444,6 +444,67 @@ export function normalizeAuthorName(authorInput: string): string {
 }
 
 /**
+ * Map figureId (from EZHW/external apps) to canonical author name
+ * Maintains backward compatibility with figureId-based queries
+ */
+export function mapFigureIdToAuthor(figureId: string): string | undefined {
+  if (!figureId || figureId === 'common') return undefined;
+  
+  const FIGURE_ID_TO_AUTHOR: Record<string, string> = {
+    'jmk': 'J.-M. Kuczynski',
+    'russell': 'Bertrand Russell',
+    'galileo': 'Galileo',
+    'nietzsche': 'Friedrich Nietzsche',
+    'spinoza': 'Baruch Spinoza',
+    'bacon': 'Francis Bacon',
+    'freud': 'Sigmund Freud',
+    'william-james': 'William James',
+    'leibniz': 'Gottfried Wilhelm Leibniz',
+    'aristotle': 'Aristotle',
+    'lebon': 'Gustave Le Bon',
+    'plato': 'Plato',
+    'darwin': 'Charles Darwin',
+    'kant': 'Immanuel Kant',
+    'schopenhauer': 'Arthur Schopenhauer',
+    'bergson': 'Henri Bergson',
+    'jung': 'Carl Jung',
+    'bierce': 'Ambrose Bierce',
+    'marx': 'Karl Marx',
+    'poe': 'Edgar Allan Poe',
+    'machiavelli': 'Niccolò Machiavelli',
+    'keynes': 'John Maynard Keynes',
+    'hume': 'David Hume',
+    'james-allen': 'James Allen',
+    'newton': 'Isaac Newton',
+    'locke': 'John Locke',
+    'london': 'Jack London',
+    'poincare': 'Henri Poincaré',
+    'la-rochefoucauld': 'François de La Rochefoucauld',
+    'dewey': 'John Dewey',
+    'descartes': 'René Descartes',
+    'lenin': 'Vladimir Lenin',
+    'hegel': 'G.W.F. Hegel',
+    'hobbes': 'Thomas Hobbes',
+    'berkeley': 'George Berkeley',
+    'veblen': 'Thorstein Veblen',
+    'rousseau': 'Jean-Jacques Rousseau',
+    'mill': 'John Stuart Mill',
+    'engels': 'Friedrich Engels',
+    'mises': 'Ludwig von Mises',
+    'smith': 'Adam Smith',
+    'spencer': 'Herbert Spencer',
+    'marden': 'Orison Swett Marden',
+    'adler': 'Alfred Adler',
+    'peirce': 'Charles Sanders Peirce',
+    'maimonides': 'Moses Maimonides',
+    'reich': 'Wilhelm Reich',
+    'orwell': 'George Orwell',
+  };
+  
+  return FIGURE_ID_TO_AUTHOR[figureId.toLowerCase()];
+}
+
+/**
  * Detect author name from query text using database lookup
  * Returns author name if detected, undefined otherwise
  */

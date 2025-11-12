@@ -1467,12 +1467,22 @@ Be precise, formal, and show your work. This is mathematics with philosophy.`;
       
       // Audit log
       const appId = (req as any).zhiAuth?.appId || "unknown";
-      console.log(`[Knowledge Provider] ${appId} querying unified knowledge base: "${query}" (results: ${maxResults}, author: ${author || 'all'})`);
+      console.log(`[Knowledge Provider] ${appId} querying unified knowledge base: "${query}" (figureId: ${figureId}, author: ${author || 'none'}, results: ${maxResults})`);
       
-      // CRITICAL FIX: Normalize author parameter + auto-detect from query text
+      // CRITICAL FIX: Map figureId → author for backward compatibility with EZHW
       let detectedAuthor = author;
       
-      // Step 1: Normalize explicit author parameter (handles "john-michael kuczynski" → "Kuczynski")
+      // Step 1: Map figureId to author name if no explicit author provided
+      if (!detectedAuthor && figureId && figureId !== 'common') {
+        const { mapFigureIdToAuthor } = await import("./vector-search");
+        const mappedAuthor = mapFigureIdToAuthor(figureId);
+        if (mappedAuthor) {
+          console.log(`[Knowledge Provider] 🔄 Mapped figureId "${figureId}" → author "${mappedAuthor}"`);
+          detectedAuthor = mappedAuthor;
+        }
+      }
+      
+      // Step 2: Normalize explicit author parameter (handles "john-michael kuczynski" → "Kuczynski")
       if (detectedAuthor) {
         const { normalizeAuthorName } = await import("./vector-search");
         const normalized = normalizeAuthorName(detectedAuthor);
@@ -1482,7 +1492,7 @@ Be precise, formal, and show your work. This is mathematics with philosophy.`;
         }
       }
       
-      // Step 2: Auto-detect from query text if still no author
+      // Step 3: Auto-detect from query text if still no author
       if (!detectedAuthor && query) {
         const { detectAuthorFromQuery } = await import("./vector-search");
         detectedAuthor = await detectAuthorFromQuery(query);
