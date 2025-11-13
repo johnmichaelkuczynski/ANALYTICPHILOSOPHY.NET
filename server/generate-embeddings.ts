@@ -50,6 +50,7 @@ const batchToFigure: Record<string, string> = {
   "orwell": "common",
   "dostoevsky_crime_punishment": "common",
   "tolstoy_war_and_peace": "common",
+  "goldman_anarchism": "common",
 };
 
 // REQUIRED: Author attribution mapping for every chunk
@@ -112,6 +113,7 @@ const batchToAuthor: Record<string, string> = {
   "orwell": "George Orwell",
   "dostoevsky_crime_punishment": "Fyodor Dostoevsky",
   "tolstoy_war_and_peace": "Leo Tolstoy",
+  "goldman_anarchism": "Emma Goldman",
   "common": "Various Authors",
 };
 
@@ -432,6 +434,10 @@ const figuresPapers = {
   "tolstoy_war_and_peace": [
     // TOLSTOY: War and Peace - November 2025
     { file: "data/tolstoy/war_and_peace.txt", title: "War and Peace by Leo Tolstoy" },
+  ],
+  "goldman_anarchism": [
+    // GOLDMAN: Anarchism and Other Essays - November 2025
+    { file: "data/goldman/anarchism_and_other_essays.txt", title: "Anarchism and Other Essays by Emma Goldman" },
   ],
   "common": [
     // Common Fund of Knowledge - shared knowledge base accessible to ALL philosophers
