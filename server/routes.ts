@@ -1333,10 +1333,25 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
         const trimmed = sentence.trim();
         // Accept all sentences between minLength and 500 chars
         if (trimmed.length >= minLength && trimmed.length <= 500) {
-          // Basic quality filter: must have at least 5 words
+          // Quality filters to reject malformed sentences
           const wordCount = trimmed.split(/\s+/).length;
           
-          if (wordCount >= 5) {
+          // Reject if contains formatting artifacts
+          const hasFormattingArtifacts = 
+            trimmed.includes('(<< back)') ||
+            trimmed.includes('(<<back)') ||
+            trimmed.includes('[<< back]') ||
+            trimmed.includes('*_') ||
+            trimmed.includes('_*') ||
+            /\[\d+\]/.test(trimmed) || // Reject [1], [2] style footnotes
+            /\(\d+\)/.test(trimmed.slice(-10)); // Reject ending with (1), (2) style footnotes
+          
+          // Reject if too many special characters (likely formatting)
+          const specialCharCount = (trimmed.match(/[<>{}[\]|\\]/g) || []).length;
+          const hasExcessiveSpecialChars = specialCharCount > 3;
+          
+          // Require at least 5 words and pass quality filters
+          if (wordCount >= 5 && !hasFormattingArtifacts && !hasExcessiveSpecialChars) {
             quotes.push({
               quote: trimmed,
               source: passage.paperTitle,
