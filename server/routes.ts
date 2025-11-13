@@ -2371,6 +2371,9 @@ TEMPLATE SELECTION GUIDE:
 - Cannot process experience → The Emperor's Club, Shutter Island
 - House of cards → Enron, Madoff, FTX, When Genius Failed (LTCM)
 - Expert obsolescence → When Genius Failed + The Obsolete Man combination
+- Mental captivity/false reality → "The Menagerie" (Star Trek TOS) - perfect illusion masks prison, controllers offer fantasy life, comfortable delusion vs harsh reality
+- Inverted values/moral opposite → "Mirror, Mirror" (Star Trek TOS) - trapped in nightmare version of familiar world, must pretend to be evil self, system rewards opposite values
+- Enhancement corrupts → "Where No Man Has Gone Before" (Star Trek TOS) - intelligence/power separates from humanity, former peer becomes contemptuous god, must be destroyed by those who loved them
 
 GOLD STANDARD EXAMPLE - "Department of Epistemic Humility":
 Author claimed bureaucrats use philosophical skepticism as excuse for inaction. Nightmare: World where epistemic humility = official law, doctor prosecuted for claiming knowledge, tribunal judges her statistically inferior, patients die awaiting certainty committees, system's logic perfect within framework, protagonist destroyed.
@@ -2494,6 +2497,9 @@ TEMPLATE SELECTION GUIDE:
 - Cannot process experience → The Emperor's Club, Shutter Island
 - House of cards → Enron, Madoff, FTX, When Genius Failed (LTCM)
 - Expert obsolescence → When Genius Failed + The Obsolete Man combination
+- Mental captivity/false reality → "The Menagerie" (Star Trek TOS) - perfect illusion masks prison, controllers offer fantasy life, comfortable delusion vs harsh reality
+- Inverted values/moral opposite → "Mirror, Mirror" (Star Trek TOS) - trapped in nightmare version of familiar world, must pretend to be evil self, system rewards opposite values
+- Enhancement corrupts → "Where No Man Has Gone Before" (Star Trek TOS) - intelligence/power separates from humanity, former peer becomes contemptuous god, must be destroyed by those who loved them
 
 CRITICAL REQUIREMENTS:
 1. NEVER use story titles - just begin the narrative
