@@ -27,8 +27,14 @@ export function NightmareConversionSection({ onRegisterInput, onRegisterOutputs 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [generatedNightmare, setGeneratedNightmare] = useState('');
   const [extractedAnxiety, setExtractedAnxiety] = useState('');
+  const [templateSelection, setTemplateSelection] = useState('');
   const [wordCount, setWordCount] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [customInstructions, setCustomInstructions] = useState('');
+  const [isRewriting, setIsRewriting] = useState(false);
+  const [rewrittenNightmare, setRewrittenNightmare] = useState('');
+  const [rewrittenTemplate, setRewrittenTemplate] = useState('');
+  const [rewrittenWordCount, setRewrittenWordCount] = useState(0);
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -120,8 +126,12 @@ export function NightmareConversionSection({ onRegisterInput, onRegisterOutputs 
       }
 
       setExtractedAnxiety(data.anxiety);
+      setTemplateSelection(data.templateSelection || '');
       setGeneratedNightmare(data.nightmare);
       setWordCount(data.wordCount);
+      setRewrittenNightmare('');
+      setRewrittenTemplate('');
+      setCustomInstructions('');
 
       toast({
         title: "Nightmare generated",
@@ -145,10 +155,79 @@ export function NightmareConversionSection({ onRegisterInput, onRegisterOutputs 
     setSelectedFile(null);
     setGeneratedNightmare('');
     setExtractedAnxiety('');
+    setTemplateSelection('');
     setWordCount(0);
     setGenderPreference('');
+    setCustomInstructions('');
+    setRewrittenNightmare('');
+    setRewrittenTemplate('');
+    setRewrittenWordCount(0);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRewrite = async () => {
+    if (!customInstructions.trim()) {
+      toast({
+        title: "Missing instructions",
+        description: "Please provide custom instructions for the rewrite.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!extractedAnxiety) {
+      toast({
+        title: "No story to rewrite",
+        description: "Please generate a story first before rewriting.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsRewriting(true);
+    setRewrittenNightmare('');
+    setRewrittenTemplate('');
+
+    try {
+      const response = await fetch('/api/nightmare-conversion/rewrite', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          anxiety: extractedAnxiety,
+          originalStory: generatedNightmare,
+          customInstructions: customInstructions,
+          genderPreference: genderPreference || undefined,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      setRewrittenTemplate(data.templateSelection || '');
+      setRewrittenNightmare(data.nightmare);
+      setRewrittenWordCount(data.wordCount);
+
+      toast({
+        title: "Story rewritten!",
+        description: `Generated ${data.wordCount} words with custom instructions.`,
+      });
+
+    } catch (error) {
+      console.error('Rewrite error:', error);
+      toast({
+        title: "Rewrite failed",
+        description: error instanceof Error ? error.message : "Failed to rewrite story",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRewriting(false);
     }
   };
 
@@ -295,6 +374,19 @@ export function NightmareConversionSection({ onRegisterInput, onRegisterOutputs 
         </Card>
       )}
 
+      {templateSelection && (
+        <Card className="border-purple-200 dark:border-purple-800">
+          <CardHeader>
+            <CardTitle className="text-lg">Template Selection</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground" data-testid="text-template-selection">
+              {templateSelection}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {generatedNightmare && (
         <Card className="border-purple-200 dark:border-purple-800">
           <CardHeader>
@@ -345,6 +437,77 @@ export function NightmareConversionSection({ onRegisterInput, onRegisterOutputs 
             >
               {generatedNightmare}
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {generatedNightmare && (
+        <Card className="border-purple-200 dark:border-purple-800">
+          <CardHeader>
+            <CardTitle className="text-lg">Rewrite Story with Custom Instructions</CardTitle>
+            <CardDescription>
+              Provide custom instructions to rewrite the nightmare story
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="custom-instructions" className="text-base font-medium">
+                Custom Instructions
+              </Label>
+              <Textarea
+                id="custom-instructions"
+                value={customInstructions}
+                onChange={(e) => setCustomInstructions(e.target.value)}
+                placeholder="Example: Make it more like Poe's Tell-Tale Heart with paranoid first-person narration... Add more documentary details with specific dates... Make the ending more brutal..."
+                className="min-h-[100px] mt-2"
+                data-testid="textarea-custom-instructions"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Specify how you want the story rewritten (template style, tone, details, etc.)
+              </p>
+            </div>
+
+            <Button
+              onClick={handleRewrite}
+              disabled={isRewriting || !customInstructions.trim()}
+              className="w-full bg-gradient-to-r from-purple-600 to-red-600 hover:from-purple-700 hover:to-red-700"
+              data-testid="button-rewrite-nightmare"
+            >
+              {isRewriting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Rewriting Story...
+                </>
+              ) : (
+                "Rewrite Story"
+              )}
+            </Button>
+
+            {rewrittenNightmare && (
+              <div className="space-y-4 mt-6 pt-6 border-t">
+                {rewrittenTemplate && (
+                  <div className="bg-purple-50 dark:bg-purple-950/20 p-4 rounded-lg">
+                    <h4 className="text-sm font-semibold mb-2">Updated Template:</h4>
+                    <p className="text-sm text-muted-foreground" data-testid="text-rewritten-template">
+                      {rewrittenTemplate}
+                    </p>
+                  </div>
+                )}
+                
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-semibold">Rewritten Story</h4>
+                    <span className="text-sm text-muted-foreground">{rewrittenWordCount} words</span>
+                  </div>
+                  <div 
+                    className="prose dark:prose-invert max-w-none whitespace-pre-wrap text-sm bg-gradient-to-br from-purple-50/50 to-red-50/50 dark:from-purple-950/10 dark:to-red-950/10 p-4 rounded-lg"
+                    data-testid="text-rewritten-nightmare"
+                  >
+                    {rewrittenNightmare}
+                  </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

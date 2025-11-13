@@ -2330,7 +2330,7 @@ Core anxiety:`;
 
       console.log(`[Nightmare Conversion] Core anxiety: ${coreAnxiety}`);
 
-      // STEP 2: Generate nightmare story using template
+      // STEP 2: Select template and generate nightmare story
       const nightmarePrompt = `You are a master storyteller with deep knowledge of narrative templates from literature, film, and true crime.
 
 CORE ANXIETY: ${coreAnxiety}
@@ -2340,7 +2340,9 @@ ${inputText}
 
 ${genderPreference ? `GENDER PREFERENCE: ${genderPreference}-oriented story\n` : ''}
 
-YOUR TASK: Write a nightmare story (800-1200 words) where this fear MATERIALIZES COMPLETELY and the protagonist is DESTROYED/DEFEATED.
+YOUR TASK: 
+1. FIRST, select the appropriate template(s) and explain why
+2. THEN, write a nightmare story (800-1200 words) where this fear MATERIALIZES COMPLETELY and the protagonist is DESTROYED/DEFEATED
 
 TEMPLATE SELECTION GUIDE:
 - Paranoid exposure → "The Tell-Tale Heart" (Poe), Kafka, "Nightmare at 20,000 Feet"
@@ -2378,7 +2380,17 @@ TONE EXAMPLES:
 
 ❌ WRONG (Villainous): "Park smiled cruelly, knowing she was destroying a good doctor's career out of pure bureaucratic spite."
 
-Write the complete nightmare story NOW, beginning directly with the narrative:`;
+OUTPUT FORMAT:
+First line: TEMPLATE: [name of template(s)] - [brief explanation why this template fits]
+Second line: ---
+Then: The complete nightmare story, beginning directly with the narrative (no title)
+
+Example:
+TEMPLATE: Bartleby + The Obsolete Man - Philosophy of passive resistance becoming institutional law matches Bartleby's viral inaction combined with Twilight Zone's tribunal structure where individual judged for violating system doctrine
+---
+Dr. Sarah Chen received the summons on a Tuesday...
+
+Now output your template selection and story:`;
 
       const storyResponse = await anthropic.messages.create({
         model: "claude-sonnet-4-20250514",
@@ -2387,16 +2399,32 @@ Write the complete nightmare story NOW, beginning directly with the narrative:`;
         messages: [{ role: "user", content: nightmarePrompt }]
       });
 
-      const nightmare = storyResponse.content[0].type === 'text' 
+      const fullResponse = storyResponse.content[0].type === 'text' 
         ? storyResponse.content[0].text.trim() 
         : '';
 
+      // Parse template selection and story
+      const parts = fullResponse.split('---');
+      let templateSelection = '';
+      let nightmare = '';
+      
+      if (parts.length >= 2) {
+        templateSelection = parts[0].replace('TEMPLATE:', '').trim();
+        nightmare = parts.slice(1).join('---').trim();
+      } else {
+        // Fallback if format not followed
+        nightmare = fullResponse;
+        templateSelection = 'Template selection not provided';
+      }
+
       const wordCount = nightmare.split(/\s+/).length;
+      console.log(`[Nightmare Conversion] Template: ${templateSelection}`);
       console.log(`[Nightmare Conversion] Generated ${wordCount} words`);
 
       res.json({
         success: true,
         anxiety: coreAnxiety,
+        templateSelection: templateSelection,
         nightmare: nightmare,
         wordCount: wordCount
       });
@@ -2406,6 +2434,108 @@ Write the complete nightmare story NOW, beginning directly with the narrative:`;
       res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : "Failed to generate nightmare"
+      });
+    }
+  });
+
+  // Nightmare Conversion - Rewrite with custom instructions
+  app.post('/api/nightmare-conversion/rewrite', upload.single('file'), async (req, res) => {
+    try {
+      const { anxiety, originalStory, customInstructions, genderPreference } = req.body;
+
+      if (!anxiety || !customInstructions) {
+        return res.status(400).json({
+          success: false,
+          error: "Please provide anxiety and custom instructions"
+        });
+      }
+
+      console.log(`[Nightmare Rewrite] Rewriting with custom instructions: ${customInstructions.substring(0, 100)}...`);
+
+      const rewritePrompt = `You are a master storyteller with deep knowledge of narrative templates from literature, film, and true crime.
+
+CORE ANXIETY: ${anxiety}
+
+${genderPreference ? `GENDER PREFERENCE: ${genderPreference}-oriented story\n` : ''}
+
+${originalStory ? `PREVIOUS VERSION:\n${originalStory}\n\n` : ''}
+
+CUSTOM INSTRUCTIONS FROM USER:
+${customInstructions}
+
+YOUR TASK:
+1. FIRST, select the appropriate template(s) and explain why (considering the custom instructions)
+2. THEN, write a nightmare story (800-1200 words) where this fear MATERIALIZES COMPLETELY and the protagonist is DESTROYED/DEFEATED
+
+TEMPLATE SELECTION GUIDE:
+- Paranoid exposure → "The Tell-Tale Heart" (Poe), Kafka, "Nightmare at 20,000 Feet"
+- Double life collapse → Ted Bundy template, Jekyll/Hyde, Gone Girl
+- System crushing individual → Kafka bureaucratic, 1984, "The Obsolete Man" (Twilight Zone), Bartleby
+- Narcissistic denial fails → Fatal Vision/Jeffrey MacDonald, Amadeus (Salieri)
+- Trusted insider betrayal → Aldrich Ames, "The Conversation"
+- Idealism destroyed → Into the Wild, "Young Goodman Brown"
+- Cannot process experience → The Emperor's Club, Shutter Island
+- House of cards → Enron, Madoff, FTX, When Genius Failed (LTCM)
+- Expert obsolescence → When Genius Failed + The Obsolete Man combination
+
+CRITICAL REQUIREMENTS:
+1. NEVER use story titles - just begin the narrative
+2. DEADPAN/MATTER-OF-FACT tone - Kafka's bureaucratic horror, Melville's understated absurdity, documentary precision
+3. NOT melodramatic or sentimental - avoid "blood froze," "ancient wisdom," "what was being lost forever"
+4. Institutional logic must be REASONABLE within framework - system isn't evil, it's following its own perfect logic
+5. Endings must be BRUTAL not elegiac - "The protocol was followed. No one was to blame." NOT "and what was lost could never be recovered"
+6. Use dates, numbers, specifics when appropriate (documentary style)
+7. Single flowing narrative (NO separate sections, no "Part 1/Part 2")
+8. The FEAR must WIN completely - protagonist destroyed/defeated, system continues unchanged
+
+OUTPUT FORMAT:
+First line: TEMPLATE: [name of template(s)] - [brief explanation why this template fits]
+Second line: ---
+Then: The complete nightmare story, beginning directly with the narrative (no title)
+
+Now output your template selection and rewritten story:`;
+
+      const storyResponse = await anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 3000,
+        temperature: 0.7,
+        messages: [{ role: "user", content: rewritePrompt }]
+      });
+
+      const fullResponse = storyResponse.content[0].type === 'text' 
+        ? storyResponse.content[0].text.trim() 
+        : '';
+
+      // Parse template selection and story
+      const parts = fullResponse.split('---');
+      let templateSelection = '';
+      let nightmare = '';
+      
+      if (parts.length >= 2) {
+        templateSelection = parts[0].replace('TEMPLATE:', '').trim();
+        nightmare = parts.slice(1).join('---').trim();
+      } else {
+        nightmare = fullResponse;
+        templateSelection = 'Template selection not provided';
+      }
+
+      const wordCount = nightmare.split(/\s+/).length;
+      console.log(`[Nightmare Rewrite] Template: ${templateSelection}`);
+      console.log(`[Nightmare Rewrite] Generated ${wordCount} words`);
+
+      res.json({
+        success: true,
+        anxiety: anxiety,
+        templateSelection: templateSelection,
+        nightmare: nightmare,
+        wordCount: wordCount
+      });
+
+    } catch (error) {
+      console.error("[Nightmare Rewrite] Error:", error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to rewrite nightmare"
       });
     }
   });
