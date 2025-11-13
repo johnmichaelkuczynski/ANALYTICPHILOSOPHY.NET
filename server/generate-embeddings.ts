@@ -33,6 +33,7 @@ const batchToFigure: Record<string, string> = {
   "jmk_college_papers": "common",
   "jmk_logic_mathematics": "common",
   "luther_batch1": "common",
+  "whewell_batch1": "common",
   "veblen_batch1": "common",
   "veblen_batch2": "common",
   "veblen_batch3": "common",
@@ -64,6 +65,7 @@ const batchToAuthor: Record<string, string> = {
   "jmk_logic_mathematics": "J.-M. Kuczynski",
   "jmk": "J.-M. Kuczynski",
   "luther_batch1": "Martin Luther",
+  "whewell_batch1": "William Whewell",
   "veblen_batch1": "Thorstein Veblen",
   "veblen_batch2": "Thorstein Veblen",
   "veblen_batch3": "Thorstein Veblen",
@@ -235,6 +237,10 @@ const figuresPapers = {
   "luther_batch1": [
     // BATCH 12: Martin Luther - Reformation Theology - November 2025
     { file: "luther_works_volume1.txt", title: "Works of Martin Luther with Introductions and Notes (Volume I)" },
+  ],
+  "whewell_batch1": [
+    // BATCH 14: William Whewell - History and Philosophy of Science - November 2025
+    { file: "whewell_history_inductive_sciences.txt", title: "History of the Inductive Sciences, from the Earliest to the Present Time" },
   ],
   "jmk": [
     // LEGACY: For backward compatibility - use batch approach above
