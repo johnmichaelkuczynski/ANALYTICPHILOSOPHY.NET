@@ -30,6 +30,7 @@ const batchToFigure: Record<string, string> = {
   "jmk_mind_meaning": "common",
   "jmk_epistem_dialogues": "common",
   "jmk_legal_intention_epistem": "common",
+  "luther_batch1": "common",
   "veblen_batch1": "common",
   "veblen_batch2": "common",
   "veblen_batch3": "common",
@@ -58,6 +59,7 @@ const batchToAuthor: Record<string, string> = {
   "jmk_epistem_dialogues": "J.-M. Kuczynski",
   "jmk_legal_intention_epistem": "J.-M. Kuczynski",
   "jmk": "J.-M. Kuczynski",
+  "luther_batch1": "Martin Luther",
   "veblen_batch1": "Thorstein Veblen",
   "veblen_batch2": "Thorstein Veblen",
   "veblen_batch3": "Thorstein Veblen",
@@ -217,6 +219,10 @@ const figuresPapers = {
     { file: "kuczynski_what_is_intention.txt", title: "What Is an Intention?" },
     { file: "kuczynski_theoretical_knowledge_inductive.txt", title: "Theoretical Knowledge and Inductive Inference (2024)" },
     { file: "kuczynski_semantics_philosophy_shorts.txt", title: "Semantics (Philosophy Shorts Volume 8)" },
+  ],
+  "luther_batch1": [
+    // BATCH 12: Martin Luther - Reformation Theology - November 2025
+    { file: "luther_works_volume1.txt", title: "Works of Martin Luther with Introductions and Notes (Volume I)" },
   ],
   "jmk": [
     // LEGACY: For backward compatibility - use batch approach above
