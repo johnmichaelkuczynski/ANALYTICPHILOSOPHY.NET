@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 import { db } from "./db";
 import { paperChunks } from "@shared/schema";
 import OpenAI from "openai";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -13,125 +13,109 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-function chunkText(text: string, targetWordsPerChunk: number = 400): string[] {
-  const sentences = text
-    .split(/(?<=[.!?])\s+/)
-    .map(s => s.trim())
-    .filter(s => s.length > 0);
-  
-  const chunks: string[] = [];
-  let currentChunk = "";
-  let wordCount = 0;
-  
-  for (const sentence of sentences) {
-    const sentenceWords = sentence.split(/\s+/).length;
-    
-    if (sentenceWords > targetWordsPerChunk) {
-      if (currentChunk.trim()) {
-        chunks.push(currentChunk.trim());
-        currentChunk = "";
-        wordCount = 0;
-      }
-      
-      const words = sentence.split(/\s+/);
-      for (let i = 0; i < words.length; i += targetWordsPerChunk) {
-        const chunk = words.slice(i, i + targetWordsPerChunk).join(" ");
-        chunks.push(chunk);
-      }
-      continue;
-    }
-    
-    if (wordCount + sentenceWords > targetWordsPerChunk && currentChunk.length > 0) {
-      chunks.push(currentChunk.trim());
-      currentChunk = sentence;
-      wordCount = sentenceWords;
-    } else {
-      currentChunk += (currentChunk ? " " : "") + sentence;
-      wordCount += sentenceWords;
-    }
-  }
-  
-  if (currentChunk.trim()) {
-    chunks.push(currentChunk.trim());
-  }
-  
-  return chunks.filter(c => c.split(/\s+/).length > 20);
-}
+async function generatePoincareEmbeddings() {
+  console.log('🔬 Starting Henri Poincaré embedding generation...\n');
 
-async function generateEmbedding(text: string): Promise<number[] | null> {
-  try {
-    const response = await openai.embeddings.create({
-      model: "text-embedding-ada-002",
-      input: text,
-    });
-    
-    return response.data[0].embedding;
-  } catch (error: any) {
-    const errorMessage = error?.error?.message || error?.message || '';
-    if (error?.status === 400 && errorMessage.includes('maximum context length')) {
-      const wordCount = text.split(/\s+/).length;
-      console.log(` ⚠️  Chunk too large (~${wordCount} words), skipping`);
-      return null;
-    }
-    throw error;
-  }
-}
+  // Delete existing Poincaré entries from Common Fund
+  console.log('🗑️  Clearing existing Poincaré embeddings from Common Fund...');
+  await db.delete(paperChunks).where(
+    and(
+      eq(paperChunks.figureId, 'common'),
+      eq(paperChunks.author, 'Henri Poincaré')
+    )
+  );
+  console.log('✓ Cleared\n');
 
-async function main() {
-  console.log("🔬 Generating Henri Poincaré embeddings...\n");
-  
-  // Delete existing Poincaré embeddings only
-  console.log("🗑️  Clearing existing Poincaré embeddings...");
-  await db.delete(paperChunks).where(eq(paperChunks.figureId, 'poincare'));
-  console.log("✓ Cleared\n");
-  
+  const works = [
+    {
+      file: 'poincare_physics.txt',
+      title: 'The New Physics and Its Evolution'
+    },
+    {
+      file: 'poincare_science_hypothesis.txt',
+      title: 'Science and Hypothesis'
+    }
+  ];
+
+  let totalChunks = 0;
   const startTime = Date.now();
-  
-  try {
-    console.log(`📄 Processing: The New Physics and Its Evolution`);
+
+  for (const work of works) {
+    console.log(`📄 Processing: ${work.title}`);
     
-    const content = readFileSync(join(__dirname, "poincare_physics.txt"), "utf-8");
-    const chunks = chunkText(content, 400);
-    
-    console.log(`   Found ${chunks.length} chunks`);
-    
-    for (let i = 0; i < chunks.length; i++) {
-      const chunk = chunks[i];
-      
-      process.stdout.write(`   Embedding chunk ${i + 1}/${chunks.length}...`);
-      
-      const embedding = await generateEmbedding(chunk);
-      
-      if (embedding === null) {
-        process.stdout.write(` skipped\n`);
-        continue;
+    const filePath = join(__dirname, work.file);
+    const content = readFileSync(filePath, 'utf-8');
+
+    // Split into chunks of approximately 250 words
+    const words = content.split(/\s+/);
+    const chunks: string[] = [];
+    const chunkSize = 250;
+
+    for (let i = 0; i < words.length; i += chunkSize) {
+      const chunk = words.slice(i, i + chunkSize).join(' ');
+      if (chunk.trim().length > 50) { // Only include substantial chunks
+        chunks.push(chunk.trim());
       }
-      
-      await db.insert(paperChunks).values({
-        figureId: "poincare",
-        paperTitle: "The New Physics and Its Evolution",
-        content: chunk,
-        embedding: embedding as any,
-        chunkIndex: i,
-      });
-      
-      process.stdout.write(` ✓\n`);
-      
-      // Rate limiting
-      await new Promise(resolve => setTimeout(resolve, 100));
     }
-    
-    const duration = ((Date.now() - startTime) / 1000 / 60).toFixed(1);
-    console.log(`\n🎉 Done! Generated ${chunks.length} Poincaré embeddings in ${duration} minutes.`);
-  } catch (error) {
-    console.error(`❌ Error:`, error);
-    process.exit(1);
+
+    console.log(`   Created ${chunks.length} chunks`);
+
+    // Process in batches of 16
+    const batchSize = 16;
+    let processedCount = 0;
+
+    for (let i = 0; i < chunks.length; i += batchSize) {
+      const batch = chunks.slice(i, i + batchSize);
+      
+      try {
+        // Generate embeddings for the batch
+        const embeddingResponse = await openai.embeddings.create({
+          model: 'text-embedding-ada-002',
+          input: batch,
+        });
+
+        // Store each chunk with its embedding
+        for (let j = 0; j < batch.length; j++) {
+          const embedding = embeddingResponse.data[j].embedding;
+          
+          await db.insert(paperChunks).values({
+            figureId: 'common',
+            content: batch[j],
+            embedding: embedding as any,
+            author: 'Henri Poincaré',
+            paperTitle: work.title,
+            chunkIndex: i + j,
+          });
+
+          processedCount++;
+        }
+
+        process.stdout.write(`   Processed ${processedCount}/${chunks.length} chunks\r`);
+        
+        // Small delay to respect rate limits
+        if (i + batchSize < chunks.length) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      } catch (error) {
+        console.error(`\n   ❌ Error processing batch ${i / batchSize + 1}:`, error);
+        throw error;
+      }
+    }
+
+    console.log(`\n   ✓ Successfully embedded ${processedCount} chunks from "${work.title}"\n`);
+    totalChunks += processedCount;
   }
-  
-  process.exit(0);
+
+  const duration = ((Date.now() - startTime) / 1000 / 60).toFixed(1);
+  console.log(`\n🎉 Done! Generated ${totalChunks} Poincaré embeddings across ${works.length} works in ${duration} minutes.`);
 }
 
-main().catch((error) => {
-  console.error("Fatal error:", error);
-  process.exit(1);
-});
+generatePoincareEmbeddings()
+  .then(() => {
+    console.log('✨ Henri Poincaré embedding generation complete!');
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error('❌ Fatal error generating Poincaré embeddings:', error);
+    process.exit(1);
+  });
