@@ -1992,6 +1992,202 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
     }
   });
 
+  // ========================================
+  // THESIS TO WORLD: Fiction Writing Function
+  // ========================================
+  
+  app.post("/api/thesis-to-world", upload.single('file'), async (req, res) => {
+    try {
+      let inputText = '';
+      const { customization } = req.body;
+
+      // Get text from file upload or direct input
+      if (req.file) {
+        const fileExtension = req.file.originalname.split('.').pop()?.toLowerCase();
+        
+        if (fileExtension === 'txt') {
+          inputText = req.file.buffer.toString('utf-8');
+        } else if (fileExtension === 'pdf') {
+          const pdfData = await pdfParse(req.file.buffer);
+          inputText = pdfData.text;
+        } else if (fileExtension === 'docx' || fileExtension === 'doc') {
+          const result = await mammoth.extractRawText({ buffer: req.file.buffer });
+          inputText = result.value;
+        } else {
+          return res.status(400).json({
+            success: false,
+            error: "Unsupported file type. Please upload .txt, .pdf, .doc, or .docx"
+          });
+        }
+      } else if (req.body.text) {
+        inputText = req.body.text;
+      } else {
+        return res.status(400).json({
+          success: false,
+          error: "No text or file provided"
+        });
+      }
+
+      if (!inputText.trim()) {
+        return res.status(400).json({
+          success: false,
+          error: "Input text is empty"
+        });
+      }
+
+      console.log(`[Thesis to World] Processing ${inputText.length} characters of input text`);
+
+      // STEP 1: Extract thesis about human nature
+      const extractionPrompt = `You are analyzing non-fiction text to extract a thesis about human nature or human behavior.
+
+INPUT TEXT:
+${inputText}
+
+YOUR TASK:
+1. Identify the core thesis or claim about how humans are/behave
+2. Return ONLY a single-sentence thesis statement
+3. If no clear anthropological claim exists, return "NO_THESIS"
+
+REQUIREMENTS:
+- One sentence maximum
+- Focus on universal claims about human nature/behavior
+- Be specific and concrete
+- Examples of valid theses:
+  * "People are fundamentally selfish and prioritize personal gain over collective good"
+  * "Humans always betray trust when given sufficient opportunity and incentive"
+  * "People judge others primarily by first impressions that rarely change"
+
+RESPONSE FORMAT:
+Return only the thesis sentence or "NO_THESIS"`;
+
+      const extractionResponse = await anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 200,
+        temperature: 0.3,
+        messages: [{ role: "user", content: extractionPrompt }]
+      });
+
+      const thesisText = extractionResponse.content[0].type === 'text' 
+        ? extractionResponse.content[0].text.trim() 
+        : '';
+
+      if (thesisText === 'NO_THESIS' || !thesisText) {
+        return res.json({
+          success: false,
+          error: "Could not identify a clear thesis about human nature in the provided text. Please provide text that makes a claim about how people are or behave."
+        });
+      }
+
+      console.log(`[Thesis to World] Extracted thesis: "${thesisText}"`);
+
+      // STEP 2: Generate documentary-style fiction
+      const customizationInstruction = customization?.trim() 
+        ? `\n\nUSER CUSTOMIZATION REQUEST: ${customization}\nIntegrate this naturally into the scenario. If it conflicts with the thesis, note the incompatibility.` 
+        : '';
+
+      const fictionPrompt = `You are writing matter-of-fact, documentary-style fiction that depicts a world where a specific thesis about human nature is demonstrably true.
+
+THESIS TO DEMONSTRATE:
+"${thesisText}"
+${customizationInstruction}
+
+YOUR TASK:
+Write a 300-500 word piece in documentary/journalistic non-fiction style (NOT creative fiction) that depicts a world/scenario where this thesis is obviously, concretely true.
+
+CRITICAL STYLE REQUIREMENTS:
+- Write like journalism or documentary reporting - matter-of-fact, observational tone
+- NO melodrama, flowery language, or typical creative fiction devices
+- NO character thoughts/feelings - only observable actions and patterns
+- Use concrete, specific details and examples
+- Present as factual documentation of how things are
+- Structure: Opening context (1 para) → Three specific examples/patterns (3 paras) → Closing observation (1 para)
+
+BANNED PHRASES/APPROACHES:
+- Avoid: "In a world where...", "One day...", dramatic reveals
+- Avoid: Emotional language, poetic descriptions, suspenseful pacing
+- Instead: Direct observation, data-like specificity, reportorial distance
+
+WORD COUNT: Target 420 words (±60 acceptable range: 300-500 words)
+
+After writing, verify:
+1. Word count is 300-500 words
+2. Tone is documentary/journalistic, not creative fiction
+3. Thesis is demonstrated through concrete examples
+4. No melodrama or flowery language
+
+Write the fiction now:`;
+
+      const fictionResponse = await anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1500,
+        temperature: 0.7,
+        messages: [{ role: "user", content: fictionPrompt }]
+      });
+
+      const fiction = fictionResponse.content[0].type === 'text' 
+        ? fictionResponse.content[0].text.trim() 
+        : '';
+
+      if (!fiction) {
+        throw new Error("Failed to generate fiction");
+      }
+
+      // Verify word count
+      const wordCount = fiction.split(/\s+/).length;
+      console.log(`[Thesis to World] Generated ${wordCount} words of fiction`);
+
+      // If significantly out of range, request revision
+      if (wordCount < 250 || wordCount > 550) {
+        console.log(`[Thesis to World] Word count ${wordCount} out of range, requesting revision...`);
+        
+        const revisionPrompt = `Your previous response was ${wordCount} words. Please revise to be exactly 300-500 words while maintaining the documentary/journalistic style and demonstrating the thesis: "${thesisText}"
+
+Return ONLY the revised fiction, no commentary.`;
+
+        const revisionResponse = await anthropic.messages.create({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1500,
+          temperature: 0.7,
+          messages: [
+            { role: "user", content: fictionPrompt },
+            { role: "assistant", content: fiction },
+            { role: "user", content: revisionPrompt }
+          ]
+        });
+
+        const revisedFiction = revisionResponse.content[0].type === 'text' 
+          ? revisionResponse.content[0].text.trim() 
+          : fiction;
+
+        const revisedWordCount = revisedFiction.split(/\s+/).length;
+        console.log(`[Thesis to World] Revised to ${revisedWordCount} words`);
+
+        return res.json({
+          success: true,
+          thesis: thesisText,
+          fiction: revisedFiction,
+          wordCount: revisedWordCount,
+          revised: true
+        });
+      }
+
+      res.json({
+        success: true,
+        thesis: thesisText,
+        fiction: fiction,
+        wordCount: wordCount,
+        revised: false
+      });
+
+    } catch (error) {
+      console.error("[Thesis to World] Error:", error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to generate fiction"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
