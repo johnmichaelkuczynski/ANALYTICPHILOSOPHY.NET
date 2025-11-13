@@ -2198,9 +2198,8 @@ NO markdown, NO explanatory text, ONLY the JSON object.`;
 
       console.log(`[Thesis to World] Validated ${validatedIncidents.length} incidents`);
 
-      // STEP 5: Convert structured incidents to documentary prose
+      // STEP 5: Convert structured incidents to documentary prose (PART 1)
       const documentary = validatedIncidents.map((inc: any) => {
-        // Build factual sentence: Date, Name, Action (with numbers), Result
         const datePart = `In ${inc.date},`;
         const actionPart = inc.action.includes(inc.numbers) 
           ? `${inc.name} ${inc.action}` 
@@ -2210,14 +2209,50 @@ NO markdown, NO explanatory text, ONLY the JSON object.`;
         return `${datePart} ${actionPart}. ${resultPart}`;
       }).join('\n\n');
 
-      const wordCount = documentary.split(/\s+/).length;
-      console.log(`[Thesis to World] Generated ${wordCount} words of documentary content`);
+      console.log(`[Thesis to World] Documentary background: ${documentary.split(/\s+/).length} words`);
+
+      // STEP 6: Generate narrative story (PART 2) set in this world
+      const storyPrompt = `You have documentary background showing a world where this thesis is true:
+
+THESIS: "${thesisText}"
+
+BACKGROUND INCIDENTS:
+${documentary}
+
+YOUR TASK: Write a 400-600 word DEVELOPED, EXTREME narrative story showing someone living in this world and experiencing the thesis firsthand.
+
+REQUIREMENTS:
+- Named protagonist with specific situation
+- Concrete scenes with vivid details
+- Dialogue showing what people say
+- Show extreme consequences of living in this world
+- Make it realistic but dramatic - push the implications to their limit
+- Matter-of-fact storytelling tone (not melodramatic writing style, but extreme events)
+
+Write the story NOW (400-600 words):`;
+
+      const storyResponse = await anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 2000,
+        temperature: 0.6,
+        messages: [{ role: "user", content: storyPrompt }]
+      });
+
+      const story = storyResponse.content[0].type === 'text' 
+        ? storyResponse.content[0].text.trim() 
+        : '';
+
+      console.log(`[Thesis to World] Narrative story: ${story.split(/\s+/).length} words`);
+
+      // STEP 7: Combine both parts
+      const fullOutput = `**PART 1: BACKGROUND**\n\n${documentary}\n\n**PART 2: IN THIS WORLD**\n\n${story}`;
+      const totalWordCount = fullOutput.split(/\s+/).length;
 
       res.json({
         success: true,
         thesis: thesisText,
-        fiction: documentary,
-        wordCount: wordCount
+        fiction: fullOutput,
+        wordCount: totalWordCount
       });
 
     } catch (error) {
