@@ -21,6 +21,7 @@ import kuczynskiIcon from "/jmk-photo.png";
 import { ComparisonModal } from "@/components/comparison-modal";
 import { ModelBuilderSection } from "@/components/model-builder-section";
 import { PaperWriterSection } from "@/components/paper-writer-section";
+import { QuoteGeneratorSection } from "@/components/quote-generator-section";
 
 const DEFAULT_PERSONA_SETTINGS: Partial<PersonaSettings> = {
   responseLength: 0,
@@ -533,6 +534,11 @@ export default function Chat() {
               onRegisterInput={(setter) => { paperWriterTopicRef.current = setter; }}
               onTransferContent={handleContentTransfer}
             />
+          </div>
+
+          {/* Quote Generator Section */}
+          <div id="quote-generator-section" className="px-4 py-8 border-t-4 border-primary/20">
+            <QuoteGeneratorSection />
           </div>
         </div>
       </main>

@@ -17,6 +17,9 @@ import { readFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { verifyZhiAuth } from "./internal-auth";
+import multer from "multer";
+import * as pdfParse from "pdf-parse";
+import * as mammoth from "mammoth";
 
 // Get __dirname equivalent for ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -1610,6 +1613,154 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
       res.status(500).json({ 
         error: "Internal server error",
         message: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // ========================================
+  // QUOTE EXTRACTION FROM UPLOADED FILES
+  // ========================================
+
+  // Configure multer for file uploads
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB limit
+    },
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = ['text/plain', 'application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
+      if (allowedTypes.includes(file.mimetype) || file.originalname.match(/\.(txt|pdf|docx|doc)$/i)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Invalid file type. Only .txt, .pdf, .doc, and .docx files are allowed.'));
+      }
+    }
+  });
+
+  // Extract quotes from uploaded document
+  app.post("/api/quotes/extract", upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ 
+          success: false,
+          error: "No file uploaded" 
+        });
+      }
+
+      const { query = 'all', numQuotes = '10' } = req.body;
+      const quotesLimit = Math.min(Math.max(parseInt(numQuotes) || 10, 1), 50);
+
+      let textContent = '';
+
+      // Parse file based on type
+      const fileExtension = req.file.originalname.split('.').pop()?.toLowerCase();
+      
+      if (fileExtension === 'txt') {
+        textContent = req.file.buffer.toString('utf-8');
+      } else if (fileExtension === 'pdf') {
+        const pdfData = await pdfParse(req.file.buffer);
+        textContent = pdfData.text;
+      } else if (fileExtension === 'docx') {
+        const result = await mammoth.extractRawText({ buffer: req.file.buffer });
+        textContent = result.value;
+      } else if (fileExtension === 'doc') {
+        // For legacy .doc files, try mammoth (works for some)
+        try {
+          const result = await mammoth.extractRawText({ buffer: req.file.buffer });
+          textContent = result.value;
+        } catch (err) {
+          return res.status(400).json({
+            success: false,
+            error: "Legacy .doc format not fully supported. Please convert to .docx or .pdf"
+          });
+        }
+      } else {
+        return res.status(400).json({
+          success: false,
+          error: "Unsupported file type"
+        });
+      }
+
+      if (!textContent.trim()) {
+        return res.status(400).json({
+          success: false,
+          error: "Document appears to be empty or could not be parsed"
+        });
+      }
+
+      console.log(`[Quote Extraction] Processing ${req.file.originalname} (${textContent.length} chars)`);
+
+      // Extract quotes from the document text
+      const quotes: string[] = [];
+      
+      // First, try to find explicit quotes (text in quotation marks)
+      const explicitQuotePattern = /"([^"]{50,500})"/g;
+      const explicitMatches = Array.from(textContent.matchAll(explicitQuotePattern));
+      for (const match of explicitMatches) {
+        if (match[1] && match[1].trim().length >= 50) {
+          quotes.push(match[1].trim());
+        }
+      }
+
+      // Then extract substantial sentences as quotes
+      const sentences = textContent.split(/[.!?]\s+/);
+      for (const sentence of sentences) {
+        const trimmed = sentence.trim();
+        
+        // Filter by query if provided
+        if (query && query !== 'all') {
+          const queryLower = query.toLowerCase();
+          const sentenceLower = trimmed.toLowerCase();
+          if (!sentenceLower.includes(queryLower)) {
+            continue;
+          }
+        }
+
+        // Accept sentences between 50-500 chars
+        if (trimmed.length >= 50 && trimmed.length <= 500) {
+          const wordCount = trimmed.split(/\s+/).length;
+          
+          // Quality filters
+          const hasFormattingArtifacts = 
+            trimmed.includes('(<< back)') ||
+            trimmed.includes('(<<back)') ||
+            trimmed.includes('[<< back]') ||
+            trimmed.includes('*_') ||
+            trimmed.includes('_*') ||
+            /\(\d+\)\s*$/.test(trimmed) ||
+            /\[\d+\]\s*$/.test(trimmed);
+          
+          const specialCharCount = (trimmed.match(/[<>{}|\\]/g) || []).length;
+          const hasExcessiveSpecialChars = specialCharCount > 5;
+          
+          if (wordCount >= 5 && !hasFormattingArtifacts && !hasExcessiveSpecialChars) {
+            quotes.push(trimmed);
+          }
+        }
+      }
+
+      // Deduplicate and limit
+      const uniqueQuotes = Array.from(new Set(quotes));
+      const finalQuotes = uniqueQuotes.slice(0, quotesLimit);
+
+      console.log(`[Quote Extraction] Found ${finalQuotes.length} quotes from ${req.file.originalname}`);
+
+      res.json({
+        success: true,
+        quotes: finalQuotes,
+        meta: {
+          filename: req.file.originalname,
+          totalQuotesFound: uniqueQuotes.length,
+          quotesReturned: finalQuotes.length,
+          documentLength: textContent.length
+        }
+      });
+
+    } catch (error) {
+      console.error("[Quote Extraction] Error:", error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to extract quotes"
       });
     }
   });
