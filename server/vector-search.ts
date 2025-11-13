@@ -362,6 +362,11 @@ const AUTHOR_ALIASES: Record<string, string> = {
   'rabbi moses ben maimon': 'Maimonides',
   'rambam': 'Maimonides',
   
+  // Gibbon variants
+  'edward gibbon': 'Edward Gibbon',
+  'e gibbon': 'Edward Gibbon',
+  'e. gibbon': 'Edward Gibbon',
+  
   // Additional common variants
   'hegel': 'Hegel',
   'georg hegel': 'Hegel',
@@ -497,6 +502,7 @@ export function mapFigureIdToAuthor(figureId: string): string | undefined {
     'adler': 'Alfred Adler',
     'peirce': 'Charles Sanders Peirce',
     'maimonides': 'Moses Maimonides',
+    'gibbon': 'Edward Gibbon',
     'reich': 'Wilhelm Reich',
     'orwell': 'George Orwell',
   };
@@ -516,7 +522,7 @@ export async function detectAuthorFromQuery(queryText: string): Promise<string |
     'Newton', 'Darwin', 'Veblen', 'Lenin', 'Engels', 'Descartes',
     'Spinoza', 'Hobbes', 'Berkeley', 'Rousseau', 'Mill', 'Poe',
     'Mises', 'Smith', 'Spencer', 'Marden', 'Adler', 'Peirce',
-    'Poincare', 'Maimonides', 'Locke'
+    'Poincare', 'Maimonides', 'Gibbon', 'Locke'
   ];
   
   const queryUpper = queryText.toUpperCase();
