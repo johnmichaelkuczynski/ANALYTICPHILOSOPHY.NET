@@ -1618,6 +1618,106 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
   });
 
   // ========================================
+  // QUOTE GENERATOR: Site Authors
+  // ========================================
+  
+  app.post("/api/quotes/generate", async (req, res) => {
+    try {
+      const { query, author, numQuotes = 10 } = req.body;
+
+      if (!query || !author) {
+        return res.status(400).json({
+          success: false,
+          error: "Query and author are required"
+        });
+      }
+
+      const quotesLimit = Math.min(Math.max(parseInt(numQuotes) || 10, 1), 50);
+
+      console.log(`[Quote Generator] Generating ${quotesLimit} quotes from ${author} on: "${query}"`);
+
+      // Use semantic search to find relevant passages
+      const passages = await searchPhilosophicalChunks(query, 15, 'common', author);
+
+      if (passages.length === 0) {
+        return res.json({
+          success: true,
+          quotes: [],
+          meta: {
+            query,
+            author,
+            quotesFound: 0
+          }
+        });
+      }
+
+      // Extract quotes from passages
+      const quotes: Array<{ quote: string; source: string; chunkIndex: number }> = [];
+      
+      for (const passage of passages) {
+        // Extract substantial sentences as quotes
+        const sentences = passage.content.split(/[.!?]\s+/);
+        for (const sentence of sentences) {
+          const trimmed = sentence.trim();
+          
+          // Accept sentences between 50-500 chars
+          if (trimmed.length >= 50 && trimmed.length <= 500) {
+            const wordCount = trimmed.split(/\s+/).length;
+            
+            // Quality filters
+            const hasFormattingArtifacts = 
+              trimmed.includes('(<< back)') ||
+              trimmed.includes('(<<back)') ||
+              trimmed.includes('[<< back]') ||
+              trimmed.includes('*_') ||
+              trimmed.includes('_*') ||
+              /\(\d+\)\s*$/.test(trimmed) ||
+              /\[\d+\]\s*$/.test(trimmed);
+            
+            const specialCharCount = (trimmed.match(/[<>{}|\\]/g) || []).length;
+            const hasExcessiveSpecialChars = specialCharCount > 5;
+            
+            if (wordCount >= 5 && !hasFormattingArtifacts && !hasExcessiveSpecialChars) {
+              quotes.push({
+                quote: trimmed,
+                source: passage.paperTitle,
+                chunkIndex: passage.chunkIndex
+              });
+            }
+          }
+        }
+      }
+
+      // Deduplicate and limit
+      const uniqueQuotes = Array.from(new Map(quotes.map(q => [q.quote, q])).values());
+      const finalQuotes = uniqueQuotes.slice(0, quotesLimit);
+
+      console.log(`[Quote Generator] Found ${finalQuotes.length} quotes from ${author}`);
+
+      res.json({
+        success: true,
+        quotes: finalQuotes.map(q => ({
+          text: q.quote,
+          source: q.source,
+          chunkIndex: q.chunkIndex
+        })),
+        meta: {
+          query,
+          author,
+          quotesFound: finalQuotes.length
+        }
+      });
+
+    } catch (error) {
+      console.error("[Quote Generator] Error:", error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to generate quotes"
+      });
+    }
+  });
+
+  // ========================================
   // QUOTE EXTRACTION FROM UPLOADED FILES
   // ========================================
 

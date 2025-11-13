@@ -73,20 +73,16 @@ export function QuoteGeneratorSection({ onRegisterInput }: QuoteGeneratorSection
 
     try {
       if (mode === 'author') {
-        // Use internal knowledge API to get quotes from existing authors
-        const response = await fetch('/api/internal/knowledge', {
+        // Use public quote generation API for site authors
+        const response = await fetch('/api/quotes/generate', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-ZHI-App-ID': 'quote-generator-internal',
-            'X-ZHI-Signature': 'internal-app',
           },
           body: JSON.stringify({
             query: query.trim(),
             author: selectedAuthor,
-            includeQuotes: true,
             numQuotes: quotesNum,
-            maxResults: 15,
           }),
         });
 
