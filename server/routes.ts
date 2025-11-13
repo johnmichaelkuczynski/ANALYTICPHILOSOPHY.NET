@@ -1078,10 +1078,20 @@ You are a living intellect attacking this problem. Write the paper NOW - no narr
   // Model Builder - Generate isomorphic theories
   app.post("/api/model-builder", async (req: any, res) => {
     try {
-      const { originalText, customInstructions } = req.body;
+      const { originalText, customInstructions, mode, previousModel, critique } = req.body;
 
       if (!originalText || typeof originalText !== "string") {
         return res.status(400).json({ error: "Original text is required" });
+      }
+
+      // Validate refinement mode parameters
+      if (mode === "refine") {
+        if (!previousModel || typeof previousModel !== "string") {
+          return res.status(400).json({ error: "Previous model is required for refinement" });
+        }
+        if (!critique || typeof critique !== "string") {
+          return res.status(400).json({ error: "Critique is required for refinement" });
+        }
       }
 
       // Set up SSE
@@ -1214,9 +1224,28 @@ Analyze the provided theory:
 
 Be precise, formal, and show your work. This is mathematics with philosophy.`;
 
-      const userPrompt = customInstructions
-        ? `${customInstructions}\n\n---\n\nORIGINAL THEORY:\n${originalText}`
-        : `ORIGINAL THEORY:\n${originalText}`;
+      let userPrompt: string;
+      
+      if (mode === "refine") {
+        // Refinement mode: include previous model and critique
+        userPrompt = `REFINEMENT REQUEST
+
+ORIGINAL THEORY:
+${originalText}
+
+PREVIOUS MODEL ANALYSIS:
+${previousModel}
+
+USER CRITIQUE:
+${critique}
+
+${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : ''}Please revise the model analysis above based on the user's critique. Address the specific issues raised while maintaining the formal model-theoretic approach. Show what changed and why.`;
+      } else {
+        // Initial generation mode
+        userPrompt = customInstructions
+          ? `${customInstructions}\n\n---\n\nORIGINAL THEORY:\n${originalText}`
+          : `ORIGINAL THEORY:\n${originalText}`;
+      }
 
       const anthropic = new Anthropic({
         apiKey: process.env.ANTHROPIC_API_KEY!,

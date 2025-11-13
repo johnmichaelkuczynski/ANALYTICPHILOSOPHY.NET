@@ -18,6 +18,9 @@ export function ModelBuilderSection({ onRegisterInput, onTransferContent }: Mode
   const [customInstructions, setCustomInstructions] = useState("");
   const [generatedModel, setGeneratedModel] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [critique, setCritique] = useState("");
+  const [showRefineInput, setShowRefineInput] = useState(false);
+  const [refinementHistory, setRefinementHistory] = useState<Array<{ model: string; critique: string }>>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
 
@@ -31,6 +34,9 @@ export function ModelBuilderSection({ onRegisterInput, onTransferContent }: Mode
 
   const handleDelete = () => {
     setGeneratedModel("");
+    setRefinementHistory([]);
+    setShowRefineInput(false);
+    setCritique("");
     toast({
       title: "Output cleared",
       description: "The generated model has been cleared.",
@@ -60,6 +66,7 @@ export function ModelBuilderSection({ onRegisterInput, onTransferContent }: Mode
 
     setIsGenerating(true);
     setGeneratedModel("");
+    setShowRefineInput(false);
 
     try {
       const response = await fetch("/api/model-builder", {
@@ -115,6 +122,86 @@ export function ModelBuilderSection({ onRegisterInput, onTransferContent }: Mode
     } catch (error) {
       console.error("Error generating model:", error);
       setIsGenerating(false);
+    }
+  };
+
+  const handleRefine = async () => {
+    if (!critique.trim() || !generatedModel) {
+      return;
+    }
+
+    setIsGenerating(true);
+    const previousModel = generatedModel;
+    const currentCritique = critique.trim();
+    setGeneratedModel("");
+
+    try {
+      const response = await fetch("/api/model-builder", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          mode: "refine",
+          originalText: originalText.trim(),
+          customInstructions: customInstructions.trim() || undefined,
+          previousModel: previousModel,
+          critique: currentCritique,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to refine model");
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (reader) {
+        let accumulatedText = "";
+        let buffer = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              const data = line.slice(6);
+              if (data === "[DONE]") {
+                // Success: save to history and clear critique
+                setRefinementHistory(prev => [...prev, { model: previousModel, critique: currentCritique }]);
+                setIsGenerating(false);
+                setCritique("");
+                break;
+              }
+              try {
+                const parsed = JSON.parse(data);
+                if (parsed.content) {
+                  accumulatedText += parsed.content;
+                  setGeneratedModel(accumulatedText);
+                }
+              } catch (e) {
+                console.error("Parse error:", e);
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error refining model:", error);
+      // Restore the previous model on error
+      setGeneratedModel(previousModel);
+      setIsGenerating(false);
+      toast({
+        title: "Refinement failed",
+        description: "Failed to refine the model. Your previous model has been restored.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -254,6 +341,96 @@ export function ModelBuilderSection({ onRegisterInput, onTransferContent }: Mode
                 </div>
               )}
             </div>
+
+            {/* Refinement Section */}
+            {generatedModel && !isGenerating && (
+              <div className="space-y-2 mt-4">
+                {!showRefineInput ? (
+                  <Button
+                    onClick={() => setShowRefineInput(true)}
+                    variant="outline"
+                    className="w-full"
+                    data-testid="button-show-refine"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Refine Model
+                  </Button>
+                ) : (
+                  <div className="space-y-2 p-4 border rounded-lg bg-muted/20">
+                    <Label htmlFor="model-critique">Critique & Refinement Request</Label>
+                    <Textarea
+                      id="model-critique"
+                      placeholder="e.g., 'The domain swap is correct but the validation for claim 2 is weak' or 'This model works but I need a simpler version'"
+                      value={critique}
+                      onChange={(e) => setCritique(e.target.value)}
+                      rows={3}
+                      data-testid="input-model-critique"
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleRefine}
+                        disabled={!critique.trim()}
+                        className="flex-1"
+                        data-testid="button-submit-refine"
+                      >
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Submit Refinement
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setShowRefineInput(false);
+                          setCritique("");
+                        }}
+                        variant="outline"
+                        data-testid="button-cancel-refine"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Refinement History */}
+                {refinementHistory.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    <Label className="text-sm text-muted-foreground">
+                      Refinement History ({refinementHistory.length})
+                    </Label>
+                    <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                      {refinementHistory.map((item, index) => (
+                        <div 
+                          key={index} 
+                          className="p-3 border rounded-lg bg-muted/10 text-xs space-y-2"
+                          data-testid={`refinement-history-${index}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="font-medium text-muted-foreground">
+                              Critique #{index + 1}:
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setGeneratedModel(item.model);
+                                toast({
+                                  title: "Model restored",
+                                  description: `Restored version from critique #${index + 1}`,
+                                });
+                              }}
+                              className="h-6 px-2 text-xs"
+                              data-testid={`button-restore-${index}`}
+                            >
+                              Restore
+                            </Button>
+                          </div>
+                          <div className="text-foreground/80 italic">"{item.critique}"</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </CardContent>
