@@ -1993,7 +1993,7 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
   });
 
   // ========================================
-  // THESIS TO WORLD: Fiction Writing Function
+  // THESIS TO WORLD: Documentary Incident Generator
   // ========================================
   
   app.post("/api/thesis-to-world", upload.single('file'), async (req, res) => {
@@ -2016,7 +2016,7 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
         } else {
           return res.status(400).json({
             success: false,
-            error: "Unsupported file type. Please upload .txt, .pdf, .doc, or .docx"
+            error: "Unsupported file type. Please upload .txt, .pdf, .doc, .docx"
           });
         }
       } else if (req.body.text) {
@@ -2037,23 +2037,16 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
 
       console.log(`[Thesis to World] Processing ${inputText.length} characters of input text`);
 
-      // STEP 1: Extract the AUTHOR'S actual thesis (CRITICAL)
-      const extractionPrompt = `EXTRACT THE AUTHOR'S ACTUAL THESIS (CRITICAL):
-- Read carefully. What is the AUTHOR claiming, not what they're discussing or arguing against?
-- If the text argues AGAINST a position, extract what they argue FOR instead
-- Example: "Nietzsche says X, but I argue Y" → Extract Y, not X
-- The thesis should be about how people/society/the world actually operates
-- State it in one clear sentence
+      // STEP 1: Extract the AUTHOR'S actual thesis
+      const extractionPrompt = `Extract the author's thesis from this text.
+
+What is the AUTHOR claiming (not what they're arguing against)?
+If text says "X believes Y, but I argue Z" → extract Z, not Y.
 
 INPUT TEXT:
 ${inputText}
 
-YOUR TASK:
-Return ONLY a single-sentence thesis statement that captures what the AUTHOR is claiming.
-If no clear thesis exists, return "NO_THESIS"
-
-RESPONSE FORMAT:
-Return only the thesis sentence or "NO_THESIS"`;
+Return ONLY a single-sentence thesis or "NO_THESIS"`;
 
       const extractionResponse = await anthropic.messages.create({
         model: "claude-sonnet-4-20250514",
@@ -2069,177 +2062,140 @@ Return only the thesis sentence or "NO_THESIS"`;
       if (thesisText === 'NO_THESIS' || !thesisText) {
         return res.json({
           success: false,
-          error: "Could not identify a clear thesis about human nature in the provided text. Please provide text that makes a claim about how people are or behave."
+          error: "Could not identify a clear thesis in the provided text."
         });
       }
 
       console.log(`[Thesis to World] Extracted thesis: "${thesisText}"`);
 
-      // STEP 2A: Generate scene outline (validation step)
-      const customizationNote = customization?.trim() ? `\nUser wants: ${customization}` : '';
-
-      const outlineSystemPrompt = `You are a fiction writer who creates narrative outlines. You write STORIES with characters and events, NOT research reports or analytical documents.`;
-
-      const outlinePrompt = `Create a brief scene outline for a 300-500 word narrative fiction story depicting a world where this thesis is true:
-
-"${thesisText}"${customizationNote}
-
-Your outline MUST include:
-- 2-3 named characters with specific roles
-- 2-3 concrete scenes/incidents (with dates/locations)
-- Specific actions and events
-
-Format your outline as a simple bulleted list. Example:
-• Scene 1: March 2023, Acme Corp office - CEO James Morrison announces factory closure, approves own bonus
-• Scene 2: Same day - Supervisor Linda Chen complains to board, gets fired
-• Scene 3: Morrison's shareholder meeting - defends decision
-
-Return ONLY the outline, nothing else.`;
-
-      const outlineResponse = await anthropic.messages.create({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 300,
-        temperature: 0.4,
-        system: outlineSystemPrompt,
-        messages: [{ role: "user", content: outlinePrompt }]
-      });
-
-      const outline = outlineResponse.content[0].type === 'text' 
-        ? outlineResponse.content[0].text.trim() 
+      // STEP 2: Generate documentary-style factual incidents
+      const customizationNote = customization?.trim() 
+        ? `\n\nUSER SPECIFICATIONS: ${customization}\nIntegrate these details naturally if possible.` 
         : '';
 
-      console.log(`[Thesis to World] Scene outline generated: ${outline.substring(0, 200)}...`);
+      const documentaryPrompt = `Generate 8-12 discrete factual incidents that demonstrate this thesis through observable historical facts:
 
-      // STEP 2B: Generate narrative fiction from outline
-      const storySystemPrompt = `You are a fiction writer who writes narrative stories with characters, scenes, and events. You write in matter-of-fact journalistic style.
+THESIS: "${thesisText}"${customizationNote}
 
-ABSOLUTE RULES - HIGHEST PRIORITY:
-1. Write NARRATIVE FICTION (a story) - NOT an analytical document
-2. NEVER use phrases like: "research shows," "studies indicate," "data reveals," "analysis demonstrates," "observational study"
-3. NEVER invent statistics or cite made-up research
-4. NEVER use academic/theoretical language like "patterns suggest," "frameworks adapt," "systematic variations"
-5. DO use: specific characters, concrete scenes, dialogue, actions, events
+CRITICAL REQUIREMENTS:
+✅ Each incident MUST include: Date/time period, specific names, specific numbers, action taken, observable result
+✅ Write in pure documentary style: chronological accumulation of facts
+✅ Format: "In [DATE], [NAME/ORGANIZATION] [ACTION with NUMBERS]. [RESULT with NUMBERS]."
+✅ Total length: 300-500 words
+
+ABSOLUTELY FORBIDDEN:
+❌ NO dialogue (no quotation marks showing what people said)
+❌ NO scenes or dramatic structure  
+❌ NO character thoughts, feelings, or motivations
+❌ NO narrative arc or story progression
+❌ NO explanations or commentary on the thesis
+❌ NO phrases like "she felt," "he realized," "they wondered"
 
 CORRECT EXAMPLE:
-"On March 15, 2023, James Morrison closed the Acme factory. The 847 workers got two weeks' notice. Morrison's $4.2 million bonus came through that afternoon. Supervisor Linda Chen complained. The board fired her the next day for 'creating hostility.' Morrison told shareholders, 'Tough decisions need strong leaders.'"
+"Between 1950 and 1955, the Soviet Ministry of Science established 847 review committees. In March 1951, geneticist Nikolai Vavilov submitted wheat research showing 60% higher yields. The Central Committee rejected it as elitist differentiation. Vavilov died in prison six months later. By 1953, national crop yields fell 40%.
+
+In August 1952, the Ministry reviewed 1,200 musical compositions. They rejected 890 as insufficiently accessible. Composers Shostakovich and Prokofiev received formal censures. Concert attendance dropped 65% between 1952 and 1954."
 
 INCORRECT EXAMPLE (FORBIDDEN):
-"Recent studies of corporate governance reveal systematic patterns. Data from 847 cases shows differential treatment. Analysis demonstrates that hierarchical position correlates with ethical flexibility."`;
+"Maya Chen walked into the Innovation Bureau on a cold November morning. 'Your algorithm violates equality standards,' Director Knox told her. Maya felt her stomach sink. She had spent three years on this project."
 
-      const storyPrompt = `Using this scene outline, write a 300-500 word narrative story:
+Generate the documentary incidents NOW (300-500 words):`;
 
-${outline}
-
-THE THESIS TO DEMONSTRATE:
-"${thesisText}"
-
-Write in matter-of-fact journalistic storytelling style. Use named characters, specific dates/locations, concrete actions. Show events unfolding. Include dialogue or specific things people say.
-
-Write the story NOW (300-500 words):`;
-
-      const storyResponse = await anthropic.messages.create({
+      const documentaryResponse = await anthropic.messages.create({
         model: "claude-sonnet-4-20250514",
         max_tokens: 1500,
-        temperature: 0.5,
-        system: storySystemPrompt,
-        messages: [{ role: "user", content: storyPrompt }]
+        temperature: 0.4,
+        messages: [{ role: "user", content: documentaryPrompt }]
       });
 
-      let fiction = storyResponse.content[0].type === 'text' 
-        ? storyResponse.content[0].text.trim() 
+      let documentary = documentaryResponse.content[0].type === 'text' 
+        ? documentaryResponse.content[0].text.trim() 
         : '';
 
-      // STEP 3: Programmatic validation - reject banned phrases
-      const bannedPhrases = [
-        /research shows/i,
-        /research conducted/i,
-        /studies indicate/i,
-        /data reveals/i,
-        /data collected/i,
-        /analysis demonstrates/i,
-        /observational stud/i,
-        /systematic variation/i,
-        /patterns suggest/i,
-        /frameworks adapt/i,
-        /recent analysis/i,
-        /statistical analysis/i,
-        /documented consistent patterns/i,
-        /measured social structure/i,
-        /\d+ organizations/i,  // Catches fake study numbers like "847 organizations"
-        /\d+ cases/i,          // Catches "847 cases"
-        /between \d{4}-\d{4}/i, // Catches date ranges like "2019-2024"
+      // STEP 3: Strict validation - reject ANY narrative elements
+      const narrativeViolations = [
+        /"[^"]+"/,  // Any quotation marks (dialogue)
+        /\bshe (felt|thought|realized|wondered|knew|believed)\b/i,
+        /\bhe (felt|thought|realized|wondered|knew|believed)\b/i,
+        /\bthey (felt|thought|realized|wondered|knew|believed)\b/i,
+        /walked into/i,
+        /looked at/i,
+        /turned to/i,
+        /scene \d/i,
+        /chapter \d/i,
       ];
 
-      const foundViolations = bannedPhrases.filter(pattern => pattern.test(fiction));
+      const foundNarrative = narrativeViolations.some(pattern => pattern.test(documentary));
 
-      if (foundViolations.length > 0) {
-        console.log(`[Thesis to World] Detected ${foundViolations.length} banned phrases, requesting rewrite...`);
+      if (foundNarrative) {
+        console.log(`[Thesis to World] Detected narrative elements, requesting pure documentary rewrite...`);
 
-        const correctionPrompt = `Your story contains academic/analytical language. Rewrite it as NARRATIVE FICTION with characters and scenes. Remove phrases like "research shows," "studies indicate," "data reveals." Instead, show specific people doing specific things.
+        const correctionPrompt = `Your output contains narrative fiction elements (dialogue, scenes, character thoughts). This is completely wrong.
 
-Rewrite the story NOW (300-500 words) with concrete scenes and characters:`;
+Rewrite as PURE DOCUMENTARY FACTUAL ACCUMULATION:
+- Date. Name. Number. Action. Result.
+- NO quotation marks or dialogue
+- NO character feelings or thoughts
+- NO scenes or dramatic structure
+- Just chronological facts demonstrating the thesis
+
+Rewrite NOW (300-500 words) as pure documentary:`;
 
         const correctedResponse = await anthropic.messages.create({
           model: "claude-sonnet-4-20250514",
           max_tokens: 1500,
-          temperature: 0.5,
-          system: storySystemPrompt,
+          temperature: 0.3,
           messages: [
-            { role: "user", content: storyPrompt },
-            { role: "assistant", content: fiction },
+            { role: "user", content: documentaryPrompt },
+            { role: "assistant", content: documentary },
             { role: "user", content: correctionPrompt }
           ]
         });
 
-        fiction = correctedResponse.content[0].type === 'text' 
+        documentary = correctedResponse.content[0].type === 'text' 
           ? correctedResponse.content[0].text.trim() 
-          : fiction;
+          : documentary;
 
-        console.log(`[Thesis to World] Rewrite completed`);
+        console.log(`[Thesis to World] Documentary rewrite completed`);
       }
 
-      // Verify word count
-      const wordCount = fiction.split(/\s+/).length;
-      console.log(`[Thesis to World] Final fiction: ${wordCount} words`);
+      // Word count validation
+      const wordCount = documentary.split(/\s+/).length;
+      console.log(`[Thesis to World] Generated ${wordCount} words`);
 
-      // Word count adjustment if needed
       if (wordCount < 250 || wordCount > 550) {
-        console.log(`[Thesis to World] Word count ${wordCount} out of range, adjusting...`);
+        console.log(`[Thesis to World] Word count out of range, adjusting...`);
         
-        const revisionPrompt = `Revise to exactly 300-500 words. Keep the narrative storytelling style with characters and scenes.`;
+        const revisionPrompt = `Adjust to exactly 300-500 words. Maintain pure documentary style: dates, names, numbers, actions, results. NO dialogue or narrative.`;
 
         const revisionResponse = await anthropic.messages.create({
           model: "claude-sonnet-4-20250514",
           max_tokens: 1500,
-          temperature: 0.5,
-          system: storySystemPrompt,
+          temperature: 0.3,
           messages: [
-            { role: "user", content: storyPrompt },
-            { role: "assistant", content: fiction },
+            { role: "user", content: documentaryPrompt },
+            { role: "assistant", content: documentary },
             { role: "user", content: revisionPrompt }
           ]
         });
 
-        fiction = revisionResponse.content[0].type === 'text' 
+        documentary = revisionResponse.content[0].type === 'text' 
           ? revisionResponse.content[0].text.trim() 
-          : fiction;
-
-        const revisedWordCount = fiction.split(/\s+/).length;
-        console.log(`[Thesis to World] Revised to ${revisedWordCount} words`);
+          : documentary;
       }
 
       res.json({
         success: true,
         thesis: thesisText,
-        fiction: fiction,
-        wordCount: fiction.split(/\s+/).length
+        fiction: documentary,
+        wordCount: documentary.split(/\s+/).length
       });
 
     } catch (error) {
       console.error("[Thesis to World] Error:", error);
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : "Failed to generate fiction"
+        error: error instanceof Error ? error.message : "Failed to generate documentary"
       });
     }
   });
