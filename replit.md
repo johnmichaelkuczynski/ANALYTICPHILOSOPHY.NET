@@ -1,6 +1,7 @@
 # Ask A Philosopher - Philosophical Q&A Application
 
 ## Recent Updates (November 2025)
+- **NEW: Thesis to World Function** (Nov 13): Added first of six planned fiction-writing functions. Takes non-fiction text with claims about human nature, extracts core thesis, and generates 300-500 word documentary-style fiction depicting a world where the thesis is demonstrably true. Uses two-step Claude Sonnet 4.5 pipeline (thesis extraction → fiction generation) with strict journalistic tone requirements and word-count enforcement.
 - **NEW: AI Portraits Generated** (Nov 13): Created professional AI-generated portraits for **George Orwell** (lean angular face, thin mustache, 1940s aesthetic) and **Wilhelm Reich** (wire-rimmed glasses, scholarly appearance, psychoanalyst style). Both portraits installed and live.
 - **NEW: Financial Regulation Training** (Nov 13): Kuczynski trained on "History of American Financial Regulation" (**46 chunks** embedded). Expands interdisciplinary coverage into economic history, regulatory policy, and financial systems.
 - **NEW: Voltaire Added** (Nov 13): French Enlightenment philosopher and satirist **Voltaire** now available as **52nd conversational figure**. System prompt captures his devastating wit, Deist philosophy, anti-clericalism, and advocacy for tolerance. Training in progress on "Works of Voltaire" (88,638 lines including Candide, Philosophical Dictionary, Letters on England, Micromegas). **287 chunks embedded** (26% complete; 796 chunks remaining).
@@ -24,9 +25,9 @@
 The application acts as a centralized knowledge server providing unified access to philosophical and psychoanalytic texts via a secure internal API. It features a 3-column layout without authentication, offering direct access to the chat interface. All philosophical texts are consolidated into a unified "Common Fund" knowledge base.
 
 ### UI/UX Decisions
-- **Layout**: A unified single-page layout with 3 columns (philosophers sidebar, settings, main content) containing four vertically stacked sections: Ask A Philosopher (chat), Model Builder, Paper Writer, and Quote Generator. All sections accessible by scrolling on ONE page.
+- **Layout**: A unified single-page layout with 3 columns (philosophers sidebar, settings, main content) containing five vertically stacked sections: Ask A Philosopher (chat), Model Builder, Paper Writer, Quote Generator, and Thesis to World. All sections accessible by scrolling on ONE page.
 - **Accessibility**: No login required; minimal settings (Response Length, Number of Quotes).
-- **Four-Section Design**: Integrates Chat, Model Builder, Paper Writer, and Quote Generator into a single scrollable page.
+- **Five-Section Design**: Integrates Chat, Model Builder, Paper Writer, Quote Generator, and Thesis to World into a single scrollable page.
 - **Visuals**: Animated Kuczynski icon, AI-generated portrait avatars, minimalistic design with elegant typography, dark mode support, and visual section dividers.
 - **Features**: "Talk with X" for personalized conversations, "Compare Thinkers" for side-by-side comparisons.
 
@@ -40,6 +41,7 @@ The application acts as a centralized knowledge server providing unified access 
 - **Model Builder Section**: Integrated for theory validation and reinterpretations using model-theoretic analysis. Supports custom instructions and iterative refinement.
 - **Paper Writer Section**: Integrated for generating formal philosophical papers (up to 1500 words) in an authentic voice, with philosopher selection and topic input.
 - **Quote Generator Section**: Extracts quotes from site authors or user-uploaded documents, with tab-based modes for "Site Authors" (with optional query and quantity) and "Upload File" (accepts .txt, .pdf, .doc, .docx up to 5MB, with keyword filtering). Includes intelligent quote extraction, spell correction, sentence validation, and relevance-based quality scoring.
+- **Thesis to World Section**: Fiction-writing function that converts non-fiction claims about human nature into documentary-style fiction. Two-step AI pipeline: (1) extracts thesis from input text or uploaded file (.txt, .pdf, .doc, .docx), (2) generates 300-500 word matter-of-fact fiction depicting a world where thesis is demonstrably true. Supports optional customization (e.g., "Make it about a soccer player named Bart in Lisbon"). Enforces journalistic tone with banned creative fiction devices and automatic word-count revision if out of range. First of six planned fiction-writing functions.
 - **Guest User Management**: Session-based storage with auto-generated guest user IDs.
 - **RAG System**: Papers are chunked (~250 words), embedded using OpenAI's `text-embedding-ada-002`, and stored in a PostgreSQL database with `pgvector` for semantic search.
 - **Unified Knowledge Base**: All philosophical texts from 87 authors (68,060 chunks across 250 unique works) are consolidated into a single "Common Fund".
