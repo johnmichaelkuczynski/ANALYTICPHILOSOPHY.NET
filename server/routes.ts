@@ -1307,67 +1307,219 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
     maxCharacters: z.number().int().min(100).max(50000).optional().default(10000),
   });
 
-  // Helper: Extract quotes from text passages
-  function extractQuotes(
-    passages: StructuredChunk[],
-    minLength: number = 50,
-    maxQuotes: number = 50
-  ): Array<{ quote: string; source: string; chunkIndex: number }> {
-    const quotes: Array<{ quote: string; source: string; chunkIndex: number }> = [];
+  // Helper: Apply spell correction for common OCR/conversion errors
+  function applySpellCorrection(text: string): string {
+    return text
+      // Common OCR errors - double-v mistakes
+      .replace(/\bvvith\b/gi, 'with')
+      .replace(/\bvvhich\b/gi, 'which')
+      .replace(/\bvvhat\b/gi, 'what')
+      .replace(/\bvvhen\b/gi, 'when')
+      .replace(/\bvvhere\b/gi, 'where')
+      .replace(/\bvvhile\b/gi, 'while')
+      .replace(/\bvvho\b/gi, 'who')
+      .replace(/\bvve\b/gi, 'we')
+      // Common OCR errors - letter confusion
+      .replace(/\btbe\b/gi, 'the')
+      .replace(/\btlie\b/gi, 'the')
+      .replace(/\bwitli\b/gi, 'with')
+      .replace(/\btbat\b/gi, 'that')
+      .replace(/\btliis\b/gi, 'this')
+      // Missing apostrophes (common OCR error)
+      .replace(/\bdont\b/gi, "don't")
+      .replace(/\bcant\b/gi, "can't")
+      .replace(/\bwont\b/gi, "won't")
+      .replace(/\bdoesnt\b/gi, "doesn't")
+      .replace(/\bisnt\b/gi, "isn't")
+      .replace(/\barent\b/gi, "aren't")
+      .replace(/\bwerent\b/gi, "weren't")
+      .replace(/\bwasnt\b/gi, "wasn't")
+      .replace(/\bhasnt\b/gi, "hasn't")
+      .replace(/\bhavent\b/gi, "haven't")
+      .replace(/\bshouldnt\b/gi, "shouldn't")
+      .replace(/\bwouldnt\b/gi, "wouldn't")
+      .replace(/\bcouldnt\b/gi, "couldn't")
+      // Fix spacing around punctuation
+      .replace(/\s+([,.!?;:])/g, '$1')
+      .replace(/([,.!?;:])\s+/g, '$1 ')
+      // Normalize whitespace
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  // Helper: Check if sentence is complete (ends with proper punctuation)
+  function isCompleteSentence(text: string): boolean {
+    const trimmed = text.trim();
+    // Must end with . ! ? or closing quote followed by punctuation
+    return /[.!?]["']?$/.test(trimmed) && !trimmed.endsWith('..') && !trimmed.endsWith('p.');
+  }
+
+  // Helper: Check if text is a citation fragment
+  function isCitationFragment(text: string): boolean {
+    const lowerText = text.toLowerCase();
+    return (
+      // Starts with section/chapter numbers
+      /^\d+\.\d+\s+[A-Z]/.test(text) || // "9.0 The raven paradox"
+      /^Chapter\s+\d+/i.test(text) ||
+      /^Section\s+\d+/i.test(text) ||
+      // Starts with citation markers
+      /^(see|cf\.|e\.g\.|i\.e\.|viz\.|ibid\.|op\. cit\.|loc\. cit\.)/i.test(text) ||
+      // Contains obvious citation patterns
+      /\(\d{4}\)/.test(text) || // (1865)
+      /\d{4},\s*p\.?\s*\d+/.test(text) || // 1865, p. 23
+      /^\s*-\s*[A-Z][a-z]+\s+[A-Z][a-z]+/.test(text) || // - William James
+      /^["']?book,\s+the\s+/i.test(text) || // Starts with "book, the"
+      // Ends with incomplete citation
+      /,\s*p\.?$/i.test(text) || // ends with ", p." or ", p"
+      /\(\s*[A-Z][a-z]+,?\s*\d{4}[),\s]*$/.test(text) // ends with (Author, 1865) or similar
+    );
+  }
+
+  // Helper: Score quote quality and relevance
+  function scoreQuote(quote: string, query: string): number {
+    let score = 0;
+    const quoteLower = quote.toLowerCase();
+    const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length > 3);
     
-    for (const passage of passages) {
-      // Match quoted text within the passage
-      const quotePattern = new RegExp(`"([^"]{${minLength},})"`, 'g');
-      const matches = Array.from(passage.content.matchAll(quotePattern));
-      
-      for (const match of matches) {
-        const quote = match[1];
-        if (quote && quote.length >= minLength) {
-          quotes.push({
-            quote,
-            source: passage.paperTitle,
-            chunkIndex: passage.chunkIndex
-          });
-        }
-      }
-      
-      // Extract ALL substantial sentences as quotes (no keyword filtering)
-      const sentences = passage.content.split(/[.!?]\s+/);
-      for (const sentence of sentences) {
-        const trimmed = sentence.trim();
-        // Accept all sentences between minLength and 500 chars
-        if (trimmed.length >= minLength && trimmed.length <= 500) {
-          // Quality filters to reject malformed sentences
-          const wordCount = trimmed.split(/\s+/).length;
-          
-          // Reject if contains formatting artifacts
-          const hasFormattingArtifacts = 
-            trimmed.includes('(<< back)') ||
-            trimmed.includes('(<<back)') ||
-            trimmed.includes('[<< back]') ||
-            trimmed.includes('*_') ||
-            trimmed.includes('_*') ||
-            /\(\d+\)\s*$/.test(trimmed) || // Only reject if ending with (1) or (2) as final characters
-            /\[\d+\]\s*$/.test(trimmed); // Only reject if ending with [1] or [2] as final characters
-          
-          // Reject if too many special characters (likely formatting)
-          const specialCharCount = (trimmed.match(/[<>{}|\\]/g) || []).length;
-          const hasExcessiveSpecialChars = specialCharCount > 5;
-          
-          // Require at least 5 words and pass quality filters
-          if (wordCount >= 5 && !hasFormattingArtifacts && !hasExcessiveSpecialChars) {
-            quotes.push({
-              quote: trimmed,
-              source: passage.paperTitle,
-              chunkIndex: passage.chunkIndex
-            });
-          }
-        }
+    // Bonus for query word matches (relevance)
+    for (const word of queryWords) {
+      if (quoteLower.includes(word)) {
+        score += 10;
       }
     }
     
-    // Deduplicate and return requested number
+    // Bonus for philosophical keywords
+    const philosophicalKeywords = [
+      'truth', 'knowledge', 'reality', 'existence', 'being', 'consciousness',
+      'mind', 'reason', 'logic', 'ethics', 'morality', 'virtue', 'justice',
+      'freedom', 'liberty', 'necessity', 'cause', 'effect', 'substance',
+      'essence', 'nature', 'universe', 'god', 'soul', 'perception', 'experience',
+      'understanding', 'wisdom', 'philosophy', 'metaphysics', 'epistemology'
+    ];
+    
+    for (const keyword of philosophicalKeywords) {
+      if (quoteLower.includes(keyword)) {
+        score += 3;
+      }
+    }
+    
+    // Penalty for very short quotes
+    if (quote.length < 100) score -= 5;
+    
+    // Bonus for medium length (100-300 chars is ideal)
+    if (quote.length >= 100 && quote.length <= 300) score += 10;
+    
+    // Penalty for numbers/dates (likely citations)
+    const numberCount = (quote.match(/\d+/g) || []).length;
+    if (numberCount > 2) score -= 5;
+    
+    return score;
+  }
+
+  // Helper: Extract quotes from text passages with intelligent sentence detection
+  function extractQuotes(
+    passages: StructuredChunk[],
+    query: string = "",
+    minLength: number = 50,
+    maxQuotes: number = 50
+  ): Array<{ quote: string; source: string; chunkIndex: number; score: number }> {
+    const quotes: Array<{ quote: string; source: string; chunkIndex: number; score: number }> = [];
+    
+    for (const passage of passages) {
+      // Clean and normalize content
+      const cleanedContent = passage.content
+        .replace(/\s+/g, ' ')  // Normalize whitespace
+        .trim();
+      
+      // Smart sentence splitting that preserves citations
+      // Split on . ! ? but NOT on abbreviations like "p.", "Dr.", "Mr.", "i.e.", "e.g."
+      const sentences: string[] = [];
+      let currentSentence = '';
+      let i = 0;
+      
+      while (i < cleanedContent.length) {
+        const char = cleanedContent[i];
+        currentSentence += char;
+        
+        if (char === '.' || char === '!' || char === '?') {
+          // Check if this is an abbreviation (followed by lowercase or another period)
+          const nextChar = cleanedContent[i + 1];
+          const prevWord = currentSentence.trim().split(/\s+/).pop() || '';
+          
+          const isAbbreviation = (
+            /^(Dr|Mr|Mrs|Ms|Prof|Jr|Sr|vs|etc|i\.e|e\.g|cf|viz|ibid|op|loc|p|pp|vol|ch|sec|fig)\.$/i.test(prevWord) ||
+            nextChar === '.' ||
+            (nextChar && nextChar === nextChar.toLowerCase() && /[a-z]/.test(nextChar))
+          );
+          
+          if (!isAbbreviation && nextChar && /\s/.test(nextChar)) {
+            // This is a sentence boundary
+            sentences.push(currentSentence.trim());
+            currentSentence = '';
+            i++; // Skip the space
+            continue;
+          }
+        }
+        
+        i++;
+      }
+      
+      // Add any remaining content
+      if (currentSentence.trim()) {
+        sentences.push(currentSentence.trim());
+      }
+      
+      // Process each sentence
+      for (let sentence of sentences) {
+        // Apply spell correction
+        sentence = applySpellCorrection(sentence);
+        
+        // Check if it's a complete sentence
+        if (!isCompleteSentence(sentence)) continue;
+        
+        // Check length bounds
+        if (sentence.length < minLength || sentence.length > 500) continue;
+        
+        // Check word count
+        const wordCount = sentence.split(/\s+/).length;
+        if (wordCount < 8) continue; // Require at least 8 words for substantive content
+        
+        // Check for citation fragments
+        if (isCitationFragment(sentence)) continue;
+        
+        // Check for formatting artifacts
+        const hasFormattingArtifacts = 
+          sentence.includes('(<< back)') ||
+          sentence.includes('(<<back)') ||
+          sentence.includes('[<< back]') ||
+          sentence.includes('*_') ||
+          sentence.includes('_*');
+        
+        if (hasFormattingArtifacts) continue;
+        
+        // Check for excessive special characters
+        const specialCharCount = (sentence.match(/[<>{}|\\]/g) || []).length;
+        if (specialCharCount > 5) continue;
+        
+        // Score the quote
+        const score = scoreQuote(sentence, query);
+        
+        quotes.push({
+          quote: sentence,
+          source: passage.paperTitle,
+          chunkIndex: passage.chunkIndex,
+          score
+        });
+      }
+    }
+    
+    // Deduplicate
     const uniqueQuotes = Array.from(new Map(quotes.map(q => [q.quote, q])).values());
+    
+    // Sort by score (best first)
+    uniqueQuotes.sort((a, b) => b.score - a.score);
+    
+    // Return top N quotes
     return uniqueQuotes.slice(0, maxQuotes);
   }
 
@@ -1452,7 +1604,7 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
       const filteredPassages = passages;
       
       // Extract quotes if requested
-      const quotes = includeQuotes ? extractQuotes(filteredPassages, minQuoteLength, 50) : [];
+      const quotes = includeQuotes ? extractQuotes(filteredPassages, query || "", minQuoteLength, 50) : [];
       
       // Build structured response with citations
       const results = filteredPassages.map(passage => ({
@@ -1576,7 +1728,7 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
       }
       
       // Extract quotes if requested
-      const quotes = includeQuotes ? extractQuotes(truncatedPassages, minQuoteLength, numQuotes || 50) : [];
+      const quotes = includeQuotes ? extractQuotes(truncatedPassages, query || "", minQuoteLength, numQuotes || 50) : [];
       
       // Build response
       const response = {
@@ -1654,51 +1806,15 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
         });
       }
 
-      // Extract quotes from passages
-      const quotes: Array<{ quote: string; source: string; chunkIndex: number }> = [];
+      // Extract quotes using improved algorithm with spell correction and quality ranking
+      const extractedQuotes = extractQuotes(passages, searchQuery, 50, quotesLimit);
       
-      for (const passage of passages) {
-        // Clean up the content: normalize whitespace and remove internal newlines
-        const cleanedContent = passage.content
-          .replace(/\s+/g, ' ')  // Replace all whitespace (including newlines) with single spaces
-          .trim();
-        
-        // Extract substantial sentences as quotes
-        const sentences = cleanedContent.split(/[.!?]\s+/);
-        for (const sentence of sentences) {
-          const trimmed = sentence.trim();
-          
-          // Accept sentences between 50-500 chars
-          if (trimmed.length >= 50 && trimmed.length <= 500) {
-            const wordCount = trimmed.split(/\s+/).length;
-            
-            // Quality filters
-            const hasFormattingArtifacts = 
-              trimmed.includes('(<< back)') ||
-              trimmed.includes('(<<back)') ||
-              trimmed.includes('[<< back]') ||
-              trimmed.includes('*_') ||
-              trimmed.includes('_*') ||
-              /\(\d+\)\s*$/.test(trimmed) ||
-              /\[\d+\]\s*$/.test(trimmed);
-            
-            const specialCharCount = (trimmed.match(/[<>{}|\\]/g) || []).length;
-            const hasExcessiveSpecialChars = specialCharCount > 5;
-            
-            if (wordCount >= 5 && !hasFormattingArtifacts && !hasExcessiveSpecialChars) {
-              quotes.push({
-                quote: trimmed,
-                source: passage.paperTitle,
-                chunkIndex: passage.chunkIndex
-              });
-            }
-          }
-        }
-      }
-
-      // Deduplicate and limit
-      const uniqueQuotes = Array.from(new Map(quotes.map(q => [q.quote, q])).values());
-      const finalQuotes = uniqueQuotes.slice(0, quotesLimit);
+      // Map to final format (without score field for API response)
+      const finalQuotes = extractedQuotes.map(q => ({
+        quote: q.quote,
+        source: q.source,
+        chunkIndex: q.chunkIndex
+      }));
 
       console.log(`[Quote Generator] Found ${finalQuotes.length} quotes from ${author}`);
 
