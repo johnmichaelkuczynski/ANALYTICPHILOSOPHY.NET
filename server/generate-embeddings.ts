@@ -37,6 +37,7 @@ const batchToFigure: Record<string, string> = {
   "jmk_ama_epistem": "common",
   "luther_batch1": "common",
   "whewell_batch1": "common",
+  "voltaire_batch1": "common",
   "veblen_batch1": "common",
   "veblen_batch2": "common",
   "veblen_batch3": "common",
@@ -72,6 +73,7 @@ const batchToAuthor: Record<string, string> = {
   "jmk": "J.-M. Kuczynski",
   "luther_batch1": "Martin Luther",
   "whewell_batch1": "William Whewell",
+  "voltaire_batch1": "Voltaire",
   "veblen_batch1": "Thorstein Veblen",
   "veblen_batch2": "Thorstein Veblen",
   "veblen_batch3": "Thorstein Veblen",
@@ -247,6 +249,10 @@ const figuresPapers = {
   "whewell_batch1": [
     // BATCH 14: William Whewell - History and Philosophy of Science - November 2025
     { file: "whewell_history_inductive_sciences.txt", title: "History of the Inductive Sciences, from the Earliest to the Present Time" },
+  ],
+  "voltaire_batch1": [
+    // BATCH 16: Voltaire - Works - November 2025
+    { file: "voltaire_works.txt", title: "Works of Voltaire: Candide, Philosophical Dictionary, Letters on England, and More" },
   ],
   "jmk_russell_math": [
     // BATCH 15A: J.-M. Kuczynski - Russell's Mathematical Philosophy - November 2025
