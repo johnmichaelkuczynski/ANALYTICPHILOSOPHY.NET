@@ -1297,9 +1297,10 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
     query: z.string().min(1).max(1000),
     figureId: z.string().optional().default("common"), // All queries now search unified knowledge base
     author: z.string().optional(), // NEW: Filter by author name (partial match via ILIKE)
-    maxResults: z.number().int().min(1).max(20).optional().default(6),
+    maxResults: z.number().int().min(1).max(20).optional().default(10),
     includeQuotes: z.boolean().optional().default(false),
     minQuoteLength: z.number().int().min(10).max(200).optional().default(50),
+    numQuotes: z.number().int().min(1).max(50).optional().default(50), // NEW: Control number of quotes returned
     maxCharacters: z.number().int().min(100).max(50000).optional().default(10000),
   });
 
@@ -1343,12 +1344,12 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
             trimmed.includes('[<< back]') ||
             trimmed.includes('*_') ||
             trimmed.includes('_*') ||
-            /\[\d+\]/.test(trimmed) || // Reject [1], [2] style footnotes
-            /\(\d+\)/.test(trimmed.slice(-10)); // Reject ending with (1), (2) style footnotes
+            /\(\d+\)\s*$/.test(trimmed) || // Only reject if ending with (1) or (2) as final characters
+            /\[\d+\]\s*$/.test(trimmed); // Only reject if ending with [1] or [2] as final characters
           
           // Reject if too many special characters (likely formatting)
-          const specialCharCount = (trimmed.match(/[<>{}[\]|\\]/g) || []).length;
-          const hasExcessiveSpecialChars = specialCharCount > 3;
+          const specialCharCount = (trimmed.match(/[<>{}|\\]/g) || []).length;
+          const hasExcessiveSpecialChars = specialCharCount > 5;
           
           // Require at least 5 words and pass quality filters
           if (wordCount >= 5 && !hasFormattingArtifacts && !hasExcessiveSpecialChars) {
@@ -1508,7 +1509,7 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
         });
       }
       
-      const { query, figureId, author, maxResults, includeQuotes, minQuoteLength, maxCharacters } = validationResult.data;
+      const { query, figureId, author, maxResults, includeQuotes, minQuoteLength, numQuotes, maxCharacters } = validationResult.data;
       
       // Audit log
       const appId = (req as any).zhiAuth?.appId || "unknown";
@@ -1572,7 +1573,7 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
       }
       
       // Extract quotes if requested
-      const quotes = includeQuotes ? extractQuotes(truncatedPassages, minQuoteLength, 50) : [];
+      const quotes = includeQuotes ? extractQuotes(truncatedPassages, minQuoteLength, numQuotes || 50) : [];
       
       // Build response
       const response = {
