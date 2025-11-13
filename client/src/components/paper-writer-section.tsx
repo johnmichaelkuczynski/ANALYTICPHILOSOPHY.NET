@@ -180,6 +180,14 @@ export function PaperWriterSection({ onRegisterInput, onTransferContent }: Paper
                 placeholder="e.g., 'The nature of consciousness' or 'Can we prove the existence of God?'"
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (topic.trim() && selectedPhilosopher && !isGenerating) {
+                      handleGenerate();
+                    }
+                  }
+                }}
                 rows={6}
                 data-testid="input-topic-paper"
               />

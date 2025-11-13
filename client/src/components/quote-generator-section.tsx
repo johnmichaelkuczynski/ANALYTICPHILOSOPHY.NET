@@ -262,6 +262,14 @@ export function QuoteGeneratorSection({ onRegisterInput }: QuoteGeneratorSection
                     placeholder="e.g., 'unconscious mind', 'action at a distance', 'class struggle'"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        if (selectedAuthor && query.trim() && !isGenerating) {
+                          handleGenerate();
+                        }
+                      }
+                    }}
                     rows={4}
                     data-testid="input-query-quotes"
                   />
@@ -308,6 +316,14 @@ export function QuoteGeneratorSection({ onRegisterInput }: QuoteGeneratorSection
                     placeholder="Leave blank to extract all quotes, or specify keywords to filter"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        if (selectedFile && !isGenerating) {
+                          handleGenerate();
+                        }
+                      }
+                    }}
                     rows={3}
                     data-testid="input-query-upload"
                   />
@@ -324,6 +340,15 @@ export function QuoteGeneratorSection({ onRegisterInput }: QuoteGeneratorSection
                 max="50"
                 value={numQuotes}
                 onChange={(e) => setNumQuotes(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if ((mode === 'author' && selectedAuthor && query.trim() && !isGenerating) || 
+                        (mode === 'upload' && selectedFile && !isGenerating)) {
+                      handleGenerate();
+                    }
+                  }
+                }}
                 placeholder="10"
                 data-testid="input-num-quotes"
               />

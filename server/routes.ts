@@ -1655,8 +1655,13 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
       const quotes: Array<{ quote: string; source: string; chunkIndex: number }> = [];
       
       for (const passage of passages) {
+        // Clean up the content: normalize whitespace and remove internal newlines
+        const cleanedContent = passage.content
+          .replace(/\s+/g, ' ')  // Replace all whitespace (including newlines) with single spaces
+          .trim();
+        
         // Extract substantial sentences as quotes
-        const sentences = passage.content.split(/[.!?]\s+/);
+        const sentences = cleanedContent.split(/[.!?]\s+/);
         for (const sentence of sentences) {
           const trimmed = sentence.trim();
           

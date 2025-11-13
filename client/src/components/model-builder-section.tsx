@@ -228,6 +228,14 @@ export function ModelBuilderSection({ onRegisterInput, onTransferContent }: Mode
                 placeholder="Paste the philosopher's response here, or click the arrow button on any response..."
                 value={originalText}
                 onChange={(e) => setOriginalText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (originalText.trim() && !isGenerating) {
+                      handleGenerate();
+                    }
+                  }
+                }}
                 rows={8}
                 data-testid="input-original-theory"
               />
@@ -240,6 +248,14 @@ export function ModelBuilderSection({ onRegisterInput, onTransferContent }: Mode
                 placeholder="e.g., 'Find a model from finance that validates Spinoza's theory' or 'Translate to modern cognitive science terms'"
                 value={customInstructions}
                 onChange={(e) => setCustomInstructions(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (originalText.trim() && !isGenerating) {
+                      handleGenerate();
+                    }
+                  }
+                }}
                 rows={4}
                 data-testid="input-custom-instructions"
               />
