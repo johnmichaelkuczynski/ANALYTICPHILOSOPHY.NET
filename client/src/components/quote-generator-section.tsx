@@ -40,10 +40,10 @@ export function QuoteGeneratorSection({ onRegisterInput }: QuoteGeneratorSection
   }, [onRegisterInput]);
 
   const handleGenerate = async () => {
-    if (mode === 'author' && (!selectedAuthor || !query.trim())) {
+    if (mode === 'author' && !selectedAuthor) {
       toast({
         title: "Missing information",
-        description: "Please select an author and enter a query.",
+        description: "Please select an author.",
         variant: "destructive",
       });
       return;
