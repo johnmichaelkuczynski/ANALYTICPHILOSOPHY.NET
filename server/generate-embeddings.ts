@@ -52,6 +52,7 @@ const batchToFigure: Record<string, string> = {
   "tolstoy_war_and_peace": "common",
   "goldman_anarchism": "common",
   "tocqueville_democracy": "common",
+  "confucius_analects": "common",
 };
 
 // REQUIRED: Author attribution mapping for every chunk
@@ -116,6 +117,7 @@ const batchToAuthor: Record<string, string> = {
   "tolstoy_war_and_peace": "Leo Tolstoy",
   "goldman_anarchism": "Emma Goldman",
   "tocqueville_democracy": "Alexis de Tocqueville",
+  "confucius_analects": "Confucius",
   "common": "Various Authors",
 };
 
@@ -444,6 +446,10 @@ const figuresPapers = {
   "tocqueville_democracy": [
     // TOCQUEVILLE: Democracy in America - November 2025
     { file: "data/tocqueville/democracy_in_america.txt", title: "Democracy in America by Alexis de Tocqueville" },
+  ],
+  "confucius_analects": [
+    // CONFUCIUS: The Analects - November 2025
+    { file: "data/confucius/analects.txt", title: "The Analects of Confucius" },
   ],
   "common": [
     // Common Fund of Knowledge - shared knowledge base accessible to ALL philosophers
