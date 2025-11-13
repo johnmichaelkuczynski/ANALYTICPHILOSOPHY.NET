@@ -54,6 +54,7 @@ const batchToFigure: Record<string, string> = {
   "tocqueville_democracy": "common",
   "confucius_analects": "common",
   "aesop_fables": "common",
+  "grimm_household_tales": "common",
 };
 
 // REQUIRED: Author attribution mapping for every chunk
@@ -120,6 +121,7 @@ const batchToAuthor: Record<string, string> = {
   "tocqueville_democracy": "Alexis de Tocqueville",
   "confucius_analects": "Confucius",
   "aesop_fables": "Aesop",
+  "grimm_household_tales": "Brothers Grimm",
   "common": "Various Authors",
 };
 
@@ -456,6 +458,10 @@ const figuresPapers = {
   "aesop_fables": [
     // AESOP: Aesop's Fables - November 2025
     { file: "data/aesop/fables.txt", title: "Aesop's Fables" },
+  ],
+  "grimm_household_tales": [
+    // BROTHERS GRIMM: Household Tales - November 2025
+    { file: "data/grimm/household_tales.txt", title: "Grimm's Household Tales" },
   ],
   "common": [
     // Common Fund of Knowledge - shared knowledge base accessible to ALL philosophers

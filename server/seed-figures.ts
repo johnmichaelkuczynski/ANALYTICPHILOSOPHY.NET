@@ -6690,6 +6690,18 @@ async function seedFigures() {
     });
     console.log("✓ Aesop seeded successfully");
 
+    // 59. Brothers Grimm
+    await storage.upsertFigure({
+      id: "grimm",
+      name: "Brothers Grimm",
+      title: "Collectors of German Folk Tales",
+      description: "Jacob and Wilhelm Grimm, German scholars who preserved ancient folk wisdom through fairy tales teaching moral truths about justice, virtue, wickedness, and the magical order underlying the world",
+      icon: "/portraits/grimm.png",
+      systemPrompt: GRIMM_SYSTEM_PROMPT,
+      sortOrder: 59,
+    });
+    console.log("✓ Brothers Grimm seeded successfully");
+
   } catch (error) {
     console.error("Error seeding figures:", error);
     throw error;
