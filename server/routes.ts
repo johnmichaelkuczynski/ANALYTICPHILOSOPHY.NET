@@ -1625,19 +1625,22 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
     try {
       const { query, author, numQuotes = 10 } = req.body;
 
-      if (!query || !author) {
+      if (!author) {
         return res.status(400).json({
           success: false,
-          error: "Query and author are required"
+          error: "Author is required"
         });
       }
 
       const quotesLimit = Math.min(Math.max(parseInt(numQuotes) || 10, 1), 50);
+      
+      // Use default query if none provided
+      const searchQuery = query?.trim() || "important philosophical insights and key ideas";
 
-      console.log(`[Quote Generator] Generating ${quotesLimit} quotes from ${author} on: "${query}"`);
+      console.log(`[Quote Generator] Generating ${quotesLimit} quotes from ${author} on: "${searchQuery}"`);
 
       // Use semantic search to find relevant passages
-      const passages = await searchPhilosophicalChunks(query, 15, 'common', author);
+      const passages = await searchPhilosophicalChunks(searchQuery, 15, 'common', author);
 
       if (passages.length === 0) {
         return res.json({
@@ -1707,7 +1710,7 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
           chunkIndex: q.chunkIndex
         })),
         meta: {
-          query,
+          query: searchQuery,
           author,
           quotesFound: finalQuotes.length
         }

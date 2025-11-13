@@ -80,7 +80,7 @@ export function QuoteGeneratorSection({ onRegisterInput }: QuoteGeneratorSection
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            query: query.trim(),
+            query: query.trim() || undefined,
             author: selectedAuthor,
             numQuotes: quotesNum,
           }),
@@ -254,18 +254,18 @@ export function QuoteGeneratorSection({ onRegisterInput }: QuoteGeneratorSection
 
                 <div className="space-y-2">
                   <Label htmlFor="query-input-quotes">
-                    Query (topic or keywords)
+                    Query (topic or keywords) — Optional
                   </Label>
                   <Textarea
                     ref={queryTextareaRef}
                     id="query-input-quotes"
-                    placeholder="e.g., 'unconscious mind', 'action at a distance', 'class struggle'"
+                    placeholder="Leave blank for best quotes, or specify topic: 'religion', 'ethics', 'epistemology', etc."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
-                        if (selectedAuthor && query.trim() && !isGenerating) {
+                        if (selectedAuthor && !isGenerating) {
                           handleGenerate();
                         }
                       }
@@ -309,11 +309,11 @@ export function QuoteGeneratorSection({ onRegisterInput }: QuoteGeneratorSection
 
                 <div className="space-y-2">
                   <Label htmlFor="query-input-upload">
-                    Search Criteria (optional)
+                    Search Criteria — Optional
                   </Label>
                   <Textarea
                     id="query-input-upload"
-                    placeholder="Leave blank to extract all quotes, or specify keywords to filter"
+                    placeholder="Leave blank for best quotes, or specify keywords to filter results"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={(e) => {
@@ -356,7 +356,7 @@ export function QuoteGeneratorSection({ onRegisterInput }: QuoteGeneratorSection
 
             <Button
               onClick={handleGenerate}
-              disabled={isGenerating || (mode === 'author' && (!selectedAuthor || !query.trim())) || (mode === 'upload' && !selectedFile)}
+              disabled={isGenerating || (mode === 'author' && !selectedAuthor) || (mode === 'upload' && !selectedFile)}
               className="w-full"
               data-testid="button-generate-quotes"
             >
