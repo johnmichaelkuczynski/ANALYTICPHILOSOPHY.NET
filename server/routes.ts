@@ -2343,23 +2343,42 @@ ${genderPreference ? `GENDER PREFERENCE: ${genderPreference}-oriented story\n` :
 YOUR TASK: Write a nightmare story (800-1200 words) where this fear MATERIALIZES COMPLETELY and the protagonist is DESTROYED/DEFEATED.
 
 TEMPLATE SELECTION GUIDE:
-- Paranoid exposure → "The Tell-Tale Heart," Kafka, "Nightmare at 20,000 Feet"
-- Double life collapse → Ted Bundy, Jekyll/Hyde, Gone Girl
-- System crushing individual → Kafka bureaucratic, 1984, "The Obsolete Man" (Twilight Zone)
+- Paranoid exposure → "The Tell-Tale Heart" (Poe), Kafka, "Nightmare at 20,000 Feet"
+- Double life collapse → Ted Bundy template, Jekyll/Hyde, Gone Girl
+- System crushing individual → Kafka bureaucratic, 1984, "The Obsolete Man" (Twilight Zone), Bartleby
 - Narcissistic denial fails → Fatal Vision/Jeffrey MacDonald, Amadeus (Salieri)
 - Trusted insider betrayal → Aldrich Ames, "The Conversation"
 - Idealism destroyed → Into the Wild, "Young Goodman Brown"
 - Cannot process experience → The Emperor's Club, Shutter Island
-- House of cards → Enron, Madoff, FTX, LTCM
+- House of cards → Enron, Madoff, FTX, When Genius Failed (LTCM)
+- Expert obsolescence → When Genius Failed + The Obsolete Man combination
+
+GOLD STANDARD EXAMPLE - "Department of Epistemic Humility":
+Author claimed bureaucrats use philosophical skepticism as excuse for inaction. Nightmare: World where epistemic humility = official law, doctor prosecuted for claiming knowledge, tribunal judges her statistically inferior, patients die awaiting certainty committees, system's logic perfect within framework, protagonist destroyed.
+
+KEY: Bartleby's deadpan matter-of-fact tone + Twilight Zone's tribunal structure. NOT sentimental. Bureaucrats aren't villains—they're following protocol. The philosophy wins.
 
 CRITICAL REQUIREMENTS:
-1. SELECT appropriate template and MATCH its narrative voice/style
-2. Single flowing narrative (NO separate "Part 1" or "Part 2" sections)
-3. Integrate any facts naturally into the story flow
-4. The FEAR must WIN - protagonist destroyed/defeated, no redemption
-5. Write in the template's style (Poe=paranoid first-person, Kafka=matter-of-fact horror, Twilight Zone=ironic moral, True Crime=documentary realism, Greek Tragedy=inexorable fate)
+1. NEVER use story titles - just begin the narrative
+2. DEADPAN/MATTER-OF-FACT tone - Kafka's bureaucratic horror, Melville's understated absurdity, documentary precision
+3. NOT melodramatic or sentimental - avoid "blood froze," "ancient wisdom," "what was being lost forever"
+4. Institutional logic must be REASONABLE within framework - system isn't evil, it's following its own perfect logic
+5. Endings must be BRUTAL not elegiac - "The protocol was followed. No one was to blame." NOT "and what was lost could never be recovered"
+6. Use dates, numbers, specifics when appropriate (documentary style)
+7. Single flowing narrative (NO separate sections, no "Part 1/Part 2")
+8. The FEAR must WIN completely - protagonist destroyed/defeated, system continues unchanged
 
-Write the complete nightmare story NOW:`;
+TONE EXAMPLES:
+
+✅ CORRECT (Deadpan/Documentary): "At the November review, Jenkins presented the data. CARDIOMAX's 98.2% accuracy versus Vasquez's 89.4%. The two deaths were classified as statistical outliers. The board voted 7-0 to recommend her early retirement. 'The numbers don't lie,' Jenkins said."
+
+❌ WRONG (Melodramatic): "Her blood froze as she realized no one would ever understand the ancient wisdom being lost forever. The whispered warnings of thirty years died with her, and the world would never know what might have been."
+
+✅ CORRECT (Bureaucratic Logic): "Director Park made a note in the file. 'This isn't punishment. We're protecting patients from physicians who think they know things.'"
+
+❌ WRONG (Villainous): "Park smiled cruelly, knowing she was destroying a good doctor's career out of pure bureaucratic spite."
+
+Write the complete nightmare story NOW, beginning directly with the narrative:`;
 
       const storyResponse = await anthropic.messages.create({
         model: "claude-sonnet-4-20250514",
