@@ -2037,25 +2037,20 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
 
       console.log(`[Thesis to World] Processing ${inputText.length} characters of input text`);
 
-      // STEP 1: Extract thesis about human nature
-      const extractionPrompt = `You are analyzing non-fiction text to extract a thesis about human nature or human behavior.
+      // STEP 1: Extract the AUTHOR'S actual thesis (CRITICAL)
+      const extractionPrompt = `EXTRACT THE AUTHOR'S ACTUAL THESIS (CRITICAL):
+- Read carefully. What is the AUTHOR claiming, not what they're discussing or arguing against?
+- If the text argues AGAINST a position, extract what they argue FOR instead
+- Example: "Nietzsche says X, but I argue Y" → Extract Y, not X
+- The thesis should be about how people/society/the world actually operates
+- State it in one clear sentence
 
 INPUT TEXT:
 ${inputText}
 
 YOUR TASK:
-1. Identify the core thesis or claim about how humans are/behave
-2. Return ONLY a single-sentence thesis statement
-3. If no clear anthropological claim exists, return "NO_THESIS"
-
-REQUIREMENTS:
-- One sentence maximum
-- Focus on universal claims about human nature/behavior
-- Be specific and concrete
-- Examples of valid theses:
-  * "People are fundamentally selfish and prioritize personal gain over collective good"
-  * "Humans always betray trust when given sufficient opportunity and incentive"
-  * "People judge others primarily by first impressions that rarely change"
+Return ONLY a single-sentence thesis statement that captures what the AUTHOR is claiming.
+If no clear thesis exists, return "NO_THESIS"
 
 RESPONSE FORMAT:
 Return only the thesis sentence or "NO_THESIS"`;
@@ -2080,103 +2075,164 @@ Return only the thesis sentence or "NO_THESIS"`;
 
       console.log(`[Thesis to World] Extracted thesis: "${thesisText}"`);
 
-      // STEP 2: Generate documentary-style fiction
-      const customizationInstruction = customization?.trim() 
-        ? `\n\nUSER CUSTOMIZATION REQUEST: ${customization}\nIntegrate this naturally into the scenario. If it conflicts with the thesis, note the incompatibility.` 
-        : '';
+      // STEP 2A: Generate scene outline (validation step)
+      const customizationNote = customization?.trim() ? `\nUser wants: ${customization}` : '';
 
-      const fictionPrompt = `You are writing matter-of-fact, documentary-style fiction that depicts a world where a specific thesis about human nature is demonstrably true.
+      const outlineSystemPrompt = `You are a fiction writer who creates narrative outlines. You write STORIES with characters and events, NOT research reports or analytical documents.`;
 
-THESIS TO DEMONSTRATE:
-"${thesisText}"
-${customizationInstruction}
+      const outlinePrompt = `Create a brief scene outline for a 300-500 word narrative fiction story depicting a world where this thesis is true:
 
-YOUR TASK:
-Write a 300-500 word piece in documentary/journalistic non-fiction style (NOT creative fiction) that depicts a world/scenario where this thesis is obviously, concretely true.
+"${thesisText}"${customizationNote}
 
-CRITICAL STYLE REQUIREMENTS:
-- Write like journalism or documentary reporting - matter-of-fact, observational tone
-- NO melodrama, flowery language, or typical creative fiction devices
-- NO character thoughts/feelings - only observable actions and patterns
-- Use concrete, specific details and examples
-- Present as factual documentation of how things are
-- Structure: Opening context (1 para) → Three specific examples/patterns (3 paras) → Closing observation (1 para)
+Your outline MUST include:
+- 2-3 named characters with specific roles
+- 2-3 concrete scenes/incidents (with dates/locations)
+- Specific actions and events
 
-BANNED PHRASES/APPROACHES:
-- Avoid: "In a world where...", "One day...", dramatic reveals
-- Avoid: Emotional language, poetic descriptions, suspenseful pacing
-- Instead: Direct observation, data-like specificity, reportorial distance
+Format your outline as a simple bulleted list. Example:
+• Scene 1: March 2023, Acme Corp office - CEO James Morrison announces factory closure, approves own bonus
+• Scene 2: Same day - Supervisor Linda Chen complains to board, gets fired
+• Scene 3: Morrison's shareholder meeting - defends decision
 
-WORD COUNT: Target 420 words (±60 acceptable range: 300-500 words)
+Return ONLY the outline, nothing else.`;
 
-After writing, verify:
-1. Word count is 300-500 words
-2. Tone is documentary/journalistic, not creative fiction
-3. Thesis is demonstrated through concrete examples
-4. No melodrama or flowery language
-
-Write the fiction now:`;
-
-      const fictionResponse = await anthropic.messages.create({
+      const outlineResponse = await anthropic.messages.create({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 1500,
-        temperature: 0.7,
-        messages: [{ role: "user", content: fictionPrompt }]
+        max_tokens: 300,
+        temperature: 0.4,
+        system: outlineSystemPrompt,
+        messages: [{ role: "user", content: outlinePrompt }]
       });
 
-      const fiction = fictionResponse.content[0].type === 'text' 
-        ? fictionResponse.content[0].text.trim() 
+      const outline = outlineResponse.content[0].type === 'text' 
+        ? outlineResponse.content[0].text.trim() 
         : '';
 
-      if (!fiction) {
-        throw new Error("Failed to generate fiction");
+      console.log(`[Thesis to World] Scene outline generated: ${outline.substring(0, 200)}...`);
+
+      // STEP 2B: Generate narrative fiction from outline
+      const storySystemPrompt = `You are a fiction writer who writes narrative stories with characters, scenes, and events. You write in matter-of-fact journalistic style.
+
+ABSOLUTE RULES - HIGHEST PRIORITY:
+1. Write NARRATIVE FICTION (a story) - NOT an analytical document
+2. NEVER use phrases like: "research shows," "studies indicate," "data reveals," "analysis demonstrates," "observational study"
+3. NEVER invent statistics or cite made-up research
+4. NEVER use academic/theoretical language like "patterns suggest," "frameworks adapt," "systematic variations"
+5. DO use: specific characters, concrete scenes, dialogue, actions, events
+
+CORRECT EXAMPLE:
+"On March 15, 2023, James Morrison closed the Acme factory. The 847 workers got two weeks' notice. Morrison's $4.2 million bonus came through that afternoon. Supervisor Linda Chen complained. The board fired her the next day for 'creating hostility.' Morrison told shareholders, 'Tough decisions need strong leaders.'"
+
+INCORRECT EXAMPLE (FORBIDDEN):
+"Recent studies of corporate governance reveal systematic patterns. Data from 847 cases shows differential treatment. Analysis demonstrates that hierarchical position correlates with ethical flexibility."`;
+
+      const storyPrompt = `Using this scene outline, write a 300-500 word narrative story:
+
+${outline}
+
+THE THESIS TO DEMONSTRATE:
+"${thesisText}"
+
+Write in matter-of-fact journalistic storytelling style. Use named characters, specific dates/locations, concrete actions. Show events unfolding. Include dialogue or specific things people say.
+
+Write the story NOW (300-500 words):`;
+
+      const storyResponse = await anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1500,
+        temperature: 0.5,
+        system: storySystemPrompt,
+        messages: [{ role: "user", content: storyPrompt }]
+      });
+
+      let fiction = storyResponse.content[0].type === 'text' 
+        ? storyResponse.content[0].text.trim() 
+        : '';
+
+      // STEP 3: Programmatic validation - reject banned phrases
+      const bannedPhrases = [
+        /research shows/i,
+        /research conducted/i,
+        /studies indicate/i,
+        /data reveals/i,
+        /data collected/i,
+        /analysis demonstrates/i,
+        /observational stud/i,
+        /systematic variation/i,
+        /patterns suggest/i,
+        /frameworks adapt/i,
+        /recent analysis/i,
+        /statistical analysis/i,
+        /documented consistent patterns/i,
+        /measured social structure/i,
+        /\d+ organizations/i,  // Catches fake study numbers like "847 organizations"
+        /\d+ cases/i,          // Catches "847 cases"
+        /between \d{4}-\d{4}/i, // Catches date ranges like "2019-2024"
+      ];
+
+      const foundViolations = bannedPhrases.filter(pattern => pattern.test(fiction));
+
+      if (foundViolations.length > 0) {
+        console.log(`[Thesis to World] Detected ${foundViolations.length} banned phrases, requesting rewrite...`);
+
+        const correctionPrompt = `Your story contains academic/analytical language. Rewrite it as NARRATIVE FICTION with characters and scenes. Remove phrases like "research shows," "studies indicate," "data reveals." Instead, show specific people doing specific things.
+
+Rewrite the story NOW (300-500 words) with concrete scenes and characters:`;
+
+        const correctedResponse = await anthropic.messages.create({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1500,
+          temperature: 0.5,
+          system: storySystemPrompt,
+          messages: [
+            { role: "user", content: storyPrompt },
+            { role: "assistant", content: fiction },
+            { role: "user", content: correctionPrompt }
+          ]
+        });
+
+        fiction = correctedResponse.content[0].type === 'text' 
+          ? correctedResponse.content[0].text.trim() 
+          : fiction;
+
+        console.log(`[Thesis to World] Rewrite completed`);
       }
 
       // Verify word count
       const wordCount = fiction.split(/\s+/).length;
-      console.log(`[Thesis to World] Generated ${wordCount} words of fiction`);
+      console.log(`[Thesis to World] Final fiction: ${wordCount} words`);
 
-      // If significantly out of range, request revision
+      // Word count adjustment if needed
       if (wordCount < 250 || wordCount > 550) {
-        console.log(`[Thesis to World] Word count ${wordCount} out of range, requesting revision...`);
+        console.log(`[Thesis to World] Word count ${wordCount} out of range, adjusting...`);
         
-        const revisionPrompt = `Your previous response was ${wordCount} words. Please revise to be exactly 300-500 words while maintaining the documentary/journalistic style and demonstrating the thesis: "${thesisText}"
-
-Return ONLY the revised fiction, no commentary.`;
+        const revisionPrompt = `Revise to exactly 300-500 words. Keep the narrative storytelling style with characters and scenes.`;
 
         const revisionResponse = await anthropic.messages.create({
           model: "claude-sonnet-4-20250514",
           max_tokens: 1500,
-          temperature: 0.7,
+          temperature: 0.5,
+          system: storySystemPrompt,
           messages: [
-            { role: "user", content: fictionPrompt },
+            { role: "user", content: storyPrompt },
             { role: "assistant", content: fiction },
             { role: "user", content: revisionPrompt }
           ]
         });
 
-        const revisedFiction = revisionResponse.content[0].type === 'text' 
+        fiction = revisionResponse.content[0].type === 'text' 
           ? revisionResponse.content[0].text.trim() 
           : fiction;
 
-        const revisedWordCount = revisedFiction.split(/\s+/).length;
+        const revisedWordCount = fiction.split(/\s+/).length;
         console.log(`[Thesis to World] Revised to ${revisedWordCount} words`);
-
-        return res.json({
-          success: true,
-          thesis: thesisText,
-          fiction: revisedFiction,
-          wordCount: revisedWordCount,
-          revised: true
-        });
       }
 
       res.json({
         success: true,
         thesis: thesisText,
         fiction: fiction,
-        wordCount: wordCount,
-        revised: false
+        wordCount: fiction.split(/\s+/).length
       });
 
     } catch (error) {
