@@ -22,6 +22,7 @@ import { ComparisonModal } from "@/components/comparison-modal";
 import { ModelBuilderSection } from "@/components/model-builder-section";
 import { PaperWriterSection } from "@/components/paper-writer-section";
 import { QuoteGeneratorSection } from "@/components/quote-generator-section";
+import { ThesisToWorldSection } from "@/components/thesis-to-world-section";
 
 const DEFAULT_PERSONA_SETTINGS: Partial<PersonaSettings> = {
   responseLength: 0,
@@ -539,6 +540,11 @@ export default function Chat() {
           {/* Quote Generator Section */}
           <div id="quote-generator-section" className="px-4 py-8 border-t-4 border-primary/20">
             <QuoteGeneratorSection />
+          </div>
+
+          {/* Thesis to World Section */}
+          <div id="thesis-to-world-section" className="px-4 py-8 border-t-4 border-primary/20">
+            <ThesisToWorldSection />
           </div>
         </div>
       </main>
