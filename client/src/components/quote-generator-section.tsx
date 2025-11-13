@@ -100,7 +100,7 @@ export function QuoteGeneratorSection({ onRegisterInput }: QuoteGeneratorSection
         // Format quotes with numbering and source attribution
         const formattedQuotes = data.quotes
           .map((q: any, index: number) => 
-            `${index + 1}. "${q.text}"\n   — ${selectedAuthor} (${q.source}, chunk ${q.chunkIndex})`
+            `${index + 1}. "${q.text}"\n   — ${q.author || 'Unknown Author'}, ${q.source} (chunk ${q.chunkIndex})`
           )
           .join('\n\n');
 

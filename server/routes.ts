@@ -1422,8 +1422,8 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
     query: string = "",
     minLength: number = 50,
     maxQuotes: number = 50
-  ): Array<{ quote: string; source: string; chunkIndex: number; score: number }> {
-    const quotes: Array<{ quote: string; source: string; chunkIndex: number; score: number }> = [];
+  ): Array<{ quote: string; source: string; chunkIndex: number; score: number; author: string }> {
+    const quotes: Array<{ quote: string; source: string; chunkIndex: number; score: number; author: string }> = [];
     
     for (const passage of passages) {
       // Clean and normalize content
@@ -1508,7 +1508,8 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
           quote: sentence,
           source: passage.paperTitle,
           chunkIndex: passage.chunkIndex,
-          score
+          score,
+          author: passage.author
         });
       }
     }
@@ -1813,7 +1814,8 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
       const finalQuotes = extractedQuotes.map(q => ({
         quote: q.quote,
         source: q.source,
-        chunkIndex: q.chunkIndex
+        chunkIndex: q.chunkIndex,
+        author: q.author
       }));
 
       console.log(`[Quote Generator] Found ${finalQuotes.length} quotes from ${author}`);
@@ -1823,7 +1825,8 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
         quotes: finalQuotes.map(q => ({
           text: q.quote,
           source: q.source,
-          chunkIndex: q.chunkIndex
+          chunkIndex: q.chunkIndex,
+          author: q.author
         })),
         meta: {
           query: searchQuery,
