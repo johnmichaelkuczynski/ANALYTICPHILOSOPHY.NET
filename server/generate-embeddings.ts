@@ -29,6 +29,7 @@ const batchToFigure: Record<string, string> = {
   "jmk_russell_frege": "common",
   "jmk_mind_meaning": "common",
   "jmk_epistem_dialogues": "common",
+  "jmk_legal_intention_epistem": "common",
   "veblen_batch1": "common",
   "veblen_batch2": "common",
   "veblen_batch3": "common",
@@ -55,6 +56,7 @@ const batchToAuthor: Record<string, string> = {
   "jmk_russell_frege": "J.-M. Kuczynski",
   "jmk_mind_meaning": "J.-M. Kuczynski",
   "jmk_epistem_dialogues": "J.-M. Kuczynski",
+  "jmk_legal_intention_epistem": "J.-M. Kuczynski",
   "jmk": "J.-M. Kuczynski",
   "veblen_batch1": "Thorstein Veblen",
   "veblen_batch2": "Thorstein Veblen",
@@ -208,6 +210,13 @@ const figuresPapers = {
     { file: "kuczynski_philosophical_knowledge_full.txt", title: "Philosophical Knowledge: What It Is and Why Philosophy Departments Don't Want You to Have It" },
     { file: "kuczynski_philosophical_dialogues.txt", title: "Philosophical Dialogues" },
     { file: "kuczynski_originalism.txt", title: "Originalism" },
+  ],
+  "jmk_legal_intention_epistem": [
+    // BATCH 11: Legal Philosophy, Philosophy of Mind/Action & Epistemology - November 2025
+    { file: "kuczynski_moral_structure_legal_obligation.txt", title: "The Moral Structure of Legal Obligation" },
+    { file: "kuczynski_what_is_intention.txt", title: "What Is an Intention?" },
+    { file: "kuczynski_theoretical_knowledge_inductive.txt", title: "Theoretical Knowledge and Inductive Inference (2024)" },
+    { file: "kuczynski_semantics_philosophy_shorts.txt", title: "Semantics (Philosophy Shorts Volume 8)" },
   ],
   "jmk": [
     // LEGACY: For backward compatibility - use batch approach above
