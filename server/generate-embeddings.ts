@@ -48,6 +48,7 @@ const batchToFigure: Record<string, string> = {
   "math_classics": "common",
   "reich": "common",
   "orwell": "common",
+  "dostoevsky_crime_punishment": "common",
 };
 
 // REQUIRED: Author attribution mapping for every chunk
@@ -108,6 +109,7 @@ const batchToAuthor: Record<string, string> = {
   "math_classics": "Various Mathematicians",
   "reich": "Wilhelm Reich",
   "orwell": "George Orwell",
+  "dostoevsky_crime_punishment": "Fyodor Dostoevsky",
   "common": "Various Authors",
 };
 
@@ -420,6 +422,10 @@ const figuresPapers = {
     { file: "poe_volume_3.txt", title: "The Works of Edgar Allan Poe — Volume 3" },
     { file: "poe_volume_4.txt", title: "The Works of Edgar Allan Poe — Volume 4" },
     { file: "poe_volume_5.txt", title: "The Works of Edgar Allan Poe — Volume 5" },
+  ],
+  "dostoevsky_crime_punishment": [
+    // DOSTOEVSKY: Crime and Punishment - November 2025
+    { file: "data/dostoevsky/crime_and_punishment.txt", title: "Crime and Punishment by Fyodor Dostoevsky" },
   ],
   "common": [
     // Common Fund of Knowledge - shared knowledge base accessible to ALL philosophers
