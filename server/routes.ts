@@ -2068,127 +2068,156 @@ Return ONLY a single-sentence thesis or "NO_THESIS"`;
 
       console.log(`[Thesis to World] Extracted thesis: "${thesisText}"`);
 
-      // STEP 2: Generate documentary-style factual incidents
+      // STEP 2: Generate structured documentary incidents (JSON enforced)
       const customizationNote = customization?.trim() 
-        ? `\n\nUSER SPECIFICATIONS: ${customization}\nIntegrate these details naturally if possible.` 
+        ? `\n\nUSER SPECIFICATIONS: ${customization}\nIntegrate these details if possible.` 
         : '';
 
-      const documentaryPrompt = `Generate 8-12 discrete factual incidents that demonstrate this thesis through observable historical facts:
+      const documentaryPrompt = `Generate 8-12 discrete factual incidents demonstrating this thesis.
 
 THESIS: "${thesisText}"${customizationNote}
 
-CRITICAL REQUIREMENTS:
-✅ Each incident MUST include: Date/time period, specific names, specific numbers, action taken, observable result
-✅ Write in pure documentary style: chronological accumulation of facts
-✅ Format: "In [DATE], [NAME/ORGANIZATION] [ACTION with NUMBERS]. [RESULT with NUMBERS]."
-✅ Total length: 300-500 words
+CRITICAL: Return ONLY valid JSON in this exact format:
+{
+  "incidents": [
+    {
+      "date": "March 1951",
+      "name": "Nikolai Vavilov",
+      "numbers": "60% higher yields",
+      "action": "submitted wheat research",
+      "result": "rejected as elitist, died in prison six months later"
+    }
+  ]
+}
+
+FIELD REQUIREMENTS:
+- date: Specific date/period (month/year minimum)
+- name: Specific person/organization name
+- numbers: Specific quantitative data (percentages, counts, dollars)
+- action: What happened (factual, no dialogue)
+- result: Observable outcome (factual, no emotions)
 
 ABSOLUTELY FORBIDDEN:
-❌ NO dialogue (no quotation marks showing what people said)
-❌ NO scenes or dramatic structure  
-❌ NO character thoughts, feelings, or motivations
-❌ NO narrative arc or story progression
-❌ NO explanations or commentary on the thesis
-❌ NO phrases like "she felt," "he realized," "they wondered"
+❌ NO dialogue or quotation marks in any field
+❌ NO character thoughts/feelings ("felt," "realized," "wondered")
+❌ NO narrative phrases ("walked into," "looked at," "confronted")
+❌ NO abstract commentary or explanations
+❌ ONLY factual observable data
 
-CORRECT EXAMPLE:
-"Between 1950 and 1955, the Soviet Ministry of Science established 847 review committees. In March 1951, geneticist Nikolai Vavilov submitted wheat research showing 60% higher yields. The Central Committee rejected it as elitist differentiation. Vavilov died in prison six months later. By 1953, national crop yields fell 40%.
-
-In August 1952, the Ministry reviewed 1,200 musical compositions. They rejected 890 as insufficiently accessible. Composers Shostakovich and Prokofiev received formal censures. Concert attendance dropped 65% between 1952 and 1954."
-
-INCORRECT EXAMPLE (FORBIDDEN):
-"Maya Chen walked into the Innovation Bureau on a cold November morning. 'Your algorithm violates equality standards,' Director Knox told her. Maya felt her stomach sink. She had spent three years on this project."
-
-Generate the documentary incidents NOW (300-500 words):`;
+Return ONLY the JSON structure, no other text:`;
 
       const documentaryResponse = await anthropic.messages.create({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 1500,
-        temperature: 0.4,
+        max_tokens: 2000,
+        temperature: 0.3,
         messages: [{ role: "user", content: documentaryPrompt }]
       });
 
-      let documentary = documentaryResponse.content[0].type === 'text' 
+      const rawResponse = documentaryResponse.content[0].type === 'text' 
         ? documentaryResponse.content[0].text.trim() 
         : '';
 
-      // STEP 3: Strict validation - reject ANY narrative elements
-      const narrativeViolations = [
-        /"[^"]+"/,  // Any quotation marks (dialogue)
-        /\bshe (felt|thought|realized|wondered|knew|believed)\b/i,
-        /\bhe (felt|thought|realized|wondered|knew|believed)\b/i,
-        /\bthey (felt|thought|realized|wondered|knew|believed)\b/i,
-        /walked into/i,
-        /looked at/i,
-        /turned to/i,
-        /scene \d/i,
-        /chapter \d/i,
+      // STEP 3: Parse and validate JSON structure
+      let incidentsData;
+      try {
+        // Extract JSON if wrapped in markdown code blocks
+        const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+          throw new Error("No JSON structure found in response");
+        }
+        incidentsData = JSON.parse(jsonMatch[0]);
+        
+        if (!incidentsData.incidents || !Array.isArray(incidentsData.incidents)) {
+          throw new Error("Invalid JSON structure: missing incidents array");
+        }
+      } catch (parseError) {
+        console.error("[Thesis to World] JSON parse failed, retrying...", parseError);
+        
+        // Retry with stronger emphasis on JSON format
+        const retryPrompt = `Previous response was not valid JSON. Return ONLY a JSON object with this exact structure:
+{
+  "incidents": [
+    {"date": "...", "name": "...", "numbers": "...", "action": "...", "result": "..."}
+  ]
+}
+
+NO markdown, NO explanatory text, ONLY the JSON object.`;
+
+        const retryResponse = await anthropic.messages.create({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 2000,
+          temperature: 0.2,
+          messages: [
+            { role: "user", content: documentaryPrompt },
+            { role: "assistant", content: rawResponse },
+            { role: "user", content: retryPrompt }
+          ]
+        });
+
+        const retryText = retryResponse.content[0].type === 'text' ? retryResponse.content[0].text.trim() : '';
+        const retryMatch = retryText.match(/\{[\s\S]*\}/);
+        if (!retryMatch) {
+          throw new Error("Failed to generate valid JSON after retry");
+        }
+        incidentsData = JSON.parse(retryMatch[0]);
+      }
+
+      // STEP 4: Validate each incident for required fields and narrative violations
+      const narrativePatterns = [
+        /"[^"]+"/,  // Quotation marks (dialogue)
+        /\b(felt|thought|realized|wondered|knew|believed|confronted|walked into|looked at|turned to|stunned by|shocked by)\b/i,
       ];
 
-      const foundNarrative = narrativeViolations.some(pattern => pattern.test(documentary));
+      const validatedIncidents = incidentsData.incidents.filter((incident: any) => {
+        // Check all required fields exist
+        if (!incident.date || !incident.name || !incident.numbers || !incident.action || !incident.result) {
+          console.warn(`[Thesis to World] Incident missing required fields:`, incident);
+          return false;
+        }
 
-      if (foundNarrative) {
-        console.log(`[Thesis to World] Detected narrative elements, requesting pure documentary rewrite...`);
+        // Check for narrative violations in any field
+        const allText = `${incident.date} ${incident.name} ${incident.numbers} ${incident.action} ${incident.result}`;
+        const hasNarrative = narrativePatterns.some(pattern => pattern.test(allText));
+        if (hasNarrative) {
+          console.warn(`[Thesis to World] Incident contains narrative elements:`, incident);
+          return false;
+        }
 
-        const correctionPrompt = `Your output contains narrative fiction elements (dialogue, scenes, character thoughts). This is completely wrong.
+        // Check for numbers in the numbers field
+        if (!/\d/.test(incident.numbers)) {
+          console.warn(`[Thesis to World] Incident missing numeric data:`, incident);
+          return false;
+        }
 
-Rewrite as PURE DOCUMENTARY FACTUAL ACCUMULATION:
-- Date. Name. Number. Action. Result.
-- NO quotation marks or dialogue
-- NO character feelings or thoughts
-- NO scenes or dramatic structure
-- Just chronological facts demonstrating the thesis
+        return true;
+      });
 
-Rewrite NOW (300-500 words) as pure documentary:`;
-
-        const correctedResponse = await anthropic.messages.create({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1500,
-          temperature: 0.3,
-          messages: [
-            { role: "user", content: documentaryPrompt },
-            { role: "assistant", content: documentary },
-            { role: "user", content: correctionPrompt }
-          ]
-        });
-
-        documentary = correctedResponse.content[0].type === 'text' 
-          ? correctedResponse.content[0].text.trim() 
-          : documentary;
-
-        console.log(`[Thesis to World] Documentary rewrite completed`);
+      if (validatedIncidents.length < 6) {
+        throw new Error(`Only ${validatedIncidents.length} valid incidents generated (minimum 6 required)`);
       }
 
-      // Word count validation
-      const wordCount = documentary.split(/\s+/).length;
-      console.log(`[Thesis to World] Generated ${wordCount} words`);
+      console.log(`[Thesis to World] Validated ${validatedIncidents.length} incidents`);
 
-      if (wordCount < 250 || wordCount > 550) {
-        console.log(`[Thesis to World] Word count out of range, adjusting...`);
+      // STEP 5: Convert structured incidents to documentary prose
+      const documentary = validatedIncidents.map((inc: any) => {
+        // Build factual sentence: Date, Name, Action (with numbers), Result
+        const datePart = `In ${inc.date},`;
+        const actionPart = inc.action.includes(inc.numbers) 
+          ? `${inc.name} ${inc.action}` 
+          : `${inc.name} ${inc.action} (${inc.numbers})`;
+        const resultPart = inc.result;
         
-        const revisionPrompt = `Adjust to exactly 300-500 words. Maintain pure documentary style: dates, names, numbers, actions, results. NO dialogue or narrative.`;
+        return `${datePart} ${actionPart}. ${resultPart}`;
+      }).join('\n\n');
 
-        const revisionResponse = await anthropic.messages.create({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1500,
-          temperature: 0.3,
-          messages: [
-            { role: "user", content: documentaryPrompt },
-            { role: "assistant", content: documentary },
-            { role: "user", content: revisionPrompt }
-          ]
-        });
-
-        documentary = revisionResponse.content[0].type === 'text' 
-          ? revisionResponse.content[0].text.trim() 
-          : documentary;
-      }
+      const wordCount = documentary.split(/\s+/).length;
+      console.log(`[Thesis to World] Generated ${wordCount} words of documentary content`);
 
       res.json({
         success: true,
         thesis: thesisText,
         fiction: documentary,
-        wordCount: documentary.split(/\s+/).length
+        wordCount: wordCount
       });
 
     } catch (error) {
