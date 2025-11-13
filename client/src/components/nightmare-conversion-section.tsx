@@ -4,10 +4,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Upload, Copy, Trash2, FileText, ChevronDown } from "lucide-react";
+import { Loader2, Upload, Copy, Trash2, FileText, ChevronDown, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,6 +31,8 @@ export function NightmareConversionSection({ onRegisterInput, onRegisterOutputs 
   const [templateSelection, setTemplateSelection] = useState('');
   const [wordCount, setWordCount] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [initialCustomInstructions, setInitialCustomInstructions] = useState('');
+  const [initialStoryModel, setInitialStoryModel] = useState('');
   const [customInstructions, setCustomInstructions] = useState('');
   const [isRewriting, setIsRewriting] = useState(false);
   const [rewrittenNightmare, setRewrittenNightmare] = useState('');
@@ -113,6 +116,12 @@ export function NightmareConversionSection({ onRegisterInput, onRegisterOutputs 
       if (genderPreference) {
         formData.append('genderPreference', genderPreference);
       }
+      if (initialCustomInstructions.trim()) {
+        formData.append('customInstructions', initialCustomInstructions);
+      }
+      if (initialStoryModel.trim()) {
+        formData.append('storyToModelAround', initialStoryModel);
+      }
 
       const response = await fetch('/api/nightmare-conversion', {
         method: 'POST',
@@ -158,6 +167,8 @@ export function NightmareConversionSection({ onRegisterInput, onRegisterOutputs 
     setTemplateSelection('');
     setWordCount(0);
     setGenderPreference('');
+    setInitialCustomInstructions('');
+    setInitialStoryModel('');
     setCustomInstructions('');
     setRewrittenNightmare('');
     setRewrittenTemplate('');

@@ -1999,7 +1999,7 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
   app.post("/api/thesis-to-world", upload.single('file'), async (req, res) => {
     try {
       let inputText = '';
-      const { customization } = req.body;
+      const { customization, customInstructions, storyToModelAround } = req.body;
 
       // Get text from file upload or direct input
       if (req.file) {
@@ -2072,10 +2072,18 @@ Return ONLY a single-sentence thesis or "NO_THESIS"`;
       const customizationNote = customization?.trim() 
         ? `\n\nUSER SPECIFICATIONS: ${customization}\nIntegrate these details if possible.` 
         : '';
+      
+      const customInstructionsText = customInstructions?.trim()
+        ? `\n\nCUSTOM INSTRUCTIONS FROM USER:\n${customInstructions}\n`
+        : '';
+      
+      const storyModelText = storyToModelAround?.trim()
+        ? `\n\nSTORY TO MODEL AROUND:\n${storyToModelAround}\nUse this as structural inspiration.\n`
+        : '';
 
       const documentaryPrompt = `Generate 8-12 discrete factual incidents demonstrating this thesis.
 
-THESIS: "${thesisText}"${customizationNote}
+THESIS: "${thesisText}"${customizationNote}${customInstructionsText}${storyModelText}
 
 CRITICAL: Return ONLY valid JSON in this exact format:
 {
@@ -2218,6 +2226,7 @@ THESIS: "${thesisText}"
 
 BACKGROUND INCIDENTS:
 ${documentary}
+${customInstructionsText}${storyModelText}
 
 YOUR TASK: Write a 400-600 word DEVELOPED, EXTREME narrative story showing someone living in this world and experiencing the thesis firsthand.
 
@@ -2270,7 +2279,7 @@ Write the story NOW (400-600 words):`;
   app.post("/api/nightmare-conversion", upload.single('file'), async (req, res) => {
     try {
       let inputText = '';
-      const { text, genderPreference } = req.body;
+      const { text, genderPreference, customInstructions, storyToModelAround } = req.body;
 
       // Get text from file upload or direct input
       if (req.file) {
@@ -2331,6 +2340,14 @@ Core anxiety:`;
       console.log(`[Nightmare Conversion] Core anxiety: ${coreAnxiety}`);
 
       // STEP 2: Select template and generate nightmare story
+      const customInstructionsText = customInstructions?.trim() 
+        ? `\n\nCUSTOM INSTRUCTIONS FROM USER:\n${customInstructions}\n` 
+        : '';
+      
+      const storyModelText = storyToModelAround?.trim()
+        ? `\n\nSTORY TO MODEL AROUND:\n${storyToModelAround}\nUse this as structural inspiration for the nightmare.\n`
+        : '';
+
       const nightmarePrompt = `You are a master storyteller with deep knowledge of narrative templates from literature, film, and true crime.
 
 CORE ANXIETY: ${coreAnxiety}
@@ -2338,7 +2355,7 @@ CORE ANXIETY: ${coreAnxiety}
 ORIGINAL TEXT (for context):
 ${inputText}
 
-${genderPreference ? `GENDER PREFERENCE: ${genderPreference}-oriented story\n` : ''}
+${genderPreference ? `GENDER PREFERENCE: ${genderPreference}-oriented story\n` : ''}${customInstructionsText}${storyModelText}
 
 YOUR TASK: 
 1. FIRST, select the appropriate template(s) and explain why

@@ -4,9 +4,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Upload, Copy, Trash2, FileText } from "lucide-react";
+import { Loader2, Upload, Copy, Trash2, FileText, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface ThesisToWorldSectionProps {
   onRegisterInput?: (setter: (content: string) => void) => void;
@@ -16,6 +17,8 @@ export function ThesisToWorldSection({ onRegisterInput }: ThesisToWorldSectionPr
   const [mode, setMode] = useState<'paste' | 'upload'>('paste');
   const [inputText, setInputText] = useState('');
   const [customization, setCustomization] = useState('');
+  const [customInstructions, setCustomInstructions] = useState('');
+  const [storyToModelAround, setStoryToModelAround] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [generatedFiction, setGeneratedFiction] = useState('');
   const [extractedThesis, setExtractedThesis] = useState('');
@@ -90,6 +93,12 @@ export function ThesisToWorldSection({ onRegisterInput }: ThesisToWorldSectionPr
 
       if (customization.trim()) {
         formData.append('customization', customization.trim());
+      }
+      if (customInstructions.trim()) {
+        formData.append('customInstructions', customInstructions);
+      }
+      if (storyToModelAround.trim()) {
+        formData.append('storyToModelAround', storyToModelAround);
       }
 
       const response = await fetch('/api/thesis-to-world', {
