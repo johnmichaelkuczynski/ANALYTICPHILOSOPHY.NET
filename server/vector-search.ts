@@ -515,14 +515,17 @@ export function mapFigureIdToAuthor(figureId: string): string | undefined {
  * Returns author name if detected, undefined otherwise
  */
 export async function detectAuthorFromQuery(queryText: string): Promise<string | undefined> {
-  // Common author names to check (covers most queries)
+  // COMPLETE author list for ZHI external API detection
   const authorPatterns = [
-    'Kuczynski', 'Russell', 'Nietzsche', 'Plato', 'Aristotle', 'Marx', 
-    'Kant', 'Hegel', 'Freud', 'Jung', 'James', 'Dewey', 'Leibniz',
-    'Newton', 'Darwin', 'Veblen', 'Lenin', 'Engels', 'Descartes',
-    'Spinoza', 'Hobbes', 'Berkeley', 'Rousseau', 'Mill', 'Poe',
-    'Mises', 'Smith', 'Spencer', 'Marden', 'Adler', 'Peirce',
-    'Poincare', 'Maimonides', 'Gibbon', 'Locke'
+    'Kuczynski', 'Russell', 'Galileo', 'Nietzsche', 'Spinoza', 'Bacon',
+    'Freud', 'James', 'Leibniz', 'Aristotle', 'Le Bon', 'Plato',
+    'Darwin', 'Kant', 'Schopenhauer', 'Bergson', 'Jung', 'Bierce',
+    'Marx', 'Poe', 'Machiavelli', 'Keynes', 'Hume', 'Newton',
+    'Locke', 'London', 'Poincare', 'La Rochefoucauld', 'Dewey',
+    'Descartes', 'Lenin', 'Hegel', 'Hobbes', 'Berkeley', 'Veblen',
+    'Rousseau', 'Mill', 'Engels', 'Mises', 'Smith', 'Spencer',
+    'Marden', 'Swett', 'Adler', 'Peirce', 'Maimonides', 'Gibbon',
+    'Reich', 'Stekel', 'Orwell', 'Allen'
   ];
   
   const queryUpper = queryText.toUpperCase();

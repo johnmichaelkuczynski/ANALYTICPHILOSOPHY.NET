@@ -1306,13 +1306,13 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
   // Helper: Extract quotes from text passages
   function extractQuotes(
     passages: StructuredChunk[],
-    minLength: number = 50
+    minLength: number = 50,
+    maxQuotes: number = 50
   ): Array<{ quote: string; source: string; chunkIndex: number }> {
     const quotes: Array<{ quote: string; source: string; chunkIndex: number }> = [];
     
     for (const passage of passages) {
       // Match quoted text within the passage
-      // Use dynamic RegExp to properly inject minLength
       const quotePattern = new RegExp(`"([^"]{${minLength},})"`, 'g');
       const matches = Array.from(passage.content.matchAll(quotePattern));
       
@@ -1327,17 +1327,19 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
         }
       }
       
-      // Also extract substantial single-sentence quotes (not in quotation marks)
-      // This helps find key philosophical statements
+      // Extract ALL substantial sentences as quotes (no keyword filtering)
       const sentences = passage.content.split(/[.!?]\s+/);
       for (const sentence of sentences) {
-        if (sentence.length >= minLength && sentence.length <= 300) {
-          // Check if it's a substantial philosophical statement
-          // (contains key philosophical terms or proper names)
-          const hasPhilosophicalContent = /\b(consciousness|existence|knowledge|reality|truth|freedom|psyche|unconscious|neurosis|psychosis)\b/i.test(sentence);
-          if (hasPhilosophicalContent) {
+        const trimmed = sentence.trim();
+        // Accept all sentences between minLength and 500 chars
+        if (trimmed.length >= minLength && trimmed.length <= 500) {
+          // Basic quality filter: must have at least 3 words and start with capital
+          const wordCount = trimmed.split(/\s+/).length;
+          const startsWithCapital = /^[A-Z"]/.test(trimmed);
+          
+          if (wordCount >= 3 && startsWithCapital) {
             quotes.push({
-              quote: sentence.trim(),
+              quote: trimmed,
               source: passage.paperTitle,
               chunkIndex: passage.chunkIndex
             });
@@ -1346,9 +1348,9 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
       }
     }
     
-    // Deduplicate and limit
+    // Deduplicate and return requested number
     const uniqueQuotes = Array.from(new Map(quotes.map(q => [q.quote, q])).values());
-    return uniqueQuotes.slice(0, 20); // Max 20 quotes
+    return uniqueQuotes.slice(0, maxQuotes);
   }
 
   // ========================================
@@ -1432,7 +1434,7 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
       const filteredPassages = passages;
       
       // Extract quotes if requested
-      const quotes = includeQuotes ? extractQuotes(filteredPassages, minQuoteLength) : [];
+      const quotes = includeQuotes ? extractQuotes(filteredPassages, minQuoteLength, 50) : [];
       
       // Build structured response with citations
       const results = filteredPassages.map(passage => ({
@@ -1556,7 +1558,7 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
       }
       
       // Extract quotes if requested
-      const quotes = includeQuotes ? extractQuotes(truncatedPassages, minQuoteLength) : [];
+      const quotes = includeQuotes ? extractQuotes(truncatedPassages, minQuoteLength, 50) : [];
       
       // Build response
       const response = {
