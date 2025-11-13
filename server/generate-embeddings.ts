@@ -27,6 +27,8 @@ const batchToFigure: Record<string, string> = {
   "jmk_intentions_legal": "common",
   "jmk_misc_essays": "common",
   "jmk_russell_frege": "common",
+  "jmk_mind_meaning": "common",
+  "jmk_epistem_dialogues": "common",
   "veblen_batch1": "common",
   "veblen_batch2": "common",
   "veblen_batch3": "common",
@@ -51,6 +53,8 @@ const batchToAuthor: Record<string, string> = {
   "jmk_intentions_legal": "J.-M. Kuczynski",
   "jmk_misc_essays": "J.-M. Kuczynski",
   "jmk_russell_frege": "J.-M. Kuczynski",
+  "jmk_mind_meaning": "J.-M. Kuczynski",
+  "jmk_epistem_dialogues": "J.-M. Kuczynski",
   "jmk": "J.-M. Kuczynski",
   "veblen_batch1": "Thorstein Veblen",
   "veblen_batch2": "Thorstein Veblen",
@@ -193,6 +197,17 @@ const figuresPapers = {
   "jmk_russell_frege": [
     // BATCH 8: Russell & Frege - Theory of Descriptions, Logical Analysis - November 2025
     { file: "kuczynski_russell_ch6.txt", title: "Russell's Improvements on Frege's Work (Chapter 6)" },
+  ],
+  "jmk_mind_meaning": [
+    // BATCH 9: Mind, Meaning & Scientific Explanation - Major Work on Philosophy of Mind & Language - November 2025
+    { file: "kuczynski_mind_meaning_scientific.txt", title: "Mind, Meaning, and Scientific Explanation" },
+  ],
+  "jmk_epistem_dialogues": [
+    // BATCH 10: Epistemology, Dialogues & Political Philosophy - November 2025
+    { file: "kuczynski_quantum_determinism_full.txt", title: "Quantum Determinism (Full Essay)" },
+    { file: "kuczynski_philosophical_knowledge_full.txt", title: "Philosophical Knowledge: What It Is and Why Philosophy Departments Don't Want You to Have It" },
+    { file: "kuczynski_philosophical_dialogues.txt", title: "Philosophical Dialogues" },
+    { file: "kuczynski_originalism.txt", title: "Originalism" },
   ],
   "jmk": [
     // LEGACY: For backward compatibility - use batch approach above
