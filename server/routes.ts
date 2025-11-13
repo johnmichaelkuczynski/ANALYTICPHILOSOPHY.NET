@@ -1333,11 +1333,10 @@ ${customInstructions ? `ADDITIONAL INSTRUCTIONS:\n${customInstructions}\n\n` : '
         const trimmed = sentence.trim();
         // Accept all sentences between minLength and 500 chars
         if (trimmed.length >= minLength && trimmed.length <= 500) {
-          // Basic quality filter: must have at least 3 words and start with capital
+          // Basic quality filter: must have at least 5 words
           const wordCount = trimmed.split(/\s+/).length;
-          const startsWithCapital = /^[A-Z"]/.test(trimmed);
           
-          if (wordCount >= 3 && startsWithCapital) {
+          if (wordCount >= 5) {
             quotes.push({
               quote: trimmed,
               source: passage.paperTitle,
