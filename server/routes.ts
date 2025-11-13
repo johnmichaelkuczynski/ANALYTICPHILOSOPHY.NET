@@ -2253,8 +2253,8 @@ Write the story NOW (400-600 words):`;
 
       console.log(`[Thesis to World] Narrative story: ${story.split(/\s+/).length} words`);
 
-      // STEP 7: Combine both parts
-      const fullOutput = `**PART 1: BACKGROUND**\n\n${documentary}\n\n**PART 2: IN THIS WORLD**\n\n${story}`;
+      // STEP 7: Combine documentary and story into single flowing narrative
+      const fullOutput = `${documentary}\n\n${story}`;
       const totalWordCount = fullOutput.split(/\s+/).length;
 
       res.json({
