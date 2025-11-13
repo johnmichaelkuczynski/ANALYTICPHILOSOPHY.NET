@@ -2264,6 +2264,133 @@ Write the story NOW (400-600 words):`;
     }
   });
 
+  // ============================================================================
+  // NIGHTMARE CONVERSION ENDPOINT
+  // ============================================================================
+  app.post("/api/nightmare-conversion", upload.single('file'), async (req, res) => {
+    try {
+      let inputText = '';
+      const { text, genderPreference } = req.body;
+
+      // Get text from file upload or direct input
+      if (req.file) {
+        const fileExtension = req.file.originalname.split('.').pop()?.toLowerCase();
+        
+        if (fileExtension === 'txt') {
+          inputText = req.file.buffer.toString('utf-8');
+        } else if (fileExtension === 'pdf') {
+          const pdfData = await pdfParse(req.file.buffer);
+          inputText = pdfData.text;
+        } else if (fileExtension === 'docx') {
+          const result = await mammoth.extractRawText({ buffer: req.file.buffer });
+          inputText = result.value;
+        } else {
+          return res.status(400).json({
+            success: false,
+            error: "Unsupported file type. Please upload .txt, .pdf, or .docx files."
+          });
+        }
+      } else if (text) {
+        inputText = text;
+      }
+
+      if (!inputText || inputText.trim().length < 50) {
+        return res.status(400).json({
+          success: false,
+          error: "Please provide at least 50 characters of non-fiction text"
+        });
+      }
+
+      console.log(`[Nightmare Conversion] Processing ${inputText.length} characters, gender: ${genderPreference || 'neutral'}`);
+
+      // STEP 1: Extract core anxiety
+      const anxietyPrompt = `Analyze this non-fiction text and identify the author's CORE ANXIETY - what are they defending against through this intellectual work?
+
+TEXT:
+${inputText}
+
+YOUR TASK: Identify what the author's WORST-CASE REALISTIC SCENARIO would be. What does their defensive intellectual structure reveal about their deepest fear?
+
+Output ONLY a single sentence stating the core anxiety.
+
+Example: "Author fears being exposed as intellectual fraud whose abstract philosophy masks lack of substance"
+
+Core anxiety:`;
+
+      const anxietyResponse = await anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 200,
+        temperature: 0.3,
+        messages: [{ role: "user", content: anxietyPrompt }]
+      });
+
+      const coreAnxiety = anxietyResponse.content[0].type === 'text' 
+        ? anxietyResponse.content[0].text.trim() 
+        : '';
+
+      console.log(`[Nightmare Conversion] Core anxiety: ${coreAnxiety}`);
+
+      // STEP 2: Generate nightmare story using template
+      const nightmarePrompt = `You are a master storyteller with deep knowledge of narrative templates from literature, film, and true crime.
+
+CORE ANXIETY: ${coreAnxiety}
+
+ORIGINAL TEXT (for context):
+${inputText}
+
+${genderPreference ? `GENDER PREFERENCE: ${genderPreference}-oriented story\n` : ''}
+
+YOUR TASK: Write a nightmare story (800-1200 words) where this fear MATERIALIZES COMPLETELY and the protagonist is DESTROYED/DEFEATED.
+
+TEMPLATE SELECTION GUIDE:
+- Paranoid exposure → "The Tell-Tale Heart," Kafka, "Nightmare at 20,000 Feet"
+- Double life collapse → Ted Bundy, Jekyll/Hyde, Gone Girl
+- System crushing individual → Kafka bureaucratic, 1984, "The Obsolete Man" (Twilight Zone)
+- Narcissistic denial fails → Fatal Vision/Jeffrey MacDonald, Amadeus (Salieri)
+- Trusted insider betrayal → Aldrich Ames, "The Conversation"
+- Idealism destroyed → Into the Wild, "Young Goodman Brown"
+- Cannot process experience → The Emperor's Club, Shutter Island
+- House of cards → Enron, Madoff, FTX, LTCM
+
+CRITICAL REQUIREMENTS:
+1. SELECT appropriate template and MATCH its narrative voice/style
+2. Single flowing narrative (NO separate "Part 1" or "Part 2" sections)
+3. Integrate any facts naturally into the story flow
+4. The FEAR must WIN - protagonist destroyed/defeated, no redemption
+5. Write in the template's style (Poe=paranoid first-person, Kafka=matter-of-fact horror, Twilight Zone=ironic moral, True Crime=documentary realism, Greek Tragedy=inexorable fate)
+
+Write the complete nightmare story NOW:`;
+
+      const storyResponse = await anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 3000,
+        temperature: 0.7,
+        messages: [{ role: "user", content: nightmarePrompt }]
+      });
+
+      const nightmare = storyResponse.content[0].type === 'text' 
+        ? storyResponse.content[0].text.trim() 
+        : '';
+
+      const wordCount = nightmare.split(/\s+/).length;
+      console.log(`[Nightmare Conversion] Generated ${wordCount} words`);
+
+      res.json({
+        success: true,
+        anxiety: coreAnxiety,
+        nightmare: nightmare,
+        wordCount: wordCount
+      });
+
+    } catch (error) {
+      console.error("[Nightmare Conversion] Error:", error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to generate nightmare"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

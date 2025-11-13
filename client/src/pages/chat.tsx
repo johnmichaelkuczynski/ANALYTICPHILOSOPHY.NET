@@ -23,6 +23,7 @@ import { ModelBuilderSection } from "@/components/model-builder-section";
 import { PaperWriterSection } from "@/components/paper-writer-section";
 import { QuoteGeneratorSection } from "@/components/quote-generator-section";
 import { ThesisToWorldSection } from "@/components/thesis-to-world-section";
+import { NightmareConversionSection } from "@/components/nightmare-conversion-section";
 
 const DEFAULT_PERSONA_SETTINGS: Partial<PersonaSettings> = {
   responseLength: 0,
@@ -545,6 +546,11 @@ export default function Chat() {
           {/* Thesis to World Section */}
           <div id="thesis-to-world-section" className="px-4 py-8 border-t-4 border-primary/20">
             <ThesisToWorldSection />
+          </div>
+
+          {/* Nightmare Conversion Section */}
+          <div id="nightmare-conversion-section" className="px-4 py-8 border-t-4 border-primary/20">
+            <NightmareConversionSection />
           </div>
         </div>
       </main>
