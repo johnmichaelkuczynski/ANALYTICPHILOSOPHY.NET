@@ -51,6 +51,7 @@ const batchToFigure: Record<string, string> = {
   "dostoevsky_crime_punishment": "common",
   "tolstoy_war_and_peace": "common",
   "goldman_anarchism": "common",
+  "tocqueville_democracy": "common",
 };
 
 // REQUIRED: Author attribution mapping for every chunk
@@ -114,6 +115,7 @@ const batchToAuthor: Record<string, string> = {
   "dostoevsky_crime_punishment": "Fyodor Dostoevsky",
   "tolstoy_war_and_peace": "Leo Tolstoy",
   "goldman_anarchism": "Emma Goldman",
+  "tocqueville_democracy": "Alexis de Tocqueville",
   "common": "Various Authors",
 };
 
@@ -438,6 +440,10 @@ const figuresPapers = {
   "goldman_anarchism": [
     // GOLDMAN: Anarchism and Other Essays - November 2025
     { file: "data/goldman/anarchism_and_other_essays.txt", title: "Anarchism and Other Essays by Emma Goldman" },
+  ],
+  "tocqueville_democracy": [
+    // TOCQUEVILLE: Democracy in America - November 2025
+    { file: "data/tocqueville/democracy_in_america.txt", title: "Democracy in America by Alexis de Tocqueville" },
   ],
   "common": [
     // Common Fund of Knowledge - shared knowledge base accessible to ALL philosophers
