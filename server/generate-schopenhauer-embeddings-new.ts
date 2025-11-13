@@ -69,7 +69,7 @@ async function generateEmbeddingsBatch(texts: string[]): Promise<number[][]> {
   } catch (error: any) {
     const errorMessage = error?.error?.message || error?.message || '';
     if (error?.status === 400 && errorMessage.includes('maximum context length')) {
-      console.log(` WARNING: Batch too large, falling back to individual processing`);
+      console.log(\` ⚠️  Batch too large, falling back to individual processing\`);
       throw error;
     }
     throw error;
@@ -88,7 +88,7 @@ async function generateEmbedding(text: string): Promise<number[] | null> {
     const errorMessage = error?.error?.message || error?.message || '';
     if (error?.status === 400 && errorMessage.includes('maximum context length')) {
       const wordCount = text.split(/\s+/).length;
-      console.log(` WARNING: Chunk too large (${wordCount} words), skipping`);
+      console.log(\` ⚠️  Chunk too large (~\${wordCount} words), skipping\`);
       return null;
     }
     throw error;
@@ -96,13 +96,13 @@ async function generateEmbedding(text: string): Promise<number[] | null> {
 }
 
 async function processBook(filePath: string, title: string, startIndex: number): Promise<number> {
-  console.log(`\nProcessing: ${title}`);
+  console.log(\`\n📄 Processing: \${title}\`);
   
   const content = readFileSync(filePath, "utf-8");
   const chunks = chunkText(content, 250);
   
-  console.log(`   Found ${chunks.length} chunks`);
-  console.log(`   Estimated time: ${Math.ceil(chunks.length / 16 * 0.2)} minutes (batch processing)\n`);
+  console.log(\`   Found \${chunks.length} chunks\`);
+  console.log(\`   Estimated time: \${Math.ceil(chunks.length / 16 * 0.2)} minutes (batch processing)\n\`);
   
   const BATCH_SIZE = 16;
   let processedCount = 0;
@@ -112,7 +112,7 @@ async function processBook(filePath: string, title: string, startIndex: number):
     const batchNum = Math.floor(i / BATCH_SIZE) + 1;
     const totalBatches = Math.ceil(chunks.length / BATCH_SIZE);
     
-    process.stdout.write(`   Processing batch ${batchNum}/${totalBatches} (chunks ${i + 1}-${Math.min(i + BATCH_SIZE, chunks.length)})...`);
+    process.stdout.write(\`   Processing batch \${batchNum}/\${totalBatches} (chunks \${i + 1}-\${Math.min(i + BATCH_SIZE, chunks.length)})...\`);
     
     try {
       const embeddings = await generateEmbeddingsBatch(batch);
@@ -129,20 +129,20 @@ async function processBook(filePath: string, title: string, startIndex: number):
         processedCount++;
       }
       
-      process.stdout.write(` ✓ (${processedCount}/${chunks.length})\n`);
+      process.stdout.write(\` ✓ (\${processedCount}/\${chunks.length})\n\`);
       await new Promise(resolve => setTimeout(resolve, 200));
       
     } catch (batchError) {
-      process.stdout.write(` falling back to individual...\n`);
+      process.stdout.write(\` falling back to individual...\n\`);
       
       for (let j = 0; j < batch.length; j++) {
         const chunkIndex = i + j;
-        process.stdout.write(`     Chunk ${chunkIndex + 1}/${chunks.length}...`);
+        process.stdout.write(\`     Chunk \${chunkIndex + 1}/\${chunks.length}...\`);
         
         const embedding = await generateEmbedding(batch[j]);
         
         if (embedding === null) {
-          process.stdout.write(` skipped\n`);
+          process.stdout.write(\` skipped\n\`);
           continue;
         }
         
@@ -156,7 +156,7 @@ async function processBook(filePath: string, title: string, startIndex: number):
         });
         
         processedCount++;
-        process.stdout.write(` ✓\n`);
+        process.stdout.write(\` ✓\n\`);
         await new Promise(resolve => setTimeout(resolve, 100));
       }
     }
@@ -166,9 +166,9 @@ async function processBook(filePath: string, title: string, startIndex: number):
 }
 
 async function main() {
-  console.log("Generating Arthur Schopenhauer embeddings...\n");
+  console.log("🎭 Generating Arthur Schopenhauer embeddings...\n");
   
-  console.log("Clearing existing Schopenhauer embeddings...");
+  console.log("🗑️  Clearing existing Schopenhauer embeddings...");
   await db.delete(paperChunks).where(
     and(
       eq(paperChunks.figureId, 'common'),
@@ -200,11 +200,11 @@ async function main() {
     );
     
     const duration = ((Date.now() - startTime) / 1000 / 60).toFixed(1);
-    console.log(`\nDone! Generated ${totalChunks} Schopenhauer embeddings in ${duration} minutes.`);
-    console.log(`Stored in Common Fund with author='Arthur Schopenhauer'`);
+    console.log(\`\n🎉 Done! Generated \${totalChunks} Schopenhauer embeddings in \${duration} minutes.\`);
+    console.log(\`💾 Stored in Common Fund with author='Arthur Schopenhauer'\`);
     
   } catch (error) {
-    console.error(`Error:`, error);
+    console.error(\`❌ Error:\`, error);
     process.exit(1);
   }
   
