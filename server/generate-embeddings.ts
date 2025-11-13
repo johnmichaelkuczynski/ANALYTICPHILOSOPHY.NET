@@ -32,6 +32,9 @@ const batchToFigure: Record<string, string> = {
   "jmk_legal_intention_epistem": "common",
   "jmk_college_papers": "common",
   "jmk_logic_mathematics": "common",
+  "jmk_russell_math": "common",
+  "jmk_conception": "common",
+  "jmk_ama_epistem": "common",
   "luther_batch1": "common",
   "whewell_batch1": "common",
   "veblen_batch1": "common",
@@ -63,6 +66,9 @@ const batchToAuthor: Record<string, string> = {
   "jmk_legal_intention_epistem": "J.-M. Kuczynski",
   "jmk_college_papers": "J.-M. Kuczynski",
   "jmk_logic_mathematics": "J.-M. Kuczynski",
+  "jmk_russell_math": "J.-M. Kuczynski",
+  "jmk_conception": "J.-M. Kuczynski",
+  "jmk_ama_epistem": "J.-M. Kuczynski",
   "jmk": "J.-M. Kuczynski",
   "luther_batch1": "Martin Luther",
   "whewell_batch1": "William Whewell",
@@ -241,6 +247,18 @@ const figuresPapers = {
   "whewell_batch1": [
     // BATCH 14: William Whewell - History and Philosophy of Science - November 2025
     { file: "whewell_history_inductive_sciences.txt", title: "History of the Inductive Sciences, from the Earliest to the Present Time" },
+  ],
+  "jmk_russell_math": [
+    // BATCH 15A: J.-M. Kuczynski - Russell's Mathematical Philosophy - November 2025
+    { file: "kuczynski_russell_mathematical_philosophy.txt", title: "Russell's Mathematical Philosophy: A Chapter-by-Chapter Exposition" },
+  ],
+  "jmk_conception": [
+    // BATCH 15B: J.-M. Kuczynski - Conception and Causation - November 2025
+    { file: "kuczynski_conception_causation.txt", title: "Conception and Causation: Selected Early Philosophical Papers" },
+  ],
+  "jmk_ama_epistem": [
+    // BATCH 15C: J.-M. Kuczynski - AMA Epistemology - November 2025
+    { file: "kuczynski_ama_epistemology.txt", title: "Ask Me Anything about Epistemology!" },
   ],
   "jmk": [
     // LEGACY: For backward compatibility - use batch approach above
