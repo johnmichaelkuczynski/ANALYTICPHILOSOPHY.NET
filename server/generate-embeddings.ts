@@ -26,6 +26,7 @@ const batchToFigure: Record<string, string> = {
   "jmk_new_texts": "common",
   "jmk_intentions_legal": "common",
   "jmk_misc_essays": "common",
+  "jmk_russell_frege": "common",
   "veblen_batch1": "common",
   "veblen_batch2": "common",
   "veblen_batch3": "common",
@@ -49,6 +50,7 @@ const batchToAuthor: Record<string, string> = {
   "jmk_new_texts": "J.-M. Kuczynski",
   "jmk_intentions_legal": "J.-M. Kuczynski",
   "jmk_misc_essays": "J.-M. Kuczynski",
+  "jmk_russell_frege": "J.-M. Kuczynski",
   "jmk": "J.-M. Kuczynski",
   "veblen_batch1": "Thorstein Veblen",
   "veblen_batch2": "Thorstein Veblen",
@@ -187,6 +189,10 @@ const figuresPapers = {
     { file: "kuczynski_symbolic_logic_lie.txt", title: "The Lie of the Discipline of Symbolic Logic" },
     { file: "kuczynski_late_onset_psychopathy.txt", title: "Two Kinds of Late-onset Psychopathy" },
     { file: "kuczynski_panic_attacks.txt", title: "Panic Attacks Have an Objective Basis" },
+  ],
+  "jmk_russell_frege": [
+    // BATCH 8: Russell & Frege - Theory of Descriptions, Logical Analysis - November 2025
+    { file: "kuczynski_russell_ch6.txt", title: "Russell's Improvements on Frege's Work (Chapter 6)" },
   ],
   "jmk": [
     // LEGACY: For backward compatibility - use batch approach above
