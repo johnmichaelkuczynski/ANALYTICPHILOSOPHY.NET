@@ -49,6 +49,7 @@ const batchToFigure: Record<string, string> = {
   "reich": "common",
   "orwell": "common",
   "dostoevsky_crime_punishment": "common",
+  "tolstoy_war_and_peace": "common",
 };
 
 // REQUIRED: Author attribution mapping for every chunk
@@ -110,6 +111,7 @@ const batchToAuthor: Record<string, string> = {
   "reich": "Wilhelm Reich",
   "orwell": "George Orwell",
   "dostoevsky_crime_punishment": "Fyodor Dostoevsky",
+  "tolstoy_war_and_peace": "Leo Tolstoy",
   "common": "Various Authors",
 };
 
@@ -426,6 +428,10 @@ const figuresPapers = {
   "dostoevsky_crime_punishment": [
     // DOSTOEVSKY: Crime and Punishment - November 2025
     { file: "data/dostoevsky/crime_and_punishment.txt", title: "Crime and Punishment by Fyodor Dostoevsky" },
+  ],
+  "tolstoy_war_and_peace": [
+    // TOLSTOY: War and Peace - November 2025
+    { file: "data/tolstoy/war_and_peace.txt", title: "War and Peace by Leo Tolstoy" },
   ],
   "common": [
     // Common Fund of Knowledge - shared knowledge base accessible to ALL philosophers
