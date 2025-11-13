@@ -49,9 +49,11 @@ export default function Chat() {
   const [chatInputContent, setChatInputContent] = useState<{ text: string; version: number }>({ text: "", version: 0 });
   const modelBuilderInputRef = useRef<(text: string) => void>(() => {});
   const paperWriterTopicRef = useRef<(topic: string) => void>(() => {});
+  const thesisToWorldInputRef = useRef<(text: string) => void>(() => {});
+  const nightmareConversionInputRef = useRef<(text: string) => void>(() => {});
 
   // Transfer handler for cross-section content flow
-  const handleContentTransfer = (content: string, target: 'chat' | 'model' | 'paper') => {
+  const handleContentTransfer = (content: string, target: 'chat' | 'model' | 'paper' | 'thesis' | 'nightmare') => {
     if (target === 'chat') {
       setChatInputContent(prev => ({ text: content, version: prev.version + 1 }));
       // Scroll to chat input
@@ -68,15 +70,25 @@ export default function Chat() {
         // Scroll to paper writer section
         document.getElementById('paper-writer-section')?.scrollIntoView({ behavior: 'smooth' });
       }
+    } else if (target === 'thesis') {
+      if (thesisToWorldInputRef.current) {
+        thesisToWorldInputRef.current(content);
+        // Scroll to thesis to world section
+        document.getElementById('thesis-to-world-section')?.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else if (target === 'nightmare') {
+      if (nightmareConversionInputRef.current) {
+        nightmareConversionInputRef.current(content);
+        // Scroll to nightmare conversion section
+        document.getElementById('nightmare-conversion-section')?.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 
   // Delete message mutation
   const deleteMessageMutation = useMutation({
-    mutationFn: async (messageId: number) => {
-      return await apiRequest(`/api/messages/${messageId}`, {
-        method: "DELETE",
-      });
+    mutationFn: async (messageId: string) => {
+      return await apiRequest("DELETE", `/api/messages/${messageId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/messages"] });
@@ -84,7 +96,7 @@ export default function Chat() {
   });
 
   // Delete message handler
-  const handleDeleteMessage = (messageId: number) => {
+  const handleDeleteMessage = (messageId: string) => {
     deleteMessageMutation.mutate(messageId);
   };
 
@@ -545,12 +557,16 @@ export default function Chat() {
 
           {/* Thesis to World Section */}
           <div id="thesis-to-world-section" className="px-4 py-8 border-t-4 border-primary/20">
-            <ThesisToWorldSection />
+            <ThesisToWorldSection 
+              onRegisterInput={(setter) => { thesisToWorldInputRef.current = setter; }}
+            />
           </div>
 
           {/* Nightmare Conversion Section */}
           <div id="nightmare-conversion-section" className="px-4 py-8 border-t-4 border-primary/20">
-            <NightmareConversionSection />
+            <NightmareConversionSection 
+              onRegisterInput={(setter) => { nightmareConversionInputRef.current = setter; }}
+            />
           </div>
         </div>
       </main>

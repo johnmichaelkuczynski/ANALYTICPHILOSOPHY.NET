@@ -8,8 +8,8 @@ import type { Message } from "@shared/schema";
 interface ChatMessageProps {
   message: Message;
   isStreaming?: boolean;
-  onTransferContent?: (content: string, target: 'chat' | 'model' | 'paper') => void;
-  onDeleteMessage?: (messageId: number) => void;
+  onTransferContent?: (content: string, target: 'chat' | 'model' | 'paper' | 'thesis' | 'nightmare') => void;
+  onDeleteMessage?: (messageId: string) => void;
 }
 
 export function ChatMessage({ message, isStreaming, onTransferContent, onDeleteMessage }: ChatMessageProps) {
@@ -113,6 +113,18 @@ export function ChatMessage({ message, isStreaming, onTransferContent, onDeleteM
                 data-testid="menu-transfer-to-paper"
               >
                 Paper Writer
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => onTransferContent(message.content, 'thesis')}
+                data-testid="menu-transfer-to-thesis"
+              >
+                Thesis to World
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => onTransferContent(message.content, 'nightmare')}
+                data-testid="menu-transfer-to-nightmare"
+              >
+                Nightmare Conversion
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
