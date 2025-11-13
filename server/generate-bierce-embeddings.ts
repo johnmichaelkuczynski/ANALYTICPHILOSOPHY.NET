@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 import { db } from "./db";
 import { paperChunks } from "@shared/schema";
 import OpenAI from "openai";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -13,7 +13,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-function chunkText(text: string, targetWordsPerChunk: number = 400): string[] {
+function chunkText(text: string, targetWordsPerChunk: number = 250): string[] {
   const sentences = text
     .split(/(?<=[.!?])\s+/)
     .map(s => s.trim())
@@ -58,6 +58,23 @@ function chunkText(text: string, targetWordsPerChunk: number = 400): string[] {
   return chunks.filter(c => c.split(/\s+/).length > 20);
 }
 
+async function generateEmbeddingsBatch(texts: string[]): Promise<number[][]> {
+  try {
+    const response = await openai.embeddings.create({
+      model: "text-embedding-ada-002",
+      input: texts,
+    });
+    
+    return response.data.map(item => item.embedding);
+  } catch (error: any) {
+    const errorMessage = error?.error?.message || error?.message || '';
+    if (error?.status === 400 && errorMessage.includes('maximum context length')) {
+      throw error;
+    }
+    throw error;
+  }
+}
+
 async function generateEmbedding(text: string): Promise<number[] | null> {
   try {
     const response = await openai.embeddings.create({
@@ -69,8 +86,6 @@ async function generateEmbedding(text: string): Promise<number[] | null> {
   } catch (error: any) {
     const errorMessage = error?.error?.message || error?.message || '';
     if (error?.status === 400 && errorMessage.includes('maximum context length')) {
-      const wordCount = text.split(/\s+/).length;
-      console.log(` ⚠️  Chunk too large (~${wordCount} words), skipping`);
       return null;
     }
     throw error;
@@ -78,53 +93,95 @@ async function generateEmbedding(text: string): Promise<number[] | null> {
 }
 
 async function main() {
-  console.log("🔬 Generating Ambrose Bierce embeddings...\n");
+  console.log("Generating Ambrose Bierce embeddings...\n");
   
-  // Delete existing Bierce embeddings only
-  console.log("🗑️  Clearing existing Bierce embeddings...");
-  await db.delete(paperChunks).where(eq(paperChunks.figureId, 'bierce'));
+  console.log("Clearing existing Bierce embeddings...");
+  await db.delete(paperChunks).where(
+    and(
+      eq(paperChunks.figureId, 'common'),
+      eq(paperChunks.author, 'Ambrose Bierce')
+    )
+  );
   console.log("✓ Cleared\n");
   
   const startTime = Date.now();
   
   try {
-    console.log(`📄 Processing: The Devil's Dictionary`);
+    console.log(`Processing: The Devil's Dictionary`);
     
-    const content = readFileSync(join(__dirname, "bierce_devils_dictionary.txt"), "utf-8");
-    const chunks = chunkText(content, 400);
+    const content = readFileSync(
+      join(__dirname, "../attached_assets/Pasted-BIERCE-The-Project-Gutenberg-eBook-of-The-Devil-s-Dictionary-This-ebook-is-for-the-use-of--1762993751792_1762993751804.txt"),
+      "utf-8"
+    );
+    const chunks = chunkText(content, 250);
     
     console.log(`   Found ${chunks.length} chunks`);
+    console.log(`   Estimated time: ${Math.ceil(chunks.length / 16 * 0.2)} minutes\n`);
     
-    for (let i = 0; i < chunks.length; i++) {
-      const chunk = chunks[i];
+    const BATCH_SIZE = 16;
+    let processedCount = 0;
+    
+    for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
+      const batch = chunks.slice(i, Math.min(i + BATCH_SIZE, chunks.length));
+      const batchNum = Math.floor(i / BATCH_SIZE) + 1;
+      const totalBatches = Math.ceil(chunks.length / BATCH_SIZE);
       
-      process.stdout.write(`   Embedding chunk ${i + 1}/${chunks.length}...`);
+      process.stdout.write(`   Batch ${batchNum}/${totalBatches} (${i + 1}-${Math.min(i + BATCH_SIZE, chunks.length)})...`);
       
-      const embedding = await generateEmbedding(chunk);
-      
-      if (embedding === null) {
-        process.stdout.write(` skipped\n`);
-        continue;
+      try {
+        const embeddings = await generateEmbeddingsBatch(batch);
+        
+        for (let j = 0; j < batch.length; j++) {
+          await db.insert(paperChunks).values({
+            figureId: "common",
+            author: "Ambrose Bierce",
+            paperTitle: "The Devil's Dictionary",
+            content: batch[j],
+            embedding: embeddings[j] as any,
+            chunkIndex: i + j,
+          });
+          processedCount++;
+        }
+        
+        process.stdout.write(` ✓ (${processedCount}/${chunks.length})\n`);
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+      } catch (batchError) {
+        process.stdout.write(` fallback...\n`);
+        
+        for (let j = 0; j < batch.length; j++) {
+          const chunkIndex = i + j;
+          process.stdout.write(`     Chunk ${chunkIndex + 1}/${chunks.length}...`);
+          
+          const embedding = await generateEmbedding(batch[j]);
+          
+          if (embedding === null) {
+            process.stdout.write(` skip\n`);
+            continue;
+          }
+          
+          await db.insert(paperChunks).values({
+            figureId: "common",
+            author: "Ambrose Bierce",
+            paperTitle: "The Devil's Dictionary",
+            content: batch[j],
+            embedding: embedding as any,
+            chunkIndex: chunkIndex,
+          });
+          
+          processedCount++;
+          process.stdout.write(` ✓\n`);
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
       }
-      
-      await db.insert(paperChunks).values({
-        figureId: "bierce",
-        paperTitle: "The Devil's Dictionary",
-        content: chunk,
-        embedding: embedding as any,
-        chunkIndex: i,
-      });
-      
-      process.stdout.write(` ✓\n`);
-      
-      // Rate limiting
-      await new Promise(resolve => setTimeout(resolve, 100));
     }
     
     const duration = ((Date.now() - startTime) / 1000 / 60).toFixed(1);
-    console.log(`\n🎉 Done! Generated ${chunks.length} Bierce embeddings in ${duration} minutes.`);
+    console.log(`\nDone! Generated ${processedCount} Bierce embeddings in ${duration} minutes.`);
+    console.log(`Stored in Common Fund with author='Ambrose Bierce'`);
+    
   } catch (error) {
-    console.error(`❌ Error:`, error);
+    console.error(`Error:`, error);
     process.exit(1);
   }
   
