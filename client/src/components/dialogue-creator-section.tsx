@@ -3,10 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Loader2, Upload, Copy, Trash2, Download, MessageSquare } from "lucide-react";
+import { Loader2, Copy, Trash2, Download, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DragDropUpload } from "@/components/ui/drag-drop-upload";
 
 interface DialogueCreatorSectionProps {
   onRegisterInput?: (setter: (content: string) => void) => void;
@@ -23,8 +23,9 @@ export function DialogueCreatorSection({
   const [isGenerating, setIsGenerating] = useState(false);
   const [dialogue, setDialogue] = useState('');
   const [wordCount, setWordCount] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadedFileRef = useRef<File | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState('');
+  const [uploadedFileSize, setUploadedFileSize] = useState(0);
   const { toast } = useToast();
 
   // Register input setter for content transfer system
@@ -46,14 +47,7 @@ export function DialogueCreatorSection({
     }
   }, [onRegisterOutputs, dialogue]);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) {
-      // Clear ref if user cancels file selection
-      uploadedFileRef.current = null;
-      return;
-    }
-
+  const handleFileAccepted = async (file: File) => {
     const fileExtension = file.name.split('.').pop()?.toLowerCase();
     const allowedExtensions = ['txt', 'pdf', 'doc', 'docx'];
 
@@ -77,6 +71,8 @@ export function DialogueCreatorSection({
 
     // Store the file for backend processing
     uploadedFileRef.current = file;
+    setUploadedFileName(file.name);
+    setUploadedFileSize(file.size);
 
     // For preview purposes only, show first part if it's a text file
     if (fileExtension === 'txt') {
@@ -101,6 +97,13 @@ export function DialogueCreatorSection({
         description: `${file.name} will be processed by server`,
       });
     }
+  };
+
+  const handleClearFile = () => {
+    uploadedFileRef.current = null;
+    setUploadedFileName('');
+    setUploadedFileSize(0);
+    setInputText('');
   };
 
   const handleGenerate = async () => {
@@ -189,9 +192,8 @@ export function DialogueCreatorSection({
 
       // Clear uploaded file after successful generation
       uploadedFileRef.current = null;
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      setUploadedFileName('');
+      setUploadedFileSize(0);
 
     } catch (error) {
       console.error('Error generating dialogue:', error);
@@ -274,10 +276,7 @@ export function DialogueCreatorSection({
             setMode(newMode);
             // Clear uploaded file when switching to paste mode
             if (newMode === 'paste') {
-              uploadedFileRef.current = null;
-              if (fileInputRef.current) {
-                fileInputRef.current.value = '';
-              }
+              handleClearFile();
             }
           }}>
             <TabsList className="grid w-full grid-cols-2">
@@ -306,21 +305,18 @@ export function DialogueCreatorSection({
             <TabsContent value="upload" className="space-y-4">
               <div>
                 <Label>Upload File</Label>
-                <div className="mt-2">
-                  <Input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".txt,.pdf,.doc,.docx"
-                    onChange={handleFileUpload}
-                    data-testid="input-file"
-                    className="cursor-pointer"
-                  />
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Accepts .txt, .pdf, .doc, .docx files (max 5MB)
-                  </p>
-                </div>
+                <DragDropUpload
+                  accept=".txt,.pdf,.doc,.docx"
+                  maxSizeBytes={5 * 1024 * 1024}
+                  onFileAccepted={handleFileAccepted}
+                  onClear={handleClearFile}
+                  currentFileName={uploadedFileName}
+                  currentFileSize={uploadedFileSize}
+                  data-testid="drag-drop-upload"
+                  className="mt-2"
+                />
               </div>
-              {inputText && (
+              {inputText && uploadedFileName && (
                 <div>
                   <Label>Loaded Text Preview</Label>
                   <Textarea
