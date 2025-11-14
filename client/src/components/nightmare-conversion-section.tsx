@@ -3,8 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Loader2, Upload, Copy, Trash2, FileText, ChevronDown, ChevronRight } from "lucide-react";
+import { Loader2, Copy, Trash2, FileText, ChevronDown, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -15,6 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { DragDropUpload } from "@/components/ui/drag-drop-upload";
 
 interface NightmareConversionSectionProps {
   onRegisterInput?: (setter: (content: string) => void) => void;
@@ -26,6 +26,8 @@ export function NightmareConversionSection({ onRegisterInput, onRegisterOutputs 
   const [inputText, setInputText] = useState('');
   const [genderPreference, setGenderPreference] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState('');
+  const [uploadedFileSize, setUploadedFileSize] = useState(0);
   const [generatedNightmare, setGeneratedNightmare] = useState('');
   const [extractedAnxiety, setExtractedAnxiety] = useState('');
   const [templateSelection, setTemplateSelection] = useState('');
@@ -40,7 +42,6 @@ export function NightmareConversionSection({ onRegisterInput, onRegisterOutputs 
   const [rewrittenWordCount, setRewrittenWordCount] = useState(0);
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (onRegisterInput) {
@@ -57,27 +58,28 @@ export function NightmareConversionSection({ onRegisterInput, onRegisterOutputs 
     }
   }, [onRegisterOutputs, generatedNightmare, extractedAnxiety]);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const validTypes = ['.txt', '.pdf', '.docx'];
-      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
-      
-      if (!validTypes.includes(fileExtension)) {
-        toast({
-          title: "Invalid file type",
-          description: "Please upload .txt, .pdf, or .docx files only.",
-          variant: "destructive",
-        });
-        return;
-      }
+  const handleFileAccepted = (file: File) => {
+    setSelectedFile(file);
+    setUploadedFileName(file.name);
+    setUploadedFileSize(file.size);
+    toast({
+      title: "File selected",
+      description: file.name,
+    });
+  };
 
-      setSelectedFile(file);
-      toast({
-        title: "File selected",
-        description: file.name,
-      });
-    }
+  const handleValidationError = (error: { title: string; description: string }) => {
+    toast({
+      title: error.title,
+      description: error.description,
+      variant: "destructive",
+    });
+  };
+
+  const handleClearFile = () => {
+    setSelectedFile(null);
+    setUploadedFileName('');
+    setUploadedFileSize(0);
   };
 
   const handleGenerate = async () => {
@@ -162,6 +164,8 @@ export function NightmareConversionSection({ onRegisterInput, onRegisterOutputs 
   const handleClear = () => {
     setInputText('');
     setSelectedFile(null);
+    setUploadedFileName('');
+    setUploadedFileSize(0);
     setGeneratedNightmare('');
     setExtractedAnxiety('');
     setTemplateSelection('');
@@ -173,9 +177,6 @@ export function NightmareConversionSection({ onRegisterInput, onRegisterOutputs 
     setRewrittenNightmare('');
     setRewrittenTemplate('');
     setRewrittenWordCount(0);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
   };
 
   const handleRewrite = async () => {
@@ -290,37 +291,20 @@ export function NightmareConversionSection({ onRegisterInput, onRegisterOutputs 
 
             <TabsContent value="upload" className="space-y-4">
               <div>
-                <Label htmlFor="nightmare-file-upload" className="text-base font-medium">
+                <Label className="text-base font-medium">
                   Upload Document
                 </Label>
-                <div className="flex items-center gap-4 mt-2">
-                  <Input
-                    id="nightmare-file-upload"
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".txt,.pdf,.docx"
-                    onChange={handleFileSelect}
-                    className="flex-1"
-                    data-testid="input-nightmare-file"
-                  />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => fileInputRef.current?.click()}
-                    data-testid="button-browse-nightmare"
-                  >
-                    <Upload className="h-4 w-4" />
-                  </Button>
-                </div>
-                {selectedFile && (
-                  <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-                    <FileText className="h-4 w-4" />
-                    <span>{selectedFile.name}</span>
-                  </div>
-                )}
-                <p className="text-xs text-muted-foreground mt-1">
-                  Accepts .txt, .pdf, .docx files
-                </p>
+                <DragDropUpload
+                  accept=".txt,.pdf,.docx"
+                  maxSizeBytes={5 * 1024 * 1024}
+                  onFileAccepted={handleFileAccepted}
+                  onValidationError={handleValidationError}
+                  onClear={handleClearFile}
+                  currentFileName={uploadedFileName}
+                  currentFileSize={uploadedFileSize}
+                  data-testid="drag-drop-upload-nightmare"
+                  className="mt-2"
+                />
               </div>
             </TabsContent>
           </Tabs>

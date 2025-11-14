@@ -3,13 +3,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Loader2, Quote, Copy, Trash2, Upload, BookOpen, FileUp } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Quote, Copy, Trash2, BookOpen, FileUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import type { Figure } from "@shared/schema";
+import { DragDropUpload } from "@/components/ui/drag-drop-upload";
 
 interface QuoteGeneratorSectionProps {
   onRegisterInput?: (setter: (content: string) => void) => void;
@@ -21,11 +22,12 @@ export function QuoteGeneratorSection({ onRegisterInput }: QuoteGeneratorSection
   const [query, setQuery] = useState('');
   const [numQuotes, setNumQuotes] = useState('10');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState('');
+  const [uploadedFileSize, setUploadedFileSize] = useState(0);
   const [generatedQuotes, setGeneratedQuotes] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
   const queryTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch available figures
   const { data: figures = [] } = useQuery<Figure[]>({
@@ -159,32 +161,28 @@ export function QuoteGeneratorSection({ onRegisterInput }: QuoteGeneratorSection
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Check file type
-      const allowedTypes = ['text/plain', 'application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
-      if (!allowedTypes.includes(file.type) && !file.name.match(/\.(txt|pdf|docx|doc)$/i)) {
-        toast({
-          title: "Invalid file type",
-          description: "Please upload a .txt, .pdf, .doc, or .docx file",
-          variant: "destructive",
-        });
-        return;
-      }
+  const handleFileAccepted = (file: File) => {
+    setSelectedFile(file);
+    setUploadedFileName(file.name);
+    setUploadedFileSize(file.size);
+    toast({
+      title: "File uploaded",
+      description: file.name,
+    });
+  };
 
-      // Check file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "File too large",
-          description: "Please upload a file smaller than 5MB",
-          variant: "destructive",
-        });
-        return;
-      }
+  const handleValidationError = (error: { title: string; description: string }) => {
+    toast({
+      title: error.title,
+      description: error.description,
+      variant: "destructive",
+    });
+  };
 
-      setSelectedFile(file);
-    }
+  const handleClearFile = () => {
+    setSelectedFile(null);
+    setUploadedFileName('');
+    setUploadedFileSize(0);
   };
 
   const handleCopy = () => {
@@ -278,33 +276,17 @@ export function QuoteGeneratorSection({ onRegisterInput }: QuoteGeneratorSection
             ) : (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="file-upload-quotes">Upload Document</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      id="file-upload-quotes"
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleFileSelect}
-                      accept=".txt,.pdf,.doc,.docx"
-                      className="hidden"
-                      data-testid="input-file-quotes"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="w-full"
-                      data-testid="button-select-file"
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      {selectedFile ? selectedFile.name : 'Choose file (.txt, .pdf, .doc, .docx)'}
-                    </Button>
-                  </div>
-                  {selectedFile && (
-                    <p className="text-sm text-muted-foreground">
-                      File size: {(selectedFile.size / 1024).toFixed(1)} KB
-                    </p>
-                  )}
+                  <Label>Upload Document</Label>
+                  <DragDropUpload
+                    accept=".txt,.pdf,.doc,.docx"
+                    maxSizeBytes={5 * 1024 * 1024}
+                    onFileAccepted={handleFileAccepted}
+                    onValidationError={handleValidationError}
+                    onClear={handleClearFile}
+                    currentFileName={uploadedFileName}
+                    currentFileSize={uploadedFileSize}
+                    data-testid="drag-drop-upload-quotes"
+                  />
                 </div>
 
                 <div className="space-y-2">

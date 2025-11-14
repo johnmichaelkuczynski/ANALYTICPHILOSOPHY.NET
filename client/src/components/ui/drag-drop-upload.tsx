@@ -7,6 +7,7 @@ interface DragDropUploadProps {
   accept: string;
   maxSizeBytes: number;
   onFileAccepted: (file: File) => void;
+  onValidationError?: (error: { title: string; description: string }) => void;
   onClear?: () => void;
   currentFileName?: string;
   currentFileSize?: number;
@@ -20,6 +21,7 @@ export function DragDropUpload({
   accept,
   maxSizeBytes,
   onFileAccepted,
+  onValidationError,
   onClear,
   currentFileName,
   currentFileSize,
@@ -86,12 +88,24 @@ export function DragDropUpload({
       .map(ext => ext.trim().replace('.', '').toLowerCase());
 
     if (!fileExtension || !acceptedExtensions.includes(fileExtension)) {
-      return; // Let parent component show validation error
+      if (onValidationError) {
+        onValidationError({
+          title: "Invalid file type",
+          description: `Please upload ${accept.split(',').join(', ')} files only`,
+        });
+      }
+      return;
     }
 
     // Validate file size
     if (file.size > maxSizeBytes) {
-      return; // Let parent component show validation error
+      if (onValidationError) {
+        onValidationError({
+          title: "File too large",
+          description: `Please upload files smaller than ${formatFileSize(maxSizeBytes)}`,
+        });
+      }
+      return;
     }
 
     onFileAccepted(file);

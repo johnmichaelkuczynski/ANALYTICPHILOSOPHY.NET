@@ -49,25 +49,6 @@ export function DialogueCreatorSection({
 
   const handleFileAccepted = async (file: File) => {
     const fileExtension = file.name.split('.').pop()?.toLowerCase();
-    const allowedExtensions = ['txt', 'pdf', 'doc', 'docx'];
-
-    if (!fileExtension || !allowedExtensions.includes(fileExtension)) {
-      toast({
-        title: "Invalid file type",
-        description: "Please upload .txt, .pdf, .doc, or .docx files",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "File too large",
-        description: "Please upload files smaller than 5MB",
-        variant: "destructive",
-      });
-      return;
-    }
 
     // Store the file for backend processing
     uploadedFileRef.current = file;
@@ -97,6 +78,14 @@ export function DialogueCreatorSection({
         description: `${file.name} will be processed by server`,
       });
     }
+  };
+
+  const handleValidationError = (error: { title: string; description: string }) => {
+    toast({
+      title: error.title,
+      description: error.description,
+      variant: "destructive",
+    });
   };
 
   const handleClearFile = () => {
@@ -309,6 +298,7 @@ export function DialogueCreatorSection({
                   accept=".txt,.pdf,.doc,.docx"
                   maxSizeBytes={5 * 1024 * 1024}
                   onFileAccepted={handleFileAccepted}
+                  onValidationError={handleValidationError}
                   onClear={handleClearFile}
                   currentFileName={uploadedFileName}
                   currentFileSize={uploadedFileSize}

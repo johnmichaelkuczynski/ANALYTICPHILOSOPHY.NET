@@ -3,8 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Loader2, Upload, Copy, Trash2, FileText, ChevronDown } from "lucide-react";
+import { Loader2, Copy, Trash2, FileText, ChevronDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,6 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { DragDropUpload } from "@/components/ui/drag-drop-upload";
 
 interface PhilosophicalFictionSectionProps {
   onRegisterInput?: (setter: (content: string) => void) => void;
@@ -43,12 +43,13 @@ export function PhilosophicalFictionSection({
   const [selectedAuthor, setSelectedAuthor] = useState<string>('');
   const [customInstructions, setCustomInstructions] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState('');
+  const [uploadedFileSize, setUploadedFileSize] = useState(0);
   const [generatedFiction, setGeneratedFiction] = useState('');
   const [wordCount, setWordCount] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (onRegisterInput) {
@@ -64,27 +65,28 @@ export function PhilosophicalFictionSection({
     }
   }, [onRegisterOutputs, generatedFiction]);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const validTypes = ['.txt', '.pdf', '.doc', '.docx'];
-      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
-      
-      if (!validTypes.includes(fileExtension)) {
-        toast({
-          title: "Invalid file type",
-          description: "Please upload .txt, .pdf, .doc, or .docx files only.",
-          variant: "destructive",
-        });
-        return;
-      }
+  const handleFileAccepted = (file: File) => {
+    setSelectedFile(file);
+    setUploadedFileName(file.name);
+    setUploadedFileSize(file.size);
+    toast({
+      title: "File selected",
+      description: file.name,
+    });
+  };
 
-      setSelectedFile(file);
-      toast({
-        title: "File selected",
-        description: file.name,
-      });
-    }
+  const handleValidationError = (error: { title: string; description: string }) => {
+    toast({
+      title: error.title,
+      description: error.description,
+      variant: "destructive",
+    });
+  };
+
+  const handleClearFile = () => {
+    setSelectedFile(null);
+    setUploadedFileName('');
+    setUploadedFileSize(0);
   };
 
   const handleGenerate = async () => {
@@ -212,13 +214,12 @@ export function PhilosophicalFictionSection({
   const handleClear = () => {
     setInputText('');
     setSelectedFile(null);
+    setUploadedFileName('');
+    setUploadedFileSize(0);
     setGeneratedFiction('');
     setWordCount(0);
     setSelectedAuthor('');
     setCustomInstructions('');
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
   };
 
   const handleCopy = async (text: string) => {
@@ -273,29 +274,16 @@ export function PhilosophicalFictionSection({
             </TabsContent>
 
             <TabsContent value="upload" className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".txt,.pdf,.doc,.docx"
-                  onChange={handleFileSelect}
-                  className="flex-1"
-                  data-testid="input-fiction-file"
-                />
-                <Button 
-                  variant="outline" 
-                  size="icon"
-                  onClick={() => fileInputRef.current?.click()}
-                  data-testid="button-select-fiction-file"
-                >
-                  <Upload className="h-4 w-4" />
-                </Button>
-              </div>
-              {selectedFile && (
-                <p className="text-sm text-muted-foreground" data-testid="text-selected-file">
-                  Selected: {selectedFile.name}
-                </p>
-              )}
+              <DragDropUpload
+                accept=".txt,.pdf,.doc,.docx"
+                maxSizeBytes={5 * 1024 * 1024}
+                onFileAccepted={handleFileAccepted}
+                onValidationError={handleValidationError}
+                onClear={handleClearFile}
+                currentFileName={uploadedFileName}
+                currentFileSize={uploadedFileSize}
+                data-testid="drag-drop-upload-fiction"
+              />
             </TabsContent>
           </Tabs>
         </div>

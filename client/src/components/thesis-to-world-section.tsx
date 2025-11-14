@@ -4,10 +4,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Upload, Copy, Trash2, FileText, ChevronRight } from "lucide-react";
+import { Loader2, Copy, Trash2, FileText, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { DragDropUpload } from "@/components/ui/drag-drop-upload";
 
 interface ThesisToWorldSectionProps {
   onRegisterInput?: (setter: (content: string) => void) => void;
@@ -20,13 +21,14 @@ export function ThesisToWorldSection({ onRegisterInput }: ThesisToWorldSectionPr
   const [customInstructions, setCustomInstructions] = useState('');
   const [storyToModelAround, setStoryToModelAround] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState('');
+  const [uploadedFileSize, setUploadedFileSize] = useState(0);
   const [generatedFiction, setGeneratedFiction] = useState('');
   const [extractedThesis, setExtractedThesis] = useState('');
   const [wordCount, setWordCount] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Register input setter for external content transfer
   useEffect(() => {
@@ -35,27 +37,28 @@ export function ThesisToWorldSection({ onRegisterInput }: ThesisToWorldSectionPr
     }
   }, [onRegisterInput]);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const validTypes = ['.txt', '.pdf', '.doc', '.docx'];
-      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
-      
-      if (!validTypes.includes(fileExtension)) {
-        toast({
-          title: "Invalid file type",
-          description: "Please upload .txt, .pdf, .doc, or .docx files only.",
-          variant: "destructive",
-        });
-        return;
-      }
+  const handleFileAccepted = (file: File) => {
+    setSelectedFile(file);
+    setUploadedFileName(file.name);
+    setUploadedFileSize(file.size);
+    toast({
+      title: "File selected",
+      description: file.name,
+    });
+  };
 
-      setSelectedFile(file);
-      toast({
-        title: "File selected",
-        description: file.name,
-      });
-    }
+  const handleValidationError = (error: { title: string; description: string }) => {
+    toast({
+      title: error.title,
+      description: error.description,
+      variant: "destructive",
+    });
+  };
+
+  const handleClearFile = () => {
+    setSelectedFile(null);
+    setUploadedFileName('');
+    setUploadedFileSize(0);
   };
 
   const handleGenerate = async () => {
@@ -205,30 +208,16 @@ export function ThesisToWorldSection({ onRegisterInput }: ThesisToWorldSectionPr
             <TabsContent value="upload" className="space-y-4">
               <div className="space-y-2">
                 <Label>Upload non-fiction document (.txt, .pdf, .doc, .docx)</Label>
-                <div className="flex gap-2">
-                  <Input
-                    type="file"
-                    data-testid="input-file-upload"
-                    ref={fileInputRef}
-                    onChange={handleFileSelect}
-                    accept=".txt,.pdf,.doc,.docx"
-                    className="flex-1"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    data-testid="button-select-file"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    Select File
-                  </Button>
-                </div>
-                {selectedFile && (
-                  <p className="text-sm text-muted-foreground" data-testid="text-selected-filename">
-                    Selected: {selectedFile.name}
-                  </p>
-                )}
+                <DragDropUpload
+                  accept=".txt,.pdf,.doc,.docx"
+                  maxSizeBytes={5 * 1024 * 1024}
+                  onFileAccepted={handleFileAccepted}
+                  onValidationError={handleValidationError}
+                  onClear={handleClearFile}
+                  currentFileName={uploadedFileName}
+                  currentFileSize={uploadedFileSize}
+                  data-testid="drag-drop-upload-thesis"
+                />
               </div>
             </TabsContent>
           </Tabs>
