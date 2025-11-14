@@ -33,7 +33,12 @@ The application acts as a centralized knowledge server providing unified access 
 - **Philosophical Fiction Writer Section**: Transforms non-fiction text into 800-1500 word narrative fiction in the voice and style of a selected philosopher/author, using server-side author assets and comprehensive prompts.
 - **Dialogue Creator Section**: Transforms non-fiction philosophical, psychological, or conceptual text into authentic Kuczynski-style dialogues between Dr. K and an intelligent student. Features comprehensive system prompt capturing distinctive dialogue mechanics: genuine intellectual movement, productive misunderstandings, concrete examples grounding abstract concepts, natural speech patterns, and psychological realism. Includes optional customization field for tone/character specifications and supports paste/upload modes (.txt, .pdf, .doc, .docx up to 5MB). NOT Socratic irony, NOT straw-man debates, NOT generic LLM politeness. Creates philosophically rigorous conversations with Dr. K's characteristic phrases ("Exactly," "Spot on," "See you tomorrow") and student's engaged responses ("I follow," "Please explain"). Uses Anthropic Claude Sonnet 4.5 with 0.7 temperature for streaming generation.
 - **RAG System**: Papers are chunked, embedded using OpenAI's `text-embedding-ada-002`, and stored in a PostgreSQL database with `pgvector` for semantic search across a unified knowledge base of 87 authors.
-- **Document Upload Feature**: Users can upload text documents (.txt, .md, .doc, .docx, .pdf up to 5MB) for analysis.
+- **Document Upload Feature**: Users can upload text documents (.txt, .md, .doc, .docx, .pdf up to 5MB) for analysis across 5 sections (Quote Generator, Thesis to World, Nightmare Conversion, Philosophical Fiction Writer, Dialogue Creator). Features include:
+  - **Drag-and-Drop Upload**: Reusable `DragDropUpload` component with visual feedback (dashed border highlight on drag-over, upload icon), file validation (size/type), and error callbacks
+  - **Click-to-Upload Fallback**: Accessible file picker for users who prefer traditional upload or are on mobile devices
+  - **Validation Architecture**: Centralized validation with `onValidationError` callback pattern eliminating duplicate logic across sections
+  - **File State Management**: Parent components maintain file state authority while DragDropUpload handles UI/UX as stateless wrapper
+  - **UX Features**: Displays filename/size after selection, clear button to remove file, keyboard accessibility, mobile-responsive design
 - **ZHI Knowledge Provider Integration**: Secure internal API (`/api/internal/knowledge`) for structured knowledge retrieval with explicit author attribution.
 
 ## External Dependencies
