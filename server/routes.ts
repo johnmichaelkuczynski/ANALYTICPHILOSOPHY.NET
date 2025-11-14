@@ -8,7 +8,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import * as sdk from "microsoft-cognitiveservices-speech-sdk";
 import { buildSystemPrompt } from "./prompt-builder";
 import { findRelevantVerse } from "./bible-verses";
-import { findRelevantChunks, searchPhilosophicalChunks, type StructuredChunk } from "./vector-search";
+import { findRelevantChunks, searchPhilosophicalChunks, normalizeAuthorName, type StructuredChunk } from "./vector-search";
 import {
   insertPersonaSettingsSchema,
   insertGoalSchema,
@@ -2676,7 +2676,7 @@ Now output your template selection and rewritten story:`;
   app.post("/api/dialogue-creator", upload.single('file'), async (req, res) => {
     try {
       let sourceText = '';
-      const { text, customInstructions } = req.body;
+      const { text, customInstructions, authorId } = req.body;
 
       // Get text from file upload or direct input
       if (req.file) {
@@ -2707,10 +2707,53 @@ Now output your template selection and rewritten story:`;
         });
       }
 
-      console.log(`[Dialogue Creator] Generating dialogue, ${sourceText.length} chars input`);
+      console.log(`[Dialogue Creator] Generating dialogue, ${sourceText.length} chars input${authorId ? `, with ${authorId} content/tone` : ''}`);
+
+      // Retrieve author-specific content if author selected
+      let authorContent = '';
+      let authorName = '';
+      if (authorId) {
+        try {
+          // Get author details
+          const author = await storage.getFigure(authorId);
+          if (author) {
+            authorName = author.name;
+            // Normalize author name to match database storage (e.g., "J.-M. Kuczynski" → "Kuczynski")
+            const normalizedAuthorName = normalizeAuthorName(authorName);
+            console.log(`[Dialogue Creator] Using author: ${authorName} (normalized: ${normalizedAuthorName})`);
+            
+            // Use searchPhilosophicalChunks to get relevant content from the selected author's works
+            // This provides content and tone for the dialogue
+            const relevantChunks = await searchPhilosophicalChunks(
+              sourceText,
+              4, // Get 4 relevant chunks
+              "common", // Search in common fund
+              normalizedAuthorName // Filter by this author only (normalized name)
+            );
+            
+            if (relevantChunks.length > 0) {
+              authorContent = `\n\n=== REFERENCE MATERIAL FROM ${authorName.toUpperCase()} ===\n\n`;
+              authorContent += `The dialogue should incorporate ideas, themes, and tone from ${authorName}'s works. Use these relevant passages as inspiration for content and voice:\n\n`;
+              
+              relevantChunks.forEach((chunk, index) => {
+                authorContent += `[Excerpt ${index + 1}] ${chunk.paperTitle}\n${chunk.content}\n\n`;
+              });
+              
+              authorContent += `=== END REFERENCE MATERIAL ===\n\nIncorporate ${authorName}'s distinctive philosophical approach, terminology, and intellectual style into the dialogue while maintaining the authentic Kuczynski dialogue format.`;
+              
+              console.log(`[Dialogue Creator] Retrieved ${relevantChunks.length} relevant chunks from ${authorName}'s works`);
+            } else {
+              console.log(`[Dialogue Creator] No relevant chunks found for ${authorName}`);
+            }
+          }
+        } catch (error) {
+          console.error(`[Dialogue Creator] Error retrieving author content:`, error);
+          // Continue without author content rather than failing
+        }
+      }
 
       // Build comprehensive Kuczynski dialogue system prompt
-      const DIALOGUE_SYSTEM_PROMPT = `# DIALOGUE CREATOR SYSTEM PROMPT
+      let DIALOGUE_SYSTEM_PROMPT = `# DIALOGUE CREATOR SYSTEM PROMPT
 
 You are the Dialogue Creator for the "Ask a Philosopher" app, created by philosopher J.-M. Kuczynski PhD. Your purpose is to transform non-fiction philosophical, psychological, or conceptual text into authentic dialogue that follows Kuczynski's distinctive style.
 
@@ -2864,6 +2907,11 @@ The dialogue should feel like overhearing two real minds grappling with real ide
 
       // Build user prompt
       let userPrompt = `Input text:\n\n${sourceText}`;
+      
+      // Add author-specific content if available
+      if (authorContent) {
+        userPrompt += `\n\n${authorContent}`;
+      }
       
       if (customInstructions && customInstructions.trim()) {
         userPrompt += `\n\nCustom instructions: ${customInstructions}`;

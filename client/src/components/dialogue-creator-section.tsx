@@ -3,10 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Copy, Trash2, Download, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DragDropUpload } from "@/components/ui/drag-drop-upload";
+import { useQuery } from "@tanstack/react-query";
+import type { Figure } from "@shared/schema";
 
 interface DialogueCreatorSectionProps {
   onRegisterInput?: (setter: (content: string) => void) => void;
@@ -20,6 +23,7 @@ export function DialogueCreatorSection({
   const [mode, setMode] = useState<'paste' | 'upload'>('paste');
   const [inputText, setInputText] = useState('');
   const [customInstructions, setCustomInstructions] = useState('');
+  const [selectedAuthor, setSelectedAuthor] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [dialogue, setDialogue] = useState('');
   const [wordCount, setWordCount] = useState(0);
@@ -27,6 +31,11 @@ export function DialogueCreatorSection({
   const [uploadedFileName, setUploadedFileName] = useState('');
   const [uploadedFileSize, setUploadedFileSize] = useState(0);
   const { toast } = useToast();
+
+  // Fetch available authors/figures
+  const { data: figures = [] } = useQuery<Figure[]>({
+    queryKey: ['/api/figures'],
+  });
 
   // Register input setter for content transfer system
   useEffect(() => {
@@ -122,6 +131,10 @@ export function DialogueCreatorSection({
       
       if (customInstructions.trim()) {
         formData.append('customInstructions', customInstructions);
+      }
+      
+      if (selectedAuthor && selectedAuthor !== 'none') {
+        formData.append('authorId', selectedAuthor);
       }
 
       const response = await fetch('/api/dialogue-creator', {
@@ -322,6 +335,35 @@ export function DialogueCreatorSection({
               )}
             </TabsContent>
           </Tabs>
+
+          <div>
+            <Label htmlFor="author-select">
+              Optional: Select Author for Content & Tone
+            </Label>
+            <Select
+              value={selectedAuthor}
+              onValueChange={setSelectedAuthor}
+            >
+              <SelectTrigger
+                id="author-select"
+                data-testid="select-author"
+                className="mt-2"
+              >
+                <SelectValue placeholder="None - Standard Dr. K dialogue" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None - Standard Dr. K dialogue</SelectItem>
+                {figures.map((figure) => (
+                  <SelectItem key={figure.id} value={figure.id}>
+                    {figure.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-muted-foreground mt-1">
+              When selected, the dialogue will incorporate the author's works and tone
+            </p>
+          </div>
 
           <div>
             <Label htmlFor="custom-instructions">Optional Customization</Label>
