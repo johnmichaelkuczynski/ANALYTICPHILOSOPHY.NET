@@ -1,23 +1,7 @@
 # Ask A Philosopher - Philosophical Q&A Application
 
-## Recent Updates (November 14, 2025)
-- **Author Literature Organization System - PHASE 1 COMPLETE**: Successfully built comprehensive literature databases for 8 priority authors (43 files total) to power the upcoming Philosophical Fiction Writer module. Each author has 5-6 detailed reference files including style_guide.txt (narrative techniques and rhetorical patterns), voice_profile.txt (philosophical framework and core ideas), primary_texts.txt (works index), quotes_indexed.txt (quote database), and specialized files (dialogues for Plato/Berkeley, aphorisms for Nietzsche, fiction_examples for Dostoevsky, case_studies for Freud, framework files for systematic thinkers). Phase 1 authors: J.-M. Kuczynski, Sigmund Freud, George Berkeley, William James, Friedrich Nietzsche, Karl Marx, Fyodor Dostoevsky, Plato. Ready to test Philosophical Fiction Writer module with diverse voices (analytic, psychoanalytic, idealist, pragmatist, genealogical, dialectical, psychological, dialogical) before expanding to remaining 51 authors in Phases 2-3.
-
-## Recent Updates (November 13, 2025)
-- **NEW: Seven Major Authors Added**: Fyodor Dostoevsky (#53), Leo Tolstoy (#54), Emma Goldman (#55), Alexis de Tocqueville (#56), Confucius (#57), Aesop (#58), and Brothers Grimm (#59) now available:
-  - **Dostoevsky**: Crime and Punishment (109,465 lines) - **1,038 chunks embedded** (50% complete). Passionate voice exploring suffering, redemption, and the soul's depths.
-  - **Tolstoy**: War and Peace (143,093 lines) - **Ready for embedding**. Clear moral vision rejecting "great man" history, revealing truth through life itself.
-  - **Goldman**: Anarchism and Other Essays (17,203 lines) - **Ready for embedding**. Fierce anarchist-feminist voice exposing State violence, capitalism, and patriarchy from lived experience of rebellion.
-  - **Tocqueville**: Democracy in America (44,974 lines) - **Ready for embedding**. Analytical observer revealing equality of conditions, tyranny of the majority, democratic despotism, and civil associations' critical role.
-  - **Confucius**: The Analects (7,224 lines) - **Ready for embedding**. Measured sage teaching virtue (Ren), ritual propriety (Li), filial piety, the gentleman's Way, and harmony to all under Heaven.
-  - **Aesop**: Aesop's Fables (7,079 lines) - **Ready for embedding**. Storyteller teaching practical wisdom through animal fables with sharp morals about vanity, greed, cunning, and power.
-  - **Brothers Grimm**: Household Tales (41,171 lines) - **Ready for embedding**. German scholars preserving folk wisdom through dark fairy tales teaching moral truths about justice, virtue, wickedness, and the magical order of the world.
-- **NEW: Star Trek TOS Templates**: Added 3 new Star Trek TOS narrative templates to Nightmare Conversion (total: **702 templates**): "The Menagerie" (#265 - mental captivity/false reality), "Mirror, Mirror" (#701 - inverted values/evil parallel universe), "Where No Man Has Gone Before" (#702 - enhancement corrupts).
-- **NEW: Chat to Fiction Transfer**: Users can send chat responses directly to Thesis to World or Nightmare Conversion via "Send to" dropdown. Seamless workflow from philosophical discussion to fiction generation.
-- **FIXED: Integrated Output Format**: Thesis to World outputs single flowing narrative without section divisions or markdown.
-
 ## Overview
-"Ask A Philosopher" is an application designed for deep philosophical discourse with 59 philosophical and literary figures (including Fyodor Dostoevsky, Leo Tolstoy, Emma Goldman, Alexis de Tocqueville, Confucius, Aesop, and Brothers Grimm). It leverages their actual writings and advanced AI to deliver nuanced, contextually rich responses. The platform integrates philosophical papers as foundational texts, enabling the AI to reason and adapt based on user sophistication. It supports multi-author conversations through a Retrieval-Augmented Generation (RAG) system, ensuring each figure's responses are grounded in their respective works. The project aims to offer an accessible and engaging way to explore complex philosophical ideas and literary works, with J.-M. Kuczynski as the default philosopher. The ambition is to provide a robust platform for exploring complex philosophical and literary concepts, enhancing understanding through direct engagement with the 'minds' of history's great thinkers, with significant market potential in education and intellectual discourse.
+"Ask A Philosopher" is a unified application providing deep philosophical discourse with 59 philosophical and literary figures. It features seven operational sections: philosophical Q&A chat, Model Builder, Paper Writer, Quote Generator, Thesis to World, Nightmare Conversion, and Philosophical Fiction Writer. The platform leverages actual writings and advanced AI to deliver nuanced, contextually rich responses, enabling multi-author conversations through a Retrieval-Augmented Generation (RAG) system. The ambition is to provide a robust platform for exploring complex philosophical and literary concepts, enhancing understanding through direct engagement with the 'minds' of history's great thinkers, with significant market potential in education and intellectual discourse.
 
 ## User Preferences
 - **Response Length Control**: User can type desired response length in words, or leave blank for Auto mode. In Auto mode, philosophers MUST produce 3-5 substantial paragraphs separated by blank lines with multi-layered attack structure: Opening (immediate attack/reframing, 1 para), Mechanism (1-3 paragraphs deploying MULTIPLE layers of distinctive method within these paragraphs - e.g., Nietzsche: genealogy + psychological diagnosis + cultural prognosis + hammer-blow rhetoric combined in 1-3 paras; Marx: material base + class dynamics + dialectic + economic mechanisms; Spinoza: geometric proof + causal necessity + modal analysis + ethical implications), Counterattack/Implications (turn it around, 1 para), and Conclusion (decisive verdict, brief). Mandatory self-audit before responding: paragraph count (3-5 with blank lines), multiple method layers deployed within paragraphs, genealogical tracing when applicable, mechanism shown not asserted, counterattack present, voice matches philosopher's style (visceral/geometric/analytic/dialectical). Worked example provided in system prompts showing Nietzsche combining multiple layers within single paragraphs. Standard: responses must have HORSEPOWER - depth and force to fully deploy intellectual firepower. Single paragraph or polite summaries = automatic failure
@@ -32,29 +16,24 @@
 The application acts as a centralized knowledge server providing unified access to philosophical and psychoanalytic texts via a secure internal API. It features a 3-column layout without authentication, offering direct access to the chat interface. All philosophical texts are consolidated into a unified "Common Fund" knowledge base.
 
 ### UI/UX Decisions
-- **Layout**: A unified single-page layout with 3 columns (philosophers sidebar, settings, main content) containing six vertically stacked sections: Ask A Philosopher (chat), Model Builder, Paper Writer, Quote Generator, Thesis to World, and Nightmare Conversion. All sections accessible by scrolling on ONE page.
-- **Accessibility**: No login required; minimal settings (Response Length, Number of Quotes).
-- **Six-Section Design**: Integrates Chat, Model Builder, Paper Writer, Quote Generator, Thesis to World, and Nightmare Conversion into a single scrollable page.
+- **Layout**: A unified single-page layout with 3 columns (philosophers sidebar, settings, main content) containing seven vertically stacked sections. All sections accessible by scrolling on ONE page.
 - **Visuals**: Animated Kuczynski icon, AI-generated portrait avatars, minimalistic design with elegant typography, dark mode support, and visual section dividers.
-- **Features**: "Talk with X" for personalized conversations, "Compare Thinkers" for side-by-side comparisons.
 
 ### Technical Implementations
 - **Frontend**: React, TypeScript, Wouter, TanStack Query, Shadcn UI, and Tailwind CSS.
 - **Backend**: Express.js with Node.js and Drizzle ORM.
-- **AI Interaction**: Anthropic Claude Sonnet 4.5 is the primary AI (0.7 temperature), configured for aggressive direct reasoning with a 6-point mandate. Conversation history is maintained, and philosophers can cite their own works.
+- **AI Interaction**: Anthropic Claude Sonnet 4.5 (0.7 temperature) configured for aggressive direct reasoning.
 - **Streaming**: Server-Sent Events (SSE) for real-time word-by-word AI response streaming.
-- **Settings**: Users control response length and quote frequency via the settings panel.
-- **Cross-Section Content Transfer**: Bidirectional content flow system using dropdown "Send to" arrow buttons on all outputs.
-- **Model Builder Section**: Integrated for theory validation and reinterpretations using model-theoretic analysis. Supports custom instructions and iterative refinement.
-- **Paper Writer Section**: Integrated for generating formal philosophical papers (up to 1500 words) in an authentic voice, with philosopher selection and topic input.
-- **Quote Generator Section**: Extracts quotes from site authors or user-uploaded documents, with tab-based modes for "Site Authors" (with optional query and quantity) and "Upload File" (accepts .txt, .pdf, .doc, .docx up to 5MB, with keyword filtering). Includes intelligent quote extraction, spell correction, sentence validation, and relevance-based quality scoring.
-- **Thesis to World Section**: Documentary-style factual accumulation generator that converts non-fiction claims about human nature into TWO-PART output: (1) Documentary background of 8-12 factual incidents with structured JSON enforcement (date/name/numbers/action/result fields), and (2) 400-600 word developed narrative story showing protagonist experiencing thesis consequences in that world. First stage uses structured JSON with mandatory field validation, programmatic narrative detection, and automatic filtering of invalid incidents.
-- **Nightmare Conversion Section**: Psychological inversion generator that analyzes non-fiction text to identify author's core anxiety, then generates an 800-1200 word nightmare story where that fear materializes completely. **702 templates available** including Star Trek TOS episodes ("The Menagerie" - mental captivity/false reality, "Mirror, Mirror" - inverted values/evil parallel universe, "Where No Man Has Gone Before" - enhancement corrupts), Poe, Kafka, Twilight Zone, true crime, etc. Features template selection display, rewrite functionality allowing custom instructions for regeneration, and optional gender preference for template selection. Outputs both original and rewritten versions side-by-side.
-- **Guest User Management**: Session-based storage with auto-generated guest user IDs.
-- **RAG System**: Papers are chunked (~250 words), embedded using OpenAI's `text-embedding-ada-002`, and stored in a PostgreSQL database with `pgvector` for semantic search.
-- **Unified Knowledge Base**: All philosophical texts from 87 authors (68,060 chunks across 250 unique works) are consolidated into a single "Common Fund".
-- **Document Upload Feature**: Users can upload text documents (.txt, .md, .doc, .docx, .pdf up to 1MB) for analysis.
-- **ZHI Knowledge Provider Integration**: A secure internal API (`/api/internal/knowledge`) uses HMAC-SHA256 authentication for structured knowledge retrieval with explicit author attribution.
+- **Cross-Section Content Transfer**: Bidirectional content flow using "Send to" dropdown buttons.
+- **Model Builder Section**: Integrated for theory validation and reinterpretations.
+- **Paper Writer Section**: Generates formal philosophical papers (up to 1500 words).
+- **Quote Generator Section**: Extracts quotes from site authors or user-uploaded documents with intelligent extraction and quality scoring.
+- **Thesis to World Section**: Converts non-fiction claims into a two-part output: factual incidents (structured JSON) and a developed narrative story.
+- **Nightmare Conversion Section**: Analyzes non-fiction text to identify author's core anxiety and generates an 800-1200 word nightmare story, utilizing 702 narrative templates.
+- **Philosophical Fiction Writer Section**: Transforms non-fiction text into 800-1500 word narrative fiction in the voice and style of a selected philosopher/author, using server-side author assets and comprehensive prompts.
+- **RAG System**: Papers are chunked, embedded using OpenAI's `text-embedding-ada-002`, and stored in a PostgreSQL database with `pgvector` for semantic search across a unified knowledge base of 87 authors.
+- **Document Upload Feature**: Users can upload text documents (.txt, .md, .doc, .docx, .pdf up to 5MB) for analysis.
+- **ZHI Knowledge Provider Integration**: Secure internal API (`/api/internal/knowledge`) for structured knowledge retrieval with explicit author attribution.
 
 ## External Dependencies
 - **AI Providers**: Anthropic Claude Sonnet 4.5, OpenAI GPT-4o, DeepSeek, Perplexity.
