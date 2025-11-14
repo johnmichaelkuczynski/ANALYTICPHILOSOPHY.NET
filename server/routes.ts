@@ -20,6 +20,7 @@ import { verifyZhiAuth } from "./internal-auth";
 import multer from "multer";
 import * as pdfParse from "pdf-parse";
 import * as mammoth from "mammoth";
+import { authorAssetsCache } from "./author-assets-cache";
 
 // Get __dirname equivalent for ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -2560,6 +2561,114 @@ Now output your template selection and rewritten story:`;
         success: false,
         error: error instanceof Error ? error.message : "Failed to rewrite nightmare"
       });
+    }
+  });
+
+  // Philosophical Fiction Writer endpoint
+  app.post("/api/philosophical-fiction", upload.single('file'), async (req, res) => {
+    try {
+      let sourceText = '';
+      const { text, authorId, customInstructions } = req.body;
+
+      // Get text from file upload or direct input
+      if (req.file) {
+        const fileExtension = req.file.originalname.split('.').pop()?.toLowerCase();
+        
+        if (fileExtension === 'txt') {
+          sourceText = req.file.buffer.toString('utf-8');
+        } else if (fileExtension === 'pdf') {
+          const pdfData = await pdfParse(req.file.buffer);
+          sourceText = pdfData.text;
+        } else if (fileExtension === 'docx' || fileExtension === 'doc') {
+          const result = await mammoth.extractRawText({ buffer: req.file.buffer });
+          sourceText = result.value;
+        } else {
+          return res.status(400).json({
+            success: false,
+            error: "Unsupported file type. Please upload .txt, .pdf, .doc, or .docx"
+          });
+        }
+      } else if (text) {
+        sourceText = text;
+      }
+
+      if (!sourceText || sourceText.trim().length < 20) {
+        return res.status(400).json({
+          success: false,
+          error: "Please provide at least 20 characters of source text"
+        });
+      }
+
+      if (!authorId) {
+        return res.status(400).json({
+          success: false,
+          error: "Please select an author"
+        });
+      }
+
+      console.log(`[Philosophical Fiction] Generating fiction in ${authorId}'s voice, ${sourceText.length} chars input`);
+
+      // Build prompt using author assets cache
+      const prompt = authorAssetsCache.buildFictionPrompt(authorId, sourceText, customInstructions);
+      
+      if (!prompt) {
+        return res.status(404).json({
+          success: false,
+          error: `Author '${authorId}' not found in literature database`
+        });
+      }
+
+      // Set up SSE streaming
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+
+      // Stream fiction generation
+      const stream = await anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 4000,
+        temperature: 0.8,
+        stream: true,
+        messages: [{ role: "user", content: prompt }]
+      });
+
+      let fullResponse = '';
+      
+      for await (const event of stream) {
+        if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+          const text = event.delta.text;
+          fullResponse += text;
+          
+          // Send chunks via SSE
+          res.write(`data: ${JSON.stringify({ content: text })}\n\n`);
+        }
+      }
+
+      const wordCount = fullResponse.split(/\s+/).length;
+      console.log(`[Philosophical Fiction] Generated ${wordCount} words in ${authorId}'s voice`);
+
+      // Send final metadata
+      res.write(`data: ${JSON.stringify({ 
+        done: true,
+        wordCount,
+        authorId
+      })}\n\n`);
+      
+      res.write('data: [DONE]\n\n');
+      res.end();
+
+    } catch (error) {
+      console.error("[Philosophical Fiction] Error:", error);
+      
+      if (!res.headersSent) {
+        res.status(500).json({
+          success: false,
+          error: error instanceof Error ? error.message : "Failed to generate philosophical fiction"
+        });
+      } else {
+        res.write(`data: ${JSON.stringify({ error: "Generation failed" })}\n\n`);
+        res.end();
+      }
     }
   });
 

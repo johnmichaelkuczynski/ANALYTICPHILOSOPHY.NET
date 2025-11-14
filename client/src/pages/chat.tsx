@@ -24,6 +24,7 @@ import { PaperWriterSection } from "@/components/paper-writer-section";
 import { QuoteGeneratorSection } from "@/components/quote-generator-section";
 import { ThesisToWorldSection } from "@/components/thesis-to-world-section";
 import { NightmareConversionSection } from "@/components/nightmare-conversion-section";
+import { PhilosophicalFictionSection } from "@/components/philosophical-fiction-section";
 
 const DEFAULT_PERSONA_SETTINGS: Partial<PersonaSettings> = {
   responseLength: 0,
@@ -51,9 +52,10 @@ export default function Chat() {
   const paperWriterTopicRef = useRef<(topic: string) => void>(() => {});
   const thesisToWorldInputRef = useRef<(text: string) => void>(() => {});
   const nightmareConversionInputRef = useRef<(text: string) => void>(() => {});
+  const philosophicalFictionInputRef = useRef<(text: string) => void>(() => {});
 
   // Transfer handler for cross-section content flow
-  const handleContentTransfer = (content: string, target: 'chat' | 'model' | 'paper' | 'thesis' | 'nightmare') => {
+  const handleContentTransfer = (content: string, target: 'chat' | 'model' | 'paper' | 'thesis' | 'nightmare' | 'fiction') => {
     if (target === 'chat') {
       setChatInputContent(prev => ({ text: content, version: prev.version + 1 }));
       // Scroll to chat input
@@ -81,6 +83,12 @@ export default function Chat() {
         nightmareConversionInputRef.current(content);
         // Scroll to nightmare conversion section
         document.getElementById('nightmare-conversion-section')?.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else if (target === 'fiction') {
+      if (philosophicalFictionInputRef.current) {
+        philosophicalFictionInputRef.current(content);
+        // Scroll to philosophical fiction section
+        document.getElementById('philosophical-fiction-section')?.scrollIntoView({ behavior: 'smooth' });
       }
     }
   };
@@ -566,6 +574,14 @@ export default function Chat() {
           <div id="nightmare-conversion-section" className="px-4 py-8 border-t-4 border-primary/20">
             <NightmareConversionSection 
               onRegisterInput={(setter) => { nightmareConversionInputRef.current = setter; }}
+            />
+          </div>
+
+          {/* Philosophical Fiction Writer Section */}
+          <div id="philosophical-fiction-section" className="px-4 py-8 border-t-4 border-primary/20">
+            <PhilosophicalFictionSection 
+              onRegisterInput={(setter) => { philosophicalFictionInputRef.current = setter; }}
+              onTransfer={handleContentTransfer}
             />
           </div>
         </div>

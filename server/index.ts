@@ -4,6 +4,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import path from "path";
 import fs from "fs";
 import cors from "cors";
+import { authorAssetsCache } from "./author-assets-cache";
 
 const app = express();          // create the app first
 app.use(cors());                // then enable CORS middleware
