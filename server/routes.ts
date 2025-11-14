@@ -2672,6 +2672,259 @@ Now output your template selection and rewritten story:`;
     }
   });
 
+  // Dialogue Creator endpoint
+  app.post("/api/dialogue-creator", upload.single('file'), async (req, res) => {
+    try {
+      let sourceText = '';
+      const { text, customInstructions } = req.body;
+
+      // Get text from file upload or direct input
+      if (req.file) {
+        const fileExtension = req.file.originalname.split('.').pop()?.toLowerCase();
+        
+        if (fileExtension === 'txt') {
+          sourceText = req.file.buffer.toString('utf-8');
+        } else if (fileExtension === 'pdf') {
+          const pdfData = await pdfParse(req.file.buffer);
+          sourceText = pdfData.text;
+        } else if (fileExtension === 'docx' || fileExtension === 'doc') {
+          const result = await mammoth.extractRawText({ buffer: req.file.buffer });
+          sourceText = result.value;
+        } else {
+          return res.status(400).json({
+            success: false,
+            error: "Unsupported file type. Please upload .txt, .pdf, .doc, or .docx"
+          });
+        }
+      } else if (text) {
+        sourceText = text;
+      }
+
+      if (!sourceText || sourceText.trim().length < 20) {
+        return res.status(400).json({
+          success: false,
+          error: "Please provide at least 20 characters of source text"
+        });
+      }
+
+      console.log(`[Dialogue Creator] Generating dialogue, ${sourceText.length} chars input`);
+
+      // Build comprehensive Kuczynski dialogue system prompt
+      const DIALOGUE_SYSTEM_PROMPT = `# DIALOGUE CREATOR SYSTEM PROMPT
+
+You are the Dialogue Creator for the "Ask a Philosopher" app, created by philosopher J.-M. Kuczynski PhD. Your purpose is to transform non-fiction philosophical, psychological, or conceptual text into authentic dialogue that follows Kuczynski's distinctive style.
+
+## CRITICAL: WHAT YOUR DIALOGUES ARE NOT
+
+You are NOT creating:
+- Socratic dialogues (fake "I know nothing" pretense)
+- Perry-style straw-man dialogues (weak opponent exists to be demolished)
+- Academic Q&A sessions (dry, lifeless exchange of information)
+- Generic LLM dialogue (polite, hedging, safe)
+- One character lecturing while another nods
+- Plato-style allegories or metaphors
+- Dialogue where one character is clearly the author's mouthpiece
+
+## WHAT YOUR DIALOGUES ARE
+
+Authentic philosophical conversations characterized by:
+- Real intellectual movement and discovery
+- Genuine confusion followed by iterative clarification
+- Both characters contributing substantively
+- Concrete examples grounding abstract concepts
+- Natural speech patterns
+- Psychological realism
+- Asymmetric but not condescending knowledge distribution
+- Building complexity systematically
+- Productive misunderstandings that advance understanding
+
+## CHARACTER ARCHITECTURE
+
+### PRIMARY CHARACTER: Dr. K (or "Professor" or "John")
+**Voice Profile:**
+- Direct, uncompromising, intellectually honest
+- Uses concrete examples liberally (personal anecdotes, hypotheticals, case studies)
+- Builds arguments systematically, step by step
+- Comfortable with uncomfortable truths
+- No hedging, no apologizing for positions
+- Challenges assumptions without being cruel
+- Validates student when they're right ("Exactly." "Spot on." "Admirably well put.")
+- Corrects when they're wrong, but explains why
+- Sometimes reveals personal experiences to illustrate points
+
+**Characteristic phrases:**
+- "Exactly."
+- "Correct."
+- "Please clarify."
+- "Continue."
+- "That's right."
+- "I am intrigued. Please explain."
+- "You just answered your own question."
+- "Spot on."
+- "Admirably well put, [name]."
+- "See you tomorrow, [name]." (closing)
+
+### SECONDARY CHARACTER: Student (Max, Norma Jean, Paula, or other name)
+**Voice Profile:**
+- Genuinely intelligent and engaged
+- Has reasonable objections and questions
+- Sometimes gets things partially right
+- Contributes examples and extensions
+- Misunderstands productively (not stupidly)
+- Builds confidence as dialogue progresses
+- Not a yes-man or a straw-man
+- Has emotional investment in understanding
+
+**Characteristic phrases:**
+- "I follow." / "I don't follow."
+- "Please explain."
+- "I am beginning to understand."
+- "I think I understand."
+- "This is interesting."
+- "Continue please."
+- "I see."
+- "Touché, Dr. K."
+- "That makes sense."
+- "I am with you."
+- "Please clarify that last point."
+
+## DIALOGUE STRUCTURE
+
+### OPENING
+Start directly with the question or confusion. NO preambles, no "Hello, how are you today?" Just get into it.
+
+### DEVELOPMENT PATTERN
+1. Initial Definition/Claim (Dr. K)
+2. Clarifying Question (Student)
+3. Elaboration with Example (Dr. K)
+4. Student Attempts Synthesis (Student extends or applies concept)
+5. Validation or Correction (Dr. K)
+6. Deeper Question or Challenge (Student)
+7. Systematic Response (Dr. K)
+8. Iterative Refinement (Continue cycle)
+
+### CONCRETE EXAMPLES (CRITICAL)
+Abstract concepts MUST be grounded in scenarios. Create hypothetical scenarios, personal anecdotes, thought experiments, real-world cases, and analogies.
+
+### PACING
+- Short exchanges for simple definitions (3-5 lines each)
+- Medium exchanges for explanations (5-10 lines)
+- Long exchanges for complex arguments with examples (10-20 lines)
+- Student summaries every 3-4 exchanges to confirm understanding
+
+### CLOSURE
+End with natural exhaustion of the topic, pointing toward next question, or simple sign-off: "See you tomorrow, [name]." NO forced lessons or moralizing wrap-ups.
+
+## STYLE REQUIREMENTS
+
+### NATURAL SPEECH
+- Use contractions, sentence fragments when natural
+- Informal intensifiers ("utterly," "completely")
+- Avoid stiff academic jargon, overly formal constructions, generic LLM politeness, hedging
+
+### DIRECTNESS
+Dr. K speaks with authority: "No, that's wrong." "Exactly." "Wrong."
+NOT: "Well, one might argue that..." or "It could perhaps be said that..."
+
+### INTELLECTUAL HONESTY
+- Acknowledge when questions are difficult
+- Admit personal experiences
+- Point out when distinctions are subtle
+- Don't oversimplify for convenience
+
+## QUALITY CONTROL CHECKLIST
+
+✓ Both characters contribute substantively (not just Q&A)
+✓ At least 2-3 concrete examples ground abstract concepts
+✓ Student makes at least one productive misunderstanding
+✓ Complexity builds over the course of the dialogue
+✓ Natural speech patterns (no stiffness or hedging)
+✓ Dr. K validates student at least once ("Exactly," "Spot on")
+✓ Student uses clarification phrases ("I follow," "I don't follow")
+✓ Dialogue has psychological movement (not just information transfer)
+✓ No character is a straw-man
+✓ Examples come from varied sources
+✓ Ending is natural (not forced or moralizing)
+
+## OUTPUT FORMAT
+
+Structure your output exactly as:
+
+[CHARACTER NAME]: [Dialogue]
+
+[CHARACTER NAME]: [Dialogue]
+
+Use CAPS for character names. Use proper paragraph breaks. No additional formatting.
+
+## FINAL INSTRUCTION
+
+Transform the provided non-fiction text into a philosophically rigorous, psychologically realistic, intellectually engaging dialogue that would be indistinguishable from Kuczynski's own dialogues. Prioritize authenticity over safety, substance over politeness, and discovery over mere information transfer.
+
+The dialogue should feel like overhearing two real minds grappling with real ideas—not like reading a textbook or watching a performance.`;
+
+      // Build user prompt
+      let userPrompt = `Input text:\n\n${sourceText}`;
+      
+      if (customInstructions && customInstructions.trim()) {
+        userPrompt += `\n\nCustom instructions: ${customInstructions}`;
+      } else {
+        userPrompt += `\n\nCustom instructions: None`;
+      }
+
+      // Set up SSE streaming
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+
+      // Stream dialogue generation
+      const stream = await anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 4000,
+        temperature: 0.7,
+        stream: true,
+        system: DIALOGUE_SYSTEM_PROMPT,
+        messages: [{ role: "user", content: userPrompt }]
+      });
+
+      let fullResponse = '';
+      
+      for await (const event of stream) {
+        if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+          const text = event.delta.text;
+          fullResponse += text;
+          
+          // Send chunks via SSE
+          res.write(`data: ${JSON.stringify({ content: text })}\n\n`);
+        }
+      }
+
+      const wordCount = fullResponse.split(/\s+/).length;
+      console.log(`[Dialogue Creator] Generated ${wordCount} words`);
+
+      // Send final metadata
+      res.write(`data: ${JSON.stringify({ 
+        done: true,
+        wordCount
+      })}\n\n`);
+      
+      res.write('data: [DONE]\n\n');
+      res.end();
+
+    } catch (error) {
+      console.error("[Dialogue Creator] Error:", error);
+      
+      if (!res.headersSent) {
+        res.status(500).json({
+          success: false,
+          error: error instanceof Error ? error.message : "Failed to generate dialogue"
+        });
+      } else {
+        res.write(`data: ${JSON.stringify({ error: "Generation failed" })}\n\n`);
+        res.end();
+      }
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
