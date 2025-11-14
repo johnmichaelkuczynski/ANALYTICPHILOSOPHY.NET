@@ -12,10 +12,17 @@
 - Included click-to-upload fallback for traditional file selection and mobile devices
 - All sections now provide consistent, modern file upload experience
 
-### Dialogue Creator Display Fix
-- Fixed text visibility issue in Dialogue Creator output where generated dialogues were not visible
-- Added `text-foreground` class to ensure proper text contrast in both light and dark modes
-- Dialogue output now displays correctly with proper readability
+### Dialogue Creator Enhancements
+- **Author Selection Feature**: Added optional dropdown to select any site author/philosopher whose works and tone should be incorporated into generated dialogues
+  - Dropdown fetches all available figures via React Query
+  - When author selected, backend retrieves 4 relevant chunks from author's works using RAG (searchPhilosophicalChunks)
+  - Author name normalized (e.g., "J.-M. Kuczynski" → "Kuczynski") to match vector database canonical format
+  - Retrieved content incorporated into dialogue generation prompt for authentic content/tone infusion
+  - Feature is fully optional - dialogues work with or without author selection
+  - Uses "none" as default value (Radix UI SelectItem requirement)
+- **Display Fix**: Fixed text visibility issue where generated dialogues were not visible
+  - Added `text-foreground` class to ensure proper text contrast in both light and dark modes
+  - Dialogue output now displays correctly with proper readability
 
 ## User Preferences
 - **Response Length Control**: User can type desired response length in words, or leave blank for Auto mode. In Auto mode, philosophers MUST produce 3-5 substantial paragraphs separated by blank lines with multi-layered attack structure: Opening (immediate attack/reframing, 1 para), Mechanism (1-3 paragraphs deploying MULTIPLE layers of distinctive method within these paragraphs - e.g., Nietzsche: genealogy + psychological diagnosis + cultural prognosis + hammer-blow rhetoric combined in 1-3 paras; Marx: material base + class dynamics + dialectic + economic mechanisms; Spinoza: geometric proof + causal necessity + modal analysis + ethical implications), Counterattack/Implications (turn it around, 1 para), and Conclusion (decisive verdict, brief). Mandatory self-audit before responding: paragraph count (3-5 with blank lines), multiple method layers deployed within paragraphs, genealogical tracing when applicable, mechanism shown not asserted, counterattack present, voice matches philosopher's style (visceral/geometric/analytic/dialectical). Worked example provided in system prompts showing Nietzsche combining multiple layers within single paragraphs. Standard: responses must have HORSEPOWER - depth and force to fully deploy intellectual firepower. Single paragraph or polite summaries = automatic failure
@@ -45,7 +52,7 @@ The application acts as a centralized knowledge server providing unified access 
 - **Thesis to World Section**: Converts non-fiction claims into a two-part output: factual incidents (structured JSON) and a developed narrative story.
 - **Nightmare Conversion Section**: Analyzes non-fiction text to identify author's core anxiety and generates an 800-1200 word nightmare story, utilizing 702 narrative templates.
 - **Philosophical Fiction Writer Section**: Transforms non-fiction text into 800-1500 word narrative fiction in the voice and style of a selected philosopher/author, using server-side author assets and comprehensive prompts.
-- **Dialogue Creator Section**: Transforms non-fiction philosophical, psychological, or conceptual text into authentic Kuczynski-style dialogues between Dr. K and an intelligent student. Features comprehensive system prompt capturing distinctive dialogue mechanics: genuine intellectual movement, productive misunderstandings, concrete examples grounding abstract concepts, natural speech patterns, and psychological realism. Includes optional customization field for tone/character specifications and supports paste/upload modes (.txt, .pdf, .doc, .docx up to 5MB). NOT Socratic irony, NOT straw-man debates, NOT generic LLM politeness. Creates philosophically rigorous conversations with Dr. K's characteristic phrases ("Exactly," "Spot on," "See you tomorrow") and student's engaged responses ("I follow," "Please explain"). Uses Anthropic Claude Sonnet 4.5 with 0.7 temperature for streaming generation.
+- **Dialogue Creator Section**: Transforms non-fiction philosophical, psychological, or conceptual text into authentic Kuczynski-style dialogues between Dr. K and an intelligent student. Features comprehensive system prompt capturing distinctive dialogue mechanics: genuine intellectual movement, productive misunderstandings, concrete examples grounding abstract concepts, natural speech patterns, and psychological realism. Includes optional customization field for tone/character specifications, optional author selection dropdown (incorporates selected philosopher's works/tone via RAG), and supports paste/upload modes (.txt, .pdf, .doc, .docx up to 5MB). NOT Socratic irony, NOT straw-man debates, NOT generic LLM politeness. Creates philosophically rigorous conversations with Dr. K's characteristic phrases ("Exactly," "Spot on," "See you tomorrow") and student's engaged responses ("I follow," "Please explain"). Uses Anthropic Claude Sonnet 4.5 with 0.7 temperature for streaming generation.
 - **RAG System**: Papers are chunked, embedded using OpenAI's `text-embedding-ada-002`, and stored in a PostgreSQL database with `pgvector` for semantic search across a unified knowledge base of 87 authors.
 - **Document Upload Feature**: Users can upload text documents (.txt, .md, .doc, .docx, .pdf up to 5MB) for analysis across 5 sections (Quote Generator, Thesis to World, Nightmare Conversion, Philosophical Fiction Writer, Dialogue Creator). Features include:
   - **Drag-and-Drop Upload**: Reusable `DragDropUpload` component with visual feedback (dashed border highlight on drag-over, upload icon), file validation (size/type), and error callbacks
