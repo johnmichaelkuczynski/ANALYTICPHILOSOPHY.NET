@@ -48,7 +48,11 @@ export function DialogueCreatorSection({
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      // Clear ref if user cancels file selection
+      uploadedFileRef.current = null;
+      return;
+    }
 
     const fileExtension = file.name.split('.').pop()?.toLowerCase();
     const allowedExtensions = ['txt', 'pdf', 'doc', 'docx'];
@@ -183,6 +187,12 @@ export function DialogueCreatorSection({
         description: `Created ${accumulatedText.split(/\s+/).length} word dialogue`,
       });
 
+      // Clear uploaded file after successful generation
+      uploadedFileRef.current = null;
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+
     } catch (error) {
       console.error('Error generating dialogue:', error);
       toast({
@@ -259,7 +269,17 @@ export function DialogueCreatorSection({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Tabs value={mode} onValueChange={(v) => setMode(v as 'paste' | 'upload')}>
+          <Tabs value={mode} onValueChange={(v) => {
+            const newMode = v as 'paste' | 'upload';
+            setMode(newMode);
+            // Clear uploaded file when switching to paste mode
+            if (newMode === 'paste') {
+              uploadedFileRef.current = null;
+              if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+              }
+            }
+          }}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="paste" data-testid="tab-paste">Paste Text</TabsTrigger>
               <TabsTrigger value="upload" data-testid="tab-upload">Upload File</TabsTrigger>
