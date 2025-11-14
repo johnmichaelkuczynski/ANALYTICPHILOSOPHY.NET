@@ -404,7 +404,7 @@ export function DialogueCreatorSection({
           </CardHeader>
           <CardContent>
             <div className="prose dark:prose-invert max-w-none">
-              <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed bg-muted/50 p-4 rounded-lg" data-testid="text-dialogue-output">
+              <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed bg-muted/50 p-4 rounded-lg text-foreground" data-testid="text-dialogue-output">
                 {dialogue}
               </pre>
             </div>
