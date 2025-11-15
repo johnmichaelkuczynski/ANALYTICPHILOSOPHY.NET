@@ -26,10 +26,12 @@ interface KuczynskiPosition {
   thesis?: string; // Some positions use "thesis"
   statement?: string; // Some positions use "statement"
   position?: string; // Some positions use "position"
+  content?: string; // Some positions use "content"
   domain: string;
   source?: string | string[];
   source_work?: string;
   work?: string;
+  work_id?: string;
   significance?: string;
   consistency?: string;
   philosophical_engagements?: PhilosophicalEngagements;
@@ -38,7 +40,9 @@ interface KuczynskiPosition {
   key_implications?: string[];
   key_insight?: string;
   explanation?: string;
-  justification?: string; // Some positions include justification
+  justification?: string;
+  context?: string; // Additional context field
+  implications?: string; // Implications field
 }
 
 interface KuczynskiDatabase {
@@ -117,11 +121,58 @@ async function loadKuczynskiDatabase() {
         continue;
       }
       
-      // Get the main content - positions use "thesis", "statement", or "position"
-      const mainContent = position.thesis || position.statement || position.position;
+      // BUILD COMPREHENSIVE CONTENT from ALL available fields
+      // Priority order: thesis > statement > position > content, but use ANY available content
+      const primaryContent = position.thesis || position.statement || position.position || position.content;
       
-      if (!mainContent) {
-        console.error(`⚠️  Position ${position.position_id} missing content (thesis/statement/position), skipping`);
+      // Build rich content by combining all descriptive fields
+      let contentParts: string[] = [];
+      
+      if (primaryContent) {
+        contentParts.push(primaryContent);
+      }
+      
+      // Add context (often provides valuable background)
+      if (position.context) {
+        contentParts.push(`Context: ${position.context}`);
+      }
+      
+      // Add explanation (often contains substantial philosophical content)
+      if (position.explanation) {
+        contentParts.push(`Explanation: ${position.explanation}`);
+      }
+      
+      // Add justification (philosophical reasoning)
+      if (position.justification) {
+        contentParts.push(`Justification: ${position.justification}`);
+      }
+      
+      // Add key insight (crucial conceptual points)
+      if (position.key_insight) {
+        contentParts.push(`Key Insight: ${position.key_insight}`);
+      }
+      
+      // Add key consequences (implications)
+      if (position.key_consequences && position.key_consequences.length > 0) {
+        contentParts.push(`Key Consequences: ${position.key_consequences.join('; ')}`);
+      }
+      
+      // Add key implications
+      if (position.key_implications && position.key_implications.length > 0) {
+        contentParts.push(`Key Implications: ${position.key_implications.join('; ')}`);
+      }
+      
+      // Add implications (singular field)
+      if (position.implications) {
+        contentParts.push(`Implications: ${position.implications}`);
+      }
+      
+      // Combine all content parts
+      const mainContent = contentParts.join('\n\n');
+      
+      // Sanity check: if NO content at all, skip (but this should be rare)
+      if (!mainContent || mainContent.trim().length === 0) {
+        console.error(`⚠️  Position ${position.position_id} has no extractable content, skipping`);
         skipped++;
         continue;
       }
@@ -129,27 +180,12 @@ async function loadKuczynskiDatabase() {
       // Get the title - use provided title or generate from position_id
       const title = position.title || `Position ${position.position_id}`;
       
-      // Create embedding content from title + main content + key metadata
+      // Create embedding content from title + comprehensive content + metadata
       let embeddingText = `${title}\n\n${mainContent}`;
       
-      // Add domain context
+      // Add domain context for better semantic search
       if (position.domain) {
         embeddingText += `\n\nDomain: ${position.domain}`;
-      }
-      
-      // Add key insight if available
-      if (position.key_insight) {
-        embeddingText += `\n\nKey Insight: ${position.key_insight}`;
-      }
-      
-      // Add explanation if available (for complex positions)
-      if (position.explanation) {
-        embeddingText += `\n\nExplanation: ${position.explanation}`;
-      }
-      
-      // Add justification if available
-      if (position.justification) {
-        embeddingText += `\n\nJustification: ${position.justification}`;
       }
       
       // Generate embedding
@@ -160,8 +196,8 @@ async function loadKuczynskiDatabase() {
       
       const embedding = embeddingResponse.data[0].embedding;
       
-      // Extract source work ID - check work, source_work, and source fields
-      let sourceWork = position.work || position.source_work;
+      // Extract source work ID - check work, work_id, source_work, and source fields
+      let sourceWork = position.work || position.work_id || position.source_work;
       if (!sourceWork && position.source) {
         if (Array.isArray(position.source)) {
           sourceWork = position.source[0];
