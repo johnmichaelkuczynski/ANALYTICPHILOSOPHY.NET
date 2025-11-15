@@ -88,6 +88,7 @@ export const figureMessages = pgTable("figure_messages", {
 });
 
 // Paper chunks with vector embeddings for RAG
+// Supports both raw text chunks AND pre-extracted philosophical positions
 export const paperChunks = pgTable("paper_chunks", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   figureId: varchar("figure_id").notNull().references(() => figures.id, { onDelete: "cascade" }),
@@ -96,10 +97,20 @@ export const paperChunks = pgTable("paper_chunks", {
   content: text("content").notNull(),
   embedding: vector("embedding", { dimensions: 1536 }), // OpenAI ada-002 dimensions
   chunkIndex: integer("chunk_index").notNull(),
+  
+  // Fields for pre-extracted philosophical positions (optional, only for DB v25 positions)
+  positionId: text("position_id"), // e.g., "EP-001", "MIND-018"
+  domain: text("domain"), // e.g., "epistemology", "philosophy_of_mind"
+  philosophicalEngagements: jsonb("philosophical_engagements"), // { challenges: [...], supports: [...] }
+  sourceWork: text("source_work"), // e.g., "WORK-001", "WORK-011"
+  significance: text("significance"), // e.g., "FOUNDATIONAL", "HIGH"
+  
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => [
   index("paper_chunks_figure_idx").on(table.figureId),
   index("paper_chunks_author_idx").on(table.author),
+  index("paper_chunks_position_idx").on(table.positionId),
+  index("paper_chunks_domain_idx").on(table.domain),
   // Unique constraint prevents duplicate chunks and enables idempotent resume
   uniqueIndex("paper_chunks_unique_idx").on(table.figureId, table.paperTitle, table.chunkIndex),
 ]);
