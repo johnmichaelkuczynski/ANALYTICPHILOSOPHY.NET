@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Sparkles, Search, Users } from "lucide-react";
+import { Sparkles, Search, Users, Star } from "lucide-react";
 import type { Message, PersonaSettings, Figure } from "@shared/schema";
 import kuczynskiIcon from "/jmk-photo.png";
 import { ComparisonModal } from "@/components/comparison-modal";
@@ -421,13 +421,16 @@ export default function Chat() {
         {/* Header - Fixed */}
         <header className="border-b bg-background/95 backdrop-blur-md relative z-20">
           <div className="px-4 py-3 flex items-center justify-between">
-            <a
-              href="mailto:contact@zhisystems.ai"
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-              data-testid="link-contact"
-            >
-              Contact Us
-            </a>
+            <div className="flex items-center gap-2">
+              <Star className="w-3 h-3 fill-yellow-500 text-yellow-500" data-testid="icon-gold-star" />
+              <a
+                href="mailto:contact@zhisystems.ai"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                data-testid="link-contact"
+              >
+                Contact Us
+              </a>
+            </div>
             <div className="flex items-center gap-4 absolute left-1/2 -translate-x-1/2">
               <div className="relative">
                 <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg border-2 border-primary/20">
