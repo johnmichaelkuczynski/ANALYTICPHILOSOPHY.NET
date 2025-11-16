@@ -307,11 +307,27 @@ Adapt your complexity, vocabulary, tone, and length to match these settings whil
 `;
       }
 
-      // VECTOR SEARCH: Find only semantically relevant chunks from papers (top 6 most similar)
-      const relevantPapers = await findRelevantChunks(message, 6, "jmk");
+      // VECTOR SEARCH: Retrieve semantically relevant Kuczynski positions from the database
+      // This searches the 623 positions from Kuczynski Philosophical Database v25
+      const relevantChunks = await searchPhilosophicalChunks(message, 8, "common", "Kuczynski");
       
-      // Use Kuczynski's system prompt for the main chat + append ONLY relevant passages + adaptive instructions
-      const systemPrompt = kuczynskiFigure.systemPrompt + "\n\n" + relevantPapers + adaptiveInstructions;
+      // Build knowledge context with ACTUAL Kuczynski content
+      let knowledgeContext = "";
+      if (relevantChunks.length > 0) {
+        knowledgeContext = `\n\n=== RELEVANT MATERIAL FROM YOUR PHILOSOPHICAL POSITIONS ===\n\n`;
+        knowledgeContext += `Retrieved ${relevantChunks.length} semantically relevant positions from your published works:\n\n`;
+        
+        for (let i = 0; i < relevantChunks.length; i++) {
+          const chunk = relevantChunks[i];
+          knowledgeContext += `[Position ${i + 1}] ${chunk.paperTitle}\n${chunk.content}\n\n`;
+        }
+        
+        knowledgeContext += `=== END OF REFERENCE MATERIAL ===\n\n`;
+        knowledgeContext += `Use these positions to inform your response. Reference them when relevant, but reason in YOUR voice - don't just summarize them.\n`;
+      }
+      
+      // Use Kuczynski's system prompt + inject actual positions + adaptive instructions
+      const systemPrompt = kuczynskiFigure.systemPrompt + knowledgeContext + adaptiveInstructions;
 
       // Build conversation history for AI context
       const conversationHistory: Array<{ role: "user" | "assistant"; content: string }> = [];
