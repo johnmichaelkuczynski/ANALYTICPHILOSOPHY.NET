@@ -1,66 +1,121 @@
-# 🧠 Teach Yourself Conceptual Mathematics
+# Teach Yourself Analytic Philosophy
 
-**A Four-Week Course on the Ideas Behind the Symbols — From the Integers to Gödel and the Halting Problem**
+A self-paced, single-user web course that teaches the **method** of analytic
+philosophy: take an ordinary sentence, find its logical form, and decide what it
+actually commits you to. Every key claim is regimented into formal logical
+notation, and every problem asks the student to *write the statement in symbols*.
 
----
-
-## 🧩 Overview
-
-Teach Yourself Conceptual Mathematics is a self-paced, single-user web course that asks the question math classes usually skip: *what are these things, really?* What is a number? What is an operation? What is a proof? What does it mean for a series to add up to a finite value? What does it mean for a theorem to be unprovable?
-
-It is a content reskin of the **QuantReason** Quantitative Reasoning app. The full QuantReason runtime — lectures with Short / Medium / Long depth, section-scoped AI tutor, adaptive practice, AI-graded homework / tests / midterm / final, two-layer AI-authorship detection, and one-click diagnostics — is preserved unchanged. The **purpose** of this build is to teach the conceptual backbone of modern mathematics — the same backbone that every undergraduate eventually meets in an analysis or algebra class, presented in one connected arc.
-
----
-
-## 🧠 What It Does
-
-- **Four-Week Curriculum of 32 Micro-Lectures** — Eight per week, organized by theme:
-  - **Week 1 — The number systems.** Counting and the number line; rationals and ratios; irrationals and the $\sqrt 2$ scandal; real numbers and completeness; imaginary and complex numbers as rotations; zero, negatives, and other conceptual leaps; bases and place value; countable vs. uncountable infinity.
-  - **Week 2 — Operations and structures.** What an operation is; commutativity, associativity, distributivity; groups and symmetry; rings and fields; vector spaces; functions as mappings; relations, equivalence classes, and isomorphism; modular arithmetic.
-  - **Week 3 — The continuum: calculus, geometry, topology.** Limits and the taming of infinity; continuity; derivatives as instantaneous rate; integrals as accumulation; the Fundamental Theorem of Calculus; sequences, series, and Zeno; Euclidean vs. non-Euclidean geometry; topology, dimension, and curvature.
-  - **Week 4 — Foundations: logic, proof, undecidability.** Propositional and predicate logic; what a proof is; mathematical induction; sets and Russell's paradox; axioms and independence results; Gödel's incompleteness theorems; probability (measure, frequency, credence); computability and the halting problem.
-- **One Real Example per Lecture** — Every micro-lecture grounds its concept in a worked example from science, history, or another part of mathematics — the Pythagoreans throwing Hippasus overboard for $\sqrt 2$, Cantor's diagonal argument, the Banach–Tarski paradox, Eddington's 1919 eclipse confirming non-Euclidean spacetime, the RSA cryptosystem as computation in $\mathbb{Z}/n\mathbb{Z}$, Cohen's forcing argument for the independence of CH, and Turing's diagonal proof of the undecidability of the halting problem.
-- **One Symbolic Question per Lecture** — Every homework / test / midterm / final problem requires the student to *write the key statement in symbols* (set-builder notation, $\varepsilon$–$\delta$, quantifiers, $\Sigma$, $\equiv \ldots \pmod n$), not just describe it in English. The on-screen math keyboard is the only practical way to compose these answers.
-- **Three-Depth Lectures, Section-Scoped Tutor, Adaptive Practice, AI Grading, Two-Layer Detection, Operator Diagnostics** — All inherited unchanged from the QuantReason runtime.
-- **12 Graded Assignments** — Two homeworks per week plus a graded weekly checkpoint: Week 1 test, end-of-Week-2 midterm, Week 3 test, end-of-Week-4 cumulative final.
-- **Built-In Product Demo Video** — The companion `qr-course-demo` artifact ships as a short screencast of the live UI.
+This is a content reskin of the **QuantReason** runtime. The full runtime —
+three-depth lectures, a section-scoped AI tutor, adaptive practice, AI-graded
+assignments, two-layer AI-authorship detection, and one-click diagnostics — is
+preserved unchanged. See `replit.md` for the course concept and `BLUEPRINT.md`
+for the technical architecture.
 
 ---
 
-## ⚙️ Technical Features
+## Monorepo layout
 
-- **Symbolic Answer Harness** — Every problem prompt is structured so the canonical answer is a piece of mathematical notation. Both prompt rendering (KaTeX) and answer entry/grading (LaTeX-aware AI grader with numeric short-circuit) handle set-builder, quantifiers, blackboard-bold, congruence-modulo, $\varepsilon$–$\delta$, and the rest cleanly.
-- **Static AI Detection (GPTZero):** Every submitted answer is sent to GPTZero's `predict/text` endpoint; the per-document AI probability is blended `0.85 × GPTZero + 0.15 × structural-heuristic` for the final score. If GPTZero is unavailable, the system silently falls back to an LLM scorer plus heuristic — submissions never block.
-- **Diachronic Keystroke Detection:** The student textarea captures keystroke count, erase count, bulk-insert events, longest bulk insert, rewrite segments, and total duration. A scorer penalises paste-then-reword behaviour, low keystroke-to-output ratios, and impossibly sustained typing speeds.
-- **System Diagnostic (`/diagnostics/system`):** Environment, database round-trip, course-seed integrity (≥32 topics), OpenAI chat completion, OpenAI JSON mode, detection pipeline, AI-positive control sample, and GPTZero connectivity. Each step returns pass/fail, timing, and a raw error string.
-- **Synthetic-Student Diagnostic (`/diagnostics/synthetic-run`):** End-to-end stack proof — a fake student takes a practice session, takes a full assignment attempt, submits, and verifies grading + detection + analytics all reflect the run.
-- **Auto-Reseed on Curriculum Change** — `seedIfEmpty` compares the set of topic slugs in the database to the expected curriculum *and* checks a sentinel phrase in a designated lecture. If either differs, it wipes and re-seeds in dependency order. A single content swap propagates cleanly on the next server start.
-- **Contract-First API** — Single OpenAPI document; React Query hooks for the UI and Zod validators for the server are generated from it.
-- **Streaming AI Tutor** — Token-by-token Server-Sent-Event streaming with a section-scoped system prompt grounded in the active lecture.
-- **Adaptive Practice Engine** — Per-session difficulty (1–4) adjusts after each attempt; problems are generated on demand.
+This is a pnpm + TypeScript monorepo. See `.local/skills/pnpm-workspace` for the
+conventions.
 
----
+```
+artifacts/
+  qr-course/        Web app (React + Vite) — the student-facing course UI
+  api-server/       Express API — course, assignments, tutor, detection, diagnostics
+  qr-course-demo/   Animated product demo video (video-js)
+  mockup-sandbox/   Component preview server (design tooling)
+lib/
+  api-spec/         OpenAPI document (the single source of truth for the contract)
+  api-zod/          Zod validators generated from the spec
+  api-client-react/ React Query hooks generated from the spec
+  db/               Drizzle schema + pooled Postgres client
+  integrations-openai-ai-server/  OpenAI client wrapper
+```
 
-## 🔐 Required Secrets
-
-- `DATABASE_URL` — Postgres connection string for the external database.
-- `OPENAI_API_KEY` — required at boot. Powers the tutor, practice generator, AI graders, and lecture-expansion job.
-- `GPTZERO_API_KEY` — required for the GPTZero leg of the static-AI-detection layer. Without it, the system falls back to the LLM scorer + heuristic but loses the primary detection signal.
-- `SESSION_SECRET` — signed-session cookie secret.
-
----
-
-## 🎓 Designed For
-
-- **Anyone Who Took a Calculus Class and Wondered "But What *Is* This?":** A short, focused course on the conceptual scaffolding behind the symbols — number, operation, structure, limit, proof, undecidability.
-- **The Maintainer of QuantReason and Its Clones:** A pure stress test of the math-notation stack — keyboard, LaTeX rendering, grading, and AI detection — under a curriculum whose answers lean on quantifiers and set-builder notation.
+The global reverse proxy routes by path: the web app is served at `/` and the
+API at `/api`. Always reach services through the proxy (`localhost:80/api/...`),
+never a service port directly.
 
 ---
 
-## 💡 Core Idea
+## Required secrets
 
-Most mathematics courses teach the *moves* — how to differentiate, how to multiply matrices, how to solve a congruence. Far fewer teach the *objects* — what a number is, what an operation is, what a proof is, what an axiom can and cannot do. This course is built around the second list.
+| Secret | Required | Purpose |
+| --- | --- | --- |
+| `DATABASE_URL` | yes* | Postgres connection string. Read directly by `lib/db`; SSL auto-enabled for non-local hosts (`DATABASE_SSL=false` overrides). Point it at an external Neon database to use Neon. *Falls back to the standard `PG*` parts if unset. |
+| `OPENAI_API_KEY` | yes | Powers the tutor, practice generator, AI graders, content auditor, and lecture expansion. The server throws on boot if missing. |
+| `GPTZERO_API_KEY` | optional | GPTZero leg of static AI-authorship detection. Falls back to an LLM scorer + heuristic if absent. |
+| `CLERK_SECRET_KEY`, `CLERK_PUBLISHABLE_KEY`, `VITE_CLERK_PUBLISHABLE_KEY` | yes | Clerk auth. The `/api` surface is cookie-gated; `/api/healthz` is public. |
+| `OPENAI_BASE_URL` | optional | Point the OpenAI client at a compatible proxy. |
 
-Read the idea, see it grounded in a real example, then write the defining statement in symbols of your own.
+Manage secrets through the Replit Secrets UI — never commit them.
 
-**Teach Yourself Conceptual Mathematics — read the idea, ground the idea, write the idea.**
+---
+
+## Running locally
+
+Apps run via Replit **workflows**, not a root `pnpm dev`. The configured
+workflows are:
+
+- `artifacts/api-server: API Server` — the Express backend
+- `artifacts/qr-course: web` — the student web app
+- `artifacts/qr-course-demo: web` — the demo video
+- `artifacts/mockup-sandbox: Component Preview Server` — design tooling
+
+Restart a workflow after code or dependency changes. The database is seeded
+automatically on first boot (see "Auto-reseed" below).
+
+### Useful commands
+
+```bash
+# Typecheck everything (libs first, then artifacts)
+pnpm run typecheck
+
+# Typecheck a single package
+pnpm --filter @workspace/api-server run typecheck
+
+# Regenerate API hooks + Zod validators from the OpenAPI spec
+pnpm --filter @workspace/api-spec run codegen
+```
+
+The contract is **contract-first**: edit the OpenAPI document in
+`lib/api-spec`, run codegen, then implement against the generated hooks (UI) and
+Zod schemas (server).
+
+---
+
+## Auto-reseed on curriculum change
+
+`seedIfEmpty` compares the set of topic slugs in the database to the expected
+curriculum **and** checks a sentinel phrase in a designated lecture. If either
+differs, it wipes and re-seeds in dependency order. Swapping the seed file is all
+it takes to propagate a new curriculum cleanly.
+
+---
+
+## Diagnostics
+
+The Diagnostics page (`/diagnostics`, behind auth) exposes three one-click
+self-tests, all backed by `artifacts/api-server/src/routes/diagnostics.ts`:
+
+1. **System check** (`/diagnostics/system`) — environment (`DATABASE_URL`
+   present), database round-trip, course-seed integrity, OpenAI chat + JSON
+   mode, the detection pipeline (heuristic + scoring), and the grader
+   equivalence check.
+2. **Synthetic student** (`/diagnostics/synthetic-run`) — an end-to-end run: a
+   fake student reads lectures, takes and submits every assignment, runs
+   practice, asks the tutor, and triggers detection, then verifies grading +
+   detection + analytics all reflect the run.
+3. **Content auditor** (`/diagnostics/content-audit`) — sends every lecture body
+   and every stored "correct answer" to OpenAI for an independent verdict on
+   whether it is genuinely correct, flagging faulty reasoning, misused logical
+   notation, and answers that don't satisfy their prompt.
+
+---
+
+## Deploying
+
+Use the Replit deployment flow. In production the API server can serve the built
+`qr-course` SPA from the same process (`NODE_ENV=production`). Ensure all
+required secrets above are set in the deployment environment, and that
+`DATABASE_URL` points at the production (Neon) database.

@@ -556,7 +556,7 @@ async function auditLecture(
   try {
     const out = await chatJson<{ issues?: LectureIssue[] }>(
       "You are a rigorous logic and philosophy fact-checker for a college-level course on analytic philosophy. " +
-        "You scrutinize a single lecture body for FACTUAL ERRORS only — wrong definitions, wrong formulas, wrong physical laws, wrong worked examples, misuse of notation (e.g. calling an equation an identity when it isn't), incorrect numerical claims, or self-contradictions. " +
+        "You scrutinize a single lecture body for FACTUAL ERRORS only — wrong definitions, faulty logical reasoning, invalid inferences or entailment claims, wrong worked examples, misuse of logical notation (e.g. wrong quantifier or scope, mislabeling a formula), misattributed positions (e.g. wrong philosopher or wrong claim), or self-contradictions. " +
         "Style, tone, completeness, and pedagogy are OUT OF SCOPE — do NOT flag them. " +
         'Respond as strict JSON: {"issues": [{"quote": string, "problem": string, "fix": string}]}. ' +
         '"quote" must be a short verbatim snippet from the lecture (<= 160 chars). "problem" states the error in one sentence. "fix" proposes the correction in one sentence. ' +
@@ -596,10 +596,10 @@ async function auditProblem(p: {
       issue?: string;
       betterAnswer?: string;
     }>(
-      "You are a rigorous grader for a college-level conceptual-mathematics course. " +
+      "You are a rigorous grader for a college-level analytic-philosophy course taught through formal logic. " +
         "You are given a problem PROMPT and the STATED CORRECT ANSWER stored in the course database. " +
         "Decide whether the stated answer is genuinely correct, fully sufficient, and notationally appropriate for the prompt. " +
-        "Minor stylistic differences (LaTeX vs unicode, spacing, equivalent algebraic forms) are NOT issues. Flag only true errors: wrong value, wrong formula, wrong symbol, wrong physics, missing a required part of the answer, or an answer that does not actually satisfy the prompt. " +
+        "Minor stylistic differences (LaTeX vs unicode, spacing, logically-equivalent formulations, variable renaming, predicate-letter choice) are NOT issues. Flag only true errors: a logically wrong formalization, wrong quantifier or scope, wrong connective or modal operator, a symbolization that does not capture the claim in the prompt, or a missing required part of the answer. " +
         'Respond as strict JSON: {"verdict": "correct" | "incorrect" | "ambiguous", "issue": string, "betterAnswer": string}. ' +
         'If verdict is "correct", issue and betterAnswer may be empty strings. ' +
         'If verdict is "incorrect" or "ambiguous", "issue" must explain the problem in one sentence and "betterAnswer" must give the answer you would store instead.',

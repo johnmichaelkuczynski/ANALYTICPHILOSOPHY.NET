@@ -25,8 +25,21 @@ summaries silently produce off-subject content even when seeded lectures/assignm
 are correct. The code review (architect) caught this as the blocking issue.
 
 **How to apply:** after editing `seed.ts`, grep the whole `api-server/src` for the old
-subject terms and update every prompt string. The on-screen keyboard is named the
+subject terms and update every prompt string. Also grep the **frontend** —
+`qr-course/src/pages/Diagnostics.tsx` hard-codes subject phrasing in its on-page
+descriptions (e.g. "wrong physics"). The on-screen keyboard is named the
 "math keyboard" in code (MathKeyboard.tsx) — that's a UI tool name, fine to keep.
+
+## Three diagnostics; keep docs in sync with the actual steps
+There are THREE diagnostics: `/diagnostics/system`, `/diagnostics/synthetic-run`,
+`/diagnostics/content-audit`. The `/diagnostics/system` checks are exactly the
+`run("...")` step names in `diagnostics.ts` (env DATABASE_URL present, SELECT 1,
+seed integrity, OpenAI chat, OpenAI JSON mode, detection heuristic+scoring, grader
+equivalence) — it does NOT do a GPTZero-connectivity or AI-positive-control step.
+When writing README/BLUEPRINT/replit, describe only those steps.
+**Why:** the architect flagged docs claiming GPTZero/AI-positive steps that the
+system diagnostic doesn't actually run. `SESSION_SECRET` is also not referenced in
+code — don't list it as required.
 
 ## Reseed gating
 `seedIfEmpty` decides whether to wipe+reseed by comparing the DB's topic slugs to the

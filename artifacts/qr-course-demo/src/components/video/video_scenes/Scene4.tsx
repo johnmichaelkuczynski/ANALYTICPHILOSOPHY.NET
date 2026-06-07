@@ -10,13 +10,7 @@ export function Scene4({ setCursorPos, setIsClicking }: { setCursorPos: (pos: {x
   const [kpi5, setKpi5] = useState(0);
 
   useEffect(() => {
-    // 0-1.5s: Cursor to sidebar "Analytics", clicks. Crossfade.
-    // 1.5-4.0s: KPI tiles count up.
-    // 4.0-6.0s: Topic Mastery rows stagger in.
-    // 6.0-8.5s: Cursor to "Ratios and proportions", click.
-    // 8.5-10s: Crossfade begins.
-
-    setCursorPos({ x: '65vw', y: '90vh' }); // Start where Scene 3 left off
+    setCursorPos({ x: '65vw', y: '90vh' }); 
     
     const t1 = setTimeout(() => {
       setCursorPos({ x: '10vw', y: '30vh' }); // Move to Analytics nav
@@ -24,15 +18,14 @@ export function Scene4({ setCursorPos, setIsClicking }: { setCursorPos: (pos: {x
 
     const t2 = setTimeout(() => {
       setIsClicking(true);
-      setPhase(1); // Nav clicked
+      setPhase(1); 
     }, 1300);
 
     const t3 = setTimeout(() => {
       setIsClicking(false);
-      setPhase(2); // Crossfade to Analytics content
+      setPhase(2); 
     }, 1500);
 
-    // Number ticker logic
     const t4 = setTimeout(() => {
       let step = 0;
       const interval = setInterval(() => {
@@ -47,21 +40,21 @@ export function Scene4({ setCursorPos, setIsClicking }: { setCursorPos: (pos: {x
     }, 1500);
 
     const t5 = setTimeout(() => {
-      setPhase(3); // Rows stagger in
+      setPhase(3); 
     }, 4000);
 
     const t6 = setTimeout(() => {
-      setCursorPos({ x: '40vw', y: '65vh' }); // Move to Ratios row
+      setCursorPos({ x: '40vw', y: '65vh' }); 
     }, 6000);
 
     const t7 = setTimeout(() => {
-      setPhase(4); // Hover effect
+      setPhase(4); 
       setIsClicking(true);
     }, 8300);
 
     const t8 = setTimeout(() => {
       setIsClicking(false);
-      setPhase(5); // Click flash & end
+      setPhase(5); 
     }, 8500);
 
     return () => {
@@ -71,11 +64,10 @@ export function Scene4({ setCursorPos, setIsClicking }: { setCursorPos: (pos: {x
   }, [setCursorPos, setIsClicking]);
 
   const rows = [
-    { topic: 'Counting, the integers, and the number line', week: 'Week 1', att: 0, acc: 0, stat: 'UNTESTED', statColor: 'text-muted-foreground bg-muted' },
-    { topic: 'Rational numbers and ratios', week: 'Week 1', att: 1, acc: 1, stat: 'STRONG', statColor: 'text-emerald-700 bg-emerald-50' },
-    { topic: 'Irrationals and the √2 scandal', week: 'Week 1', att: 1, acc: 1, stat: 'STRONG', statColor: 'text-emerald-700 bg-emerald-50' },
-    { topic: 'Real numbers and completeness', week: 'Week 1', att: 0, acc: 0, stat: 'UNTESTED', statColor: 'text-muted-foreground bg-muted' },
-    { topic: 'Countable vs. uncountable infinity', week: 'Week 1', att: 0, acc: 0, stat: 'UNTESTED', statColor: 'text-muted-foreground bg-muted' },
+    { topic: 'Sentential logic and truth tables', week: 'Week 1', att: 0, acc: 0, stat: 'UNTESTED', statColor: 'text-muted-foreground bg-muted' },
+    { topic: 'Quantificational logic: ∀ and ∃', week: 'Week 1', att: 1, acc: 1, stat: 'STRONG', statColor: 'text-emerald-700 bg-emerald-50' },
+    { topic: 'Identity and definite descriptions', week: 'Week 1', att: 1, acc: 1, stat: 'STRONG', statColor: 'text-emerald-700 bg-emerald-50' },
+    { topic: 'Necessity and possibility', week: 'Week 2', att: 0, acc: 0, stat: 'UNTESTED', statColor: 'text-muted-foreground bg-muted' },
   ];
 
   return (
@@ -136,7 +128,7 @@ export function Scene4({ setCursorPos, setIsClicking }: { setCursorPos: (pos: {x
                   {rows.map((row, i) => (
                     <motion.div 
                       key={i}
-                      className={`grid grid-cols-12 gap-4 px-6 py-4 items-center transition-colors ${i === 2 && phase >= 4 ? 'bg-primary/5 cursor-pointer' : ''}`}
+                      className={`grid grid-cols-12 gap-4 px-6 py-4 items-center transition-colors ${i === 1 && phase >= 4 ? 'bg-primary/5 cursor-pointer' : ''}`}
                       initial={{ opacity: 0, y: 10 }}
                       animate={phase >= 3 ? { opacity: 1, y: 0 } : {}}
                       transition={{ delay: phase >= 3 ? i * 0.06 : 0, duration: 0.4 }}

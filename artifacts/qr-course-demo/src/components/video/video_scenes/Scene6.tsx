@@ -6,14 +6,7 @@ export function Scene6({ setCursorPos, setIsClicking }: { setCursorPos: (pos: {x
   const [phase, setPhase] = useState(0);
 
   useEffect(() => {
-    // 0-1.5s: Cursor to sidebar "Assignments", clicks.
-    // 1.5-3.0s: Cards stagger-fade in.
-    // 3.0-4.5s: Cursor to "Homework 1.1", hover, click.
-    // 4.5-6.0s: Crossfade to assignment results.
-    // 6.0-8.0s: AI feedback streams in.
-    // 8.0-10s: AI detection appears. Scene ends.
-
-    setCursorPos({ x: '70vw', y: '60vh' }); // Start where Scene 5 left off
+    setCursorPos({ x: '70vw', y: '60vh' }); 
     
     const t1 = setTimeout(() => {
       setCursorPos({ x: '10vw', y: '23vh' }); // Move to Assignments nav
@@ -67,7 +60,7 @@ export function Scene6({ setCursorPos, setIsClicking }: { setCursorPos: (pos: {x
       className="absolute inset-0 w-full h-full bg-background"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 0.5 } }} // gentle fade at loop end
+      exit={{ opacity: 0, transition: { duration: 0.5 } }} 
     >
       <AnimatePresence mode="wait">
         {phase >= 2 && phase < 5 ? (
@@ -94,7 +87,7 @@ export function Scene6({ setCursorPos, setIsClicking }: { setCursorPos: (pos: {x
               >
                 <div>
                   <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Homework</div>
-                  <h4 className="font-serif text-lg text-primary mb-1">Homework 1.1 — Counting, rationals, irrationals, completeness</h4>
+                  <h4 className="font-serif text-lg text-primary mb-1">Homework 1.1 — Logical form and Russell's Theory of Descriptions</h4>
                   <div className="text-sm text-muted-foreground">4 problems</div>
                 </div>
                 <div className="flex items-center space-x-6">
@@ -117,7 +110,7 @@ export function Scene6({ setCursorPos, setIsClicking }: { setCursorPos: (pos: {x
               >
                 <div>
                   <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Homework</div>
-                  <h4 className="font-serif text-lg text-primary mb-1">Homework 1.2 — Complex numbers, bases, infinity</h4>
+                  <h4 className="font-serif text-lg text-primary mb-1">Homework 1.2 — Modality and definite descriptions</h4>
                   <div className="text-sm text-muted-foreground">4 problems</div>
                 </div>
                 <div className="flex items-center space-x-6">
@@ -174,11 +167,11 @@ export function Scene6({ setCursorPos, setIsClicking }: { setCursorPos: (pos: {x
             <div className="bg-white border border-border rounded-xl shadow-sm p-8 mb-6 relative overflow-hidden">
               <div className="absolute top-0 right-0 bg-emerald-100 text-emerald-700 px-4 py-1.5 text-xs font-bold tracking-widest rounded-bl-xl border-b border-l border-emerald-200">GRADED</div>
               
-              <h3 className="font-medium text-lg mb-6 max-w-2xl text-foreground">Q1. The Pythagoreans discovered that the diagonal of a unit square cannot be written as a ratio of two integers. Write that fact — that √2 is not a rational number — in symbols.</h3>
+              <h3 className="font-medium text-lg mb-6 max-w-2xl text-foreground">Q1. Write "The king of France is bald" in logical notation. Use Kx for "x is king of France" and Bx for "x is bald".</h3>
               
               <div className="w-fit mb-6">
                 <div className="text-xs text-muted-foreground mb-2">Your answer:</div>
-                <div className="px-6 py-3 bg-muted/30 border border-border rounded-lg text-lg font-mono">√2 ∉ ℚ</div>
+                <div className="px-6 py-3 bg-muted/30 border border-border rounded-lg text-lg font-mono">∃x(Kx ∧ ∀y(Ky → y=x) ∧ Bx)</div>
               </div>
 
               <AnimatePresence>
@@ -193,7 +186,7 @@ export function Scene6({ setCursorPos, setIsClicking }: { setCursorPos: (pos: {x
                       <span>AI Tutor Feedback</span>
                     </div>
                     <div className="text-sm text-blue-900 leading-relaxed">
-                      <StreamingText text="Correct. √2 ∉ ℚ is exactly the statement of the Pythagorean discovery — √2 is real, but no integer ratio equals it. Clean use of set-membership and the blackboard-bold ℚ." delay={0} />
+                      <StreamingText text="Perfect. This is Russell's Theory of Descriptions: there is at least one king of France, there is at most one, and he is bald. If there is no king, the statement is simply false, avoiding non-existent entities." delay={0} />
                     </div>
                   </motion.div>
                 )}
@@ -219,7 +212,7 @@ export function Scene6({ setCursorPos, setIsClicking }: { setCursorPos: (pos: {x
             </div>
             
             <div className="bg-white border border-border rounded-xl shadow-sm p-8 opacity-50">
-              <h3 className="font-medium text-lg mb-6 max-w-2xl text-foreground">Q2. Write the set of positive integers in set-builder notation as a subset of ℤ.</h3>
+              <h3 className="font-medium text-lg mb-6 max-w-2xl text-foreground">Q2. Write the logical form of "All ravens are black".</h3>
               <div className="text-sm text-muted-foreground">Problem content hidden...</div>
             </div>
           </motion.div>
