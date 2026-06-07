@@ -18,24 +18,24 @@ const router: IRouter = Router();
 
 const WEEK_TITLES: Record<number, { title: string; summary: string }> = {
   1: {
-    title: "Week 1 — The number systems",
+    title: "Week 1 — Analytic philosophy as logical analysis",
     summary:
-      "Counting, integers, rationals, the √2 scandal, the reals and completeness, complex numbers as rotations, zero and negatives, bases and place value, countable vs. uncountable infinity.",
+      "Philosophy as the analysis of categories; knowledge vs. meta-knowledge; philosophy and the other disciplines; analytic vs. non-analytic philosophy; Frege on logical vs. grammatical form; quantifiers and the 'someone' puzzle; existence-claims and instantiation.",
   },
   2: {
-    title: "Week 2 — Operations and structures",
+    title: "Week 2 — Analysis, ontology, and meaning",
     summary:
-      "What an operation is; commutativity, associativity, distributivity; groups, rings, fields; vector spaces; functions; equivalence and isomorphism; modular arithmetic.",
+      "Analysis vs. ontologizing; Brentano, Meinong, and non-existent objects; perception as description; empirical vs. philosophical puzzles; sentences vs. propositions; propositions as properties and truth as instantiatedness; why meaning is not use.",
   },
   3: {
-    title: "Week 3 — The continuum: calculus, geometry, topology",
+    title: "Week 3 — The Tractatus and logical positivism",
     summary:
-      "Limits, continuity, derivatives, integrals, the Fundamental Theorem of Calculus, sequences and Zeno, non-Euclidean geometry, topology and curvature.",
+      "The Tractatus and philosophy as nonsense; the picture theory of meaning; showing vs. saying; logical positivism stated; verificationism and falsificationism; the self-refutation of empiricism; the brokenness of tautological truth.",
   },
   4: {
-    title: "Week 4 — Foundations: logic, proof, undecidability",
+    title: "Week 4 — Formal truth and the map of philosophy",
     summary:
-      "Propositional and predicate logic, proof, induction, Russell's paradox, independence results, Gödel's theorems, probability foundations, the halting problem.",
+      "Formal truth and entailment; open-sentences and interpretations; the limits of strict empiricism (Hempel); why no language is logically perfect; the sub-disciplines of philosophy; mind, language, and epistemology; logic, metaphysics, and science; capstone synthesis.",
   },
 };
 
@@ -124,7 +124,7 @@ router.get("/course/overview", async (_req, res) => {
 
   res.json(
     GetCourseOverviewResponse.parse({
-      title: "Teach Yourself Conceptual Mathematics",
+      title: "Teach Yourself Analytic Philosophy",
       weeks,
       totals: { assignmentsCompleted, assignmentsTotal, practiceCount },
     }),

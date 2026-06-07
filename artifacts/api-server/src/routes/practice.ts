@@ -155,20 +155,19 @@ router.post("/practice/sessions/:sessionId/next", async (req, res): Promise<void
       correctAnswer: string;
       explanation: string;
     }>(
-      `You generate a single quantitative-reasoning practice problem for a college freshman. The problem MUST be on the topic "${topic.title}" and at difficulty "${difficultyLabel}" (${difficulty.toFixed(
+      `You generate a single analytic-philosophy practice problem for a college student. The problem MUST be on the topic "${topic.title}" and at difficulty "${difficultyLabel}" (${difficulty.toFixed(
         1,
-      )}/5). Use $...$ for inline LaTeX where helpful. The answer must be a short string (a number, fraction, expression, or short word) — never multi-paragraph. Respond as strict JSON: {"prompt": string, "correctAnswer": string, "explanation": string}. Avoid these recent prompts: ${JSON.stringify(
+      )}/5). The problem must ask the student to WRITE THE KEY STATEMENT IN FORMAL LOGICAL NOTATION — quantifiers (∀, ∃), connectives (¬, ∧, ∨, →, ↔), modal operators (□, ◇), entailment (⊨, ⊢), set-builder, or ∅ — not to compute a number. Use $...$ for inline LaTeX where helpful. The correctAnswer must be a short string of logical symbols (e.g. "¬∃x (Square(x) ∧ Circle(x))" or "∃x Smokes(x)"), never multi-paragraph. Respond as strict JSON: {"prompt": string, "correctAnswer": string, "explanation": string}. Avoid these recent prompts: ${JSON.stringify(
         lastProblems.map((p) => p.prompt),
       )}.`,
       userRequest || `Generate a new ${difficultyLabel} problem on ${topic.title}.`,
     );
   } catch {
     generated = {
-      prompt: `Practice (${topic.title}): If $x + ${Math.round(
-        difficulty * 3,
-      )} = ${Math.round(difficulty * 7)}$, what is $x$?`,
-      correctAnswer: String(Math.round(difficulty * 7) - Math.round(difficulty * 3)),
-      explanation: "Subtract from both sides.",
+      prompt: `Practice (${topic.title}): Using a negated existential, write in logical symbols the claim "nothing is a square circle".`,
+      correctAnswer: "¬∃x (Square(x) ∧ Circle(x))",
+      explanation:
+        "The property of being a square circle is uninstantiated: $\\neg\\exists x\\,(\\text{Square}(x) \\wedge \\text{Circle}(x))$.",
     };
   }
 
@@ -257,7 +256,7 @@ router.post("/practice/sessions/:sessionId/grade", async (req, res): Promise<voi
     try {
       tutorTip = (
         await chatJson<{ tip: string }>(
-          "You are a kind, concise math tutor. Given a problem, the correct answer, and the student's wrong attempt, give ONE focused next-step tip (2 sentences max). Respond as strict JSON: {\"tip\": string}.",
+          "You are a kind, concise analytic-philosophy tutor. Given a problem, the correct answer, and the student's wrong attempt, give ONE focused next-step tip (2 sentences max) about how to express the claim in formal logical notation. Respond as strict JSON: {\"tip\": string}.",
           JSON.stringify({
             prompt: problem.prompt,
             correctAnswer: problem.correctAnswer,

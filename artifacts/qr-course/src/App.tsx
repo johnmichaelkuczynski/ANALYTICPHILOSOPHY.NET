@@ -197,7 +197,7 @@ function ClerkProviderWithRoutes() {
         signUp: {
           start: {
             title: "Create your account",
-            subtitle: "Start teaching yourself conceptual mathematics",
+            subtitle: "Start teaching yourself analytic philosophy",
           },
         },
       }}

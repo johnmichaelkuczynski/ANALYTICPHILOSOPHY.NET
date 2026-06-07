@@ -25,7 +25,7 @@ export function Sidebar() {
             <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center text-primary-foreground font-serif font-bold text-lg">
               ∑
             </div>
-            <span className="font-serif font-semibold text-lg tracking-tight">ConceptualMath</span>
+            <span className="font-serif font-semibold text-lg tracking-tight">AnalyticPhil</span>
           </div>
         </Link>
       </div>
@@ -99,7 +99,7 @@ function TopBar() {
   async function handleExpandLectures() {
     if (
       !confirm(
-        "Generate Medium and Long versions of every lecture? This runs the tutor over all 32 lectures twice (medium, then long). Takes a few minutes.",
+        "Generate Medium and Long versions of every lecture? This runs the tutor over all 29 lectures twice (medium, then long). Takes a few minutes.",
       )
     )
       return;
