@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, PenTool, BarChart3, Activity, RotateCcw, Sparkles } from "lucide-react";
+import { LayoutDashboard, PenTool, BarChart3, Activity, RotateCcw, Sparkles, LogOut } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useClerk, useUser } from "@clerk/react";
+
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 export function Sidebar() {
   const [location] = useLocation();
+  const { user } = useUser();
+  const { signOut } = useClerk();
 
   const navItems = [
-    { href: "/", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/assignments", label: "Assignments", icon: PenTool },
     { href: "/analytics", label: "Analytics", icon: BarChart3 },
   ];
@@ -15,7 +20,7 @@ export function Sidebar() {
   return (
     <div className="w-64 border-r bg-sidebar flex flex-col h-full h-screen sticky top-0">
       <div className="p-6 border-b border-border">
-        <Link href="/">
+        <Link href="/dashboard">
           <div className="flex items-center gap-3 cursor-pointer">
             <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center text-primary-foreground font-serif font-bold text-lg">
               ∑
@@ -27,7 +32,7 @@ export function Sidebar() {
 
       <div className="flex-1 py-6 flex flex-col gap-2 px-4">
         {navItems.map((item) => {
-          const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
+          const isActive = location === item.href || location.startsWith(item.href + "/");
           return (
             <Link key={item.href} href={item.href}>
               <div
@@ -45,8 +50,40 @@ export function Sidebar() {
         })}
       </div>
 
-      <div className="p-4 border-t border-border text-xs text-muted-foreground text-center">
-        Teach Yourself Conceptual Mathematics
+      <div className="p-4 border-t border-border flex flex-col gap-3">
+        {user && (
+          <div className="flex items-center gap-3 px-1">
+            {user.imageUrl ? (
+              <img
+                src={user.imageUrl}
+                alt=""
+                className="w-8 h-8 rounded-full object-cover shrink-0"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-semibold shrink-0">
+                {(user.firstName ?? user.primaryEmailAddress?.emailAddress ?? "?")
+                  .charAt(0)
+                  .toUpperCase()}
+              </div>
+            )}
+            <div className="min-w-0">
+              <div className="text-sm font-medium truncate" data-testid="text-user-name">
+                {user.fullName ?? user.firstName ?? "Student"}
+              </div>
+              <div className="text-xs text-muted-foreground truncate">
+                {user.primaryEmailAddress?.emailAddress}
+              </div>
+            </div>
+          </div>
+        )}
+        <button
+          onClick={() => signOut({ redirectUrl: basePath || "/" })}
+          className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+          data-testid="button-logout"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>Log out</span>
+        </button>
       </div>
     </div>
   );
@@ -98,7 +135,7 @@ function TopBar() {
       const res = await fetch("/api/diagnostics/reset", { method: "POST" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       await qc.invalidateQueries();
-      setLocation("/");
+      setLocation("/dashboard");
     } catch (e) {
       alert(`Reset failed: ${(e as Error).message}`);
     } finally {

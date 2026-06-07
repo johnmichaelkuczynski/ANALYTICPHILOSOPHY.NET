@@ -1,0 +1,1 @@
+- [Clerk web wiring gotchas](clerk-web-wiring.md) — clerkMiddleware goes AFTER body parsers (only the proxy goes before); copy wiring verbatim; web auth is cookie-based, gate /api after a public /healthz.
