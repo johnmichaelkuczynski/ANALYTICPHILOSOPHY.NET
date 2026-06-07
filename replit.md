@@ -8,7 +8,7 @@
 
 Teach Yourself Analytic Philosophy is a self-paced, single-user web course built around one thesis: *philosophy is the discipline that delineates the structures of the categories in terms of which we think about the world.* What is a statement? What is existence? What does "someone smokes" really say? What makes a sentence meaningful? What can analysis settle that observation cannot?
 
-The course is a content reskin of the **QuantReason** Quantitative Reasoning app. The full QuantReason runtime — lectures with short / medium / long depth, section-scoped AI tutor, adaptive practice, AI-graded homework / tests / midterm / final, two-layer AI-authorship detection, and one-click diagnostics — is preserved unchanged. The **purpose** of this build is to teach the method and results of analytic philosophy as a single connected arc, with every key claim regimented into formal logical notation.
+The runtime provides lectures with short / medium / long depth, a section-scoped AI tutor, adaptive practice, AI-graded homework / tests / midterm / final, two-layer AI-authorship detection, and one-click diagnostics. The **purpose** of this build is to teach the method and results of analytic philosophy as a single connected arc, with every key claim regimented into formal logical notation.
 
 ---
 
@@ -21,7 +21,7 @@ The course is a content reskin of the **QuantReason** Quantitative Reasoning app
   - **Week 4 — Formal truth and the map of philosophy**: formal truth and entailment; open-sentences and interpretations; the limits of strict empiricism (Hempel); why no language is logically perfect; the sub-disciplines of philosophy; mind, language, and epistemology; logic, metaphysics, and science; capstone synthesis.
 - **One Real Example per Lecture** — Every micro-lecture grounds its concept in a worked case — e.g. the "someone smokes but Smith does not" consistency test, the square-circle that needs no non-entity, Brentano's incoherent non-existent objects, the *Tractatus* throwing away its own ladder, Russell's self-cancelling argument against naïve realism, Hempel's incommensurability proof that strict empiricism is false, and the master criterion that a sentence is meaningful iff it attributes a property to an object.
 - **One Symbolic Question per Lecture** — Every homework / test / midterm / final problem requires the student to *write the key statement in symbols* — quantifiers ($\forall$, $\exists$), connectives ($\neg$, $\wedge$, $\vee$, $\to$, $\leftrightarrow$), modal operators ($\Box$, $\Diamond$), entailment ($\vDash$, $\vdash$), set-builder, and $\varnothing$ — not just describe it in English. The on-screen symbol keyboard is the only practical way to compose these answers.
-- **Three-Depth Lectures, Section-Scoped Tutor, Adaptive Practice, AI Grading, Two-Layer Detection, One-Click Diagnostics** — All inherited unchanged from the QuantReason runtime.
+- **Three-Depth Lectures, Section-Scoped Tutor, Adaptive Practice, AI Grading, Two-Layer Detection, One-Click Diagnostics** — The full interactive runtime.
 - **Built-In Product Demo Video** — The companion `qr-course-demo` artifact still ships as a short screencast of the live UI.
 
 ---
@@ -56,7 +56,7 @@ The course is a content reskin of the **QuantReason** Quantitative Reasoning app
 ## 🎓 Designed For
 
 - **Anyone Who Wondered What Philosophers Actually *Do*:** A short, focused course on the method of analytic philosophy — regiment the claim, read off its structure, and decide what it really says.
-- **The Maintainer of QuantReason and Its Clones:** A pure stress test of the math-notation stack — keyboard, LaTeX rendering, grading, and AI detection — under a non-mathematical curriculum, with answers that lean on quantifiers, modal operators, and set-builder notation.
+- **The Notation-Stack Maintainer:** A pure stress test of the symbolic-notation stack — keyboard, LaTeX rendering, grading, and AI detection — under a non-mathematical curriculum, with answers that lean on quantifiers, modal operators, and set-builder notation.
 
 ---
 

@@ -5,10 +5,9 @@ philosophy: take an ordinary sentence, find its logical form, and decide what it
 actually commits you to. Every key claim is regimented into formal logical
 notation, and every problem asks the student to *write the statement in symbols*.
 
-This is a content reskin of the **QuantReason** runtime. The full runtime —
-three-depth lectures, a section-scoped AI tutor, adaptive practice, AI-graded
-assignments, two-layer AI-authorship detection, and one-click diagnostics — is
-preserved unchanged. See `replit.md` for the course concept and `BLUEPRINT.md`
+The runtime provides three-depth lectures, a section-scoped AI tutor, adaptive
+practice, AI-graded assignments, two-layer AI-authorship detection, and
+one-click diagnostics. See `replit.md` for the course concept and `BLUEPRINT.md`
 for the technical architecture.
 
 ---

@@ -41,6 +41,20 @@ When writing README/BLUEPRINT/replit, describe only those steps.
 system diagnostic doesn't actually run. `SESSION_SECRET` is also not referenced in
 code — don't list it as required.
 
+## Naming baggage outlives a content reskin
+A content reskin leaves the old subject in non-content places users still see:
+the **artifact titles** (`.replit-artifact/artifact.toml` `title`, shown in the
+preview dropdown) and the **docs** (`replit.md`/`README.md`/`BLUEPRINT.md` often
+describe the app as "a reskin of QuantReason"). Change titles via
+`verifyAndReplaceArtifactToml` (write a full temp `.edit.toml`, replace, delete
+temp). The directory/package slugs `qr-course` / `qr-course-demo` are QuantReason
+lineage too, but there is **no supported rename-artifact callback** — renaming
+the dir + `@workspace/<slug>` + `artifact.toml id`/commands + `app.ts` static
+paths + workflows is an unsupported, far-reaching change. Don't do it on a live
+deployed app without explicit sign-off; scrub titles + docs instead.
+**Why:** a frustrated user wanted the repo clean for GitHub; titles/docs were the
+real visible baggage, and a slug rename risked breaking a just-published app.
+
 ## Reseed gating
 `seedIfEmpty` decides whether to wipe+reseed by comparing the DB's topic slugs to the
 expected curriculum AND checking a sentinel phrase in one designated lecture

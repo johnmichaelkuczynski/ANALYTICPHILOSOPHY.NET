@@ -1,8 +1,8 @@
 # Blueprint — Teach Yourself Analytic Philosophy
 
-Technical architecture for the QuantReason runtime as configured for the
-analytic-philosophy curriculum. For the course concept and user-facing overview,
-see `replit.md`; for setup and commands, see `README.md`.
+Technical architecture for the analytic-philosophy course runtime. For the
+course concept and user-facing overview, see `replit.md`; for setup and
+commands, see `README.md`.
 
 ---
 
