@@ -4,13 +4,29 @@ import * as schema from "./schema";
 
 const { Pool } = pg;
 
-if (!process.env.DATABASE_URL) {
+function resolveConnectionString(): string {
+  if (process.env.DATABASE_URL) {
+    return process.env.DATABASE_URL;
+  }
+
+  // Fallback: assemble the connection string from the discrete PG* variables
+  // that Replit's managed PostgreSQL injects. This keeps the app connected when
+  // DATABASE_URL itself is not present (e.g. right after an external
+  // DATABASE_URL secret is removed in favor of the managed database).
+  const { PGUSER, PGPASSWORD, PGHOST, PGPORT, PGDATABASE } = process.env;
+  if (PGUSER && PGPASSWORD && PGHOST && PGPORT && PGDATABASE) {
+    const user = encodeURIComponent(PGUSER);
+    const password = encodeURIComponent(PGPASSWORD);
+    const database = encodeURIComponent(PGDATABASE);
+    return `postgresql://${user}:${password}@${PGHOST}:${PGPORT}/${database}`;
+  }
+
   throw new Error(
     "DATABASE_URL must be set. Did you forget to provision a database?",
   );
 }
 
-const connectionString = process.env.DATABASE_URL;
+const connectionString = resolveConnectionString();
 
 // Enable SSL for managed providers (Neon, Render, Supabase, etc.).
 // Local URLs (localhost / 127.0.0.1) keep SSL off.
