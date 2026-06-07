@@ -1,120 +1,57 @@
-# Teach Yourself Analytic Philosophy
+# 🧠 Teach Yourself Analytic Philosophy
 
-A self-paced, single-user web course that teaches the **method** of analytic
-philosophy: take an ordinary sentence, find its logical form, and decide what it
-actually commits you to. Every key claim is regimented into formal logical
-notation, and every problem asks the student to *write the statement in symbols*.
-
-The runtime provides three-depth lectures, a section-scoped AI tutor, adaptive
-practice, AI-graded assignments, two-layer AI-authorship detection, and
-one-click diagnostics. See `replit.md` for the course concept and `BLUEPRINT.md`
-for the technical architecture.
+**A Four-Week Course on the Logic Behind the Words — From Frege's Logical Form to Formal Truth and the Map of Philosophy**
 
 ---
 
-## Monorepo layout
+## 🧩 Overview
 
-This is a pnpm + TypeScript monorepo. See `.local/skills/pnpm-workspace` for the
-conventions.
+Most philosophy courses teach you *positions* — what Descartes believed, how Kant replied. This one teaches you the **method**: how to take an ordinary sentence, uncover its real logical form, and decide what it actually commits you to.
 
-```
-artifacts/
-  qr-course/        Web app (React + Vite) — the student-facing course UI
-  api-server/       Express API — course, assignments, tutor, detection, diagnostics
-  qr-course-demo/   Animated product demo video (video-js)
-  mockup-sandbox/   Component preview server (design tooling)
-lib/
-  api-spec/         OpenAPI document (the single source of truth for the contract)
-  api-zod/          Zod validators generated from the spec
-  api-client-react/ React Query hooks generated from the spec
-  db/               Drizzle schema + pooled Postgres client
-  integrations-openai-ai-server/  OpenAI client wrapper
-```
+What is a statement? What is existence? What does "someone smokes" really say? What makes a sentence meaningful — and what can careful analysis settle that observation never could? Over four focused weeks you learn to answer questions like these the way analytic philosophers do: regiment the claim, read off its structure, and see what is really there.
 
-The global reverse proxy routes by path: the web app is served at `/` and the
-API at `/api`. Always reach services through the proxy (`localhost:80/api/...`),
-never a service port directly.
+Self-paced. Single-purpose. Built to be finished.
 
 ---
 
-## Required secrets
+## 🧠 What You'll Learn
 
-| Secret | Required | Purpose |
-| --- | --- | --- |
-| `DATABASE_URL` | yes* | Postgres connection string. Read directly by `lib/db`; SSL auto-enabled for non-local hosts (`DATABASE_SSL=false` overrides). Point it at an external Neon database to use Neon. *Falls back to the standard `PG*` parts if unset. |
-| `OPENAI_API_KEY` | yes | Powers the tutor, practice generator, AI graders, content auditor, and lecture expansion. The server throws on boot if missing. |
-| `GPTZERO_API_KEY` | optional | GPTZero leg of static AI-authorship detection. Falls back to an LLM scorer + heuristic if absent. |
-| `CLERK_SECRET_KEY`, `CLERK_PUBLISHABLE_KEY`, `VITE_CLERK_PUBLISHABLE_KEY` | yes | Clerk auth. The `/api` surface is cookie-gated; `/api/healthz` is public. |
-| `OPENAI_BASE_URL` | optional | Point the OpenAI client at a compatible proxy. |
+A **four-week curriculum of 29 micro-lectures**, organized by theme:
 
-Manage secrets through the Replit Secrets UI — never commit them.
+- **Week 1 — Analytic philosophy as logical analysis.** Philosophy as the analysis of categories; knowledge vs. meta-knowledge; how philosophy differs from the sciences; Frege on logical vs. grammatical form; the quantifier puzzle behind "someone smokes"; and what it really means to say something exists.
+- **Week 2 — Analysis, ontology, and meaning.** Analysis vs. ontologizing; Brentano, Meinong, and the trouble with "non-existent objects"; perception as description; the line between empirical and philosophical puzzles; sentences vs. propositions; and why "meaning is use" does not hold up.
+- **Week 3 — The *Tractatus* and logical positivism.** Wittgenstein's claim that philosophy is nonsense; the picture theory of meaning; showing vs. saying; the rise of logical positivism; verification and falsification; and why strict empiricism refutes itself.
+- **Week 4 — Formal truth and the map of philosophy.** Formal truth and entailment; open sentences and interpretations; the limits of empiricism; why no language is logically perfect; and how mind, language, logic, and metaphysics fit together — ending in a capstone synthesis.
 
----
+**One real example in every lecture.** Each idea is grounded in a worked case — the "someone smokes but Smith does not" consistency test, the square circle that needs no shadowy non-entity, the *Tractatus* throwing away its own ladder, Russell's self-cancelling argument against naïve realism, and the master criterion that a sentence means something only when it attributes a property to an object.
 
-## Running locally
-
-Apps run via Replit **workflows**, not a root `pnpm dev`. The configured
-workflows are:
-
-- `artifacts/api-server: API Server` — the Express backend
-- `artifacts/qr-course: web` — the student web app
-- `artifacts/qr-course-demo: web` — the demo video
-- `artifacts/mockup-sandbox: Component Preview Server` — design tooling
-
-Restart a workflow after code or dependency changes. The database is seeded
-automatically on first boot (see "Auto-reseed" below).
-
-### Useful commands
-
-```bash
-# Typecheck everything (libs first, then artifacts)
-pnpm run typecheck
-
-# Typecheck a single package
-pnpm --filter @workspace/api-server run typecheck
-
-# Regenerate API hooks + Zod validators from the OpenAPI spec
-pnpm --filter @workspace/api-spec run codegen
-```
-
-The contract is **contract-first**: edit the OpenAPI document in
-`lib/api-spec`, run codegen, then implement against the generated hooks (UI) and
-Zod schemas (server).
+**One thing you write in symbols every lecture.** You do not just read about logical form — you produce it. Every problem asks you to render the key claim in real notation: quantifiers ($\forall$, $\exists$), connectives ($\neg$, $\wedge$, $\vee$, $\to$, $\leftrightarrow$), modal operators ($\Box$, $\Diamond$), entailment ($\vDash$, $\vdash$), and set-builder. An on-screen symbol keyboard makes it effortless.
 
 ---
 
-## Auto-reseed on curriculum change
+## ✨ How It Works
 
-`seedIfEmpty` compares the set of topic slugs in the database to the expected
-curriculum **and** checks a sentinel phrase in a designated lecture. If either
-differs, it wipes and re-seeds in dependency order. Swapping the seed file is all
-it takes to propagate a new curriculum cleanly.
-
----
-
-## Diagnostics
-
-The Diagnostics page (`/diagnostics`, behind auth) exposes three one-click
-self-tests, all backed by `artifacts/api-server/src/routes/diagnostics.ts`:
-
-1. **System check** (`/diagnostics/system`) — environment (`DATABASE_URL`
-   present), database round-trip, course-seed integrity, OpenAI chat + JSON
-   mode, the detection pipeline (heuristic + scoring), and the grader
-   equivalence check.
-2. **Synthetic student** (`/diagnostics/synthetic-run`) — an end-to-end run: a
-   fake student reads lectures, takes and submits every assignment, runs
-   practice, asks the tutor, and triggers detection, then verifies grading +
-   detection + analytics all reflect the run.
-3. **Content auditor** (`/diagnostics/content-audit`) — sends every lecture body
-   and every stored "correct answer" to OpenAI for an independent verdict on
-   whether it is genuinely correct, flagging faulty reasoning, misused logical
-   notation, and answers that don't satisfy their prompt.
+- **Lectures at three depths.** Read the short version for the gist, then go to medium and long when you want the full argument.
+- **A tutor that knows where you are.** Ask questions and get answers scoped to the exact section you are reading — no generic chatbot detours.
+- **Practice that adapts to you.** Difficulty adjusts as you go, so you are always working at the right edge.
+- **Real assignments, really graded.** Twelve graded assignments — homework, weekly checkpoints, a midterm, and a final — each returned with detailed, specific feedback.
+- **Honest-work safeguards.** Built-in originality checks help keep your answers your own.
+- **A guided tour.** A short companion demo video walks you through the whole experience.
 
 ---
 
-## Deploying
+## 🎓 Who It's For
 
-Use the Replit deployment flow. In production the API server can serve the built
-`qr-course` SPA from the same process (`NODE_ENV=production`). Ensure all
-required secrets above are set in the deployment environment, and that
-`DATABASE_URL` points at the production (Neon) database.
+- **Anyone who has wondered what philosophers actually *do*.** A short, focused course on the method of analytic philosophy — regiment the claim, read off its structure, and decide what it really says.
+- **Students and self-learners** who want to *use* logical notation, not just recognize it.
+- **The intellectually curious** who would rather learn a durable skill than memorize a list of names and dates.
+
+---
+
+## 💡 The Core Idea
+
+Grammar misleads; analysis clarifies. "Someone smokes" looks simple until you ask what it commits you to — and that question has a precise answer. This course teaches you to find it, again and again, until reading the logic behind the words becomes second nature.
+
+**Read the idea. Ground it in a real example. Then write it in symbols of your own.**
+
+**Teach Yourself Analytic Philosophy — read the idea, ground the idea, write the idea.**
