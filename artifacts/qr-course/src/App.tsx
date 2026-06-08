@@ -141,17 +141,39 @@ function ClerkQueryClientCacheInvalidator() {
   return null;
 }
 
+// Resolves the promise, or rejects after `ms` so a hung Clerk call (e.g. a
+// rate-limited dev instance) can't stall recovery forever.
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error("timeout")), ms),
+    ),
+  ]);
+}
+
 // Self-heals stale Clerk sessions. The session token cookie is short-lived and
 // refreshed by Clerk.js; if a tab sits idle the token can lapse, so the server
-// returns 401 even though the client still considers the user signed in — the
-// page renders but no data loads. On a 401 we force a fresh session token (which
-// updates the cookie) and refetch; if the session is truly gone we send the user
-// to sign in. A ref-guarded cooldown prevents a persistently-401ing server from
-// triggering a tight loop.
+// returns 401 for every /api call even though the client still considers the
+// user signed in — the page renders but no data loads.
+//
+// Recovery is two-stage:
+//   1. Quietly force one fresh session token (Clerk updates the cookie the
+//      server reads), then refetch. Handles the benign idle-tab case with no
+//      visible interruption.
+//   2. If that doesn't clear it (token refresh failed, returned nothing, hung,
+//      or the very next request still 401s), the session is dead server-side —
+//      not just stale. Sign out so the route guards drop the user onto the
+//      working landing / sign-in page instead of a half-broken dashboard.
+//
+// A ref-guarded cooldown plus a 30s "already tried a refresh" window guarantee
+// at most one silent refresh before escalating, so a persistently-401ing
+// backend can never trap the user in a blank, retrying loop.
 function ApiAuthRecovery() {
   const clerk = useClerk();
   const qc = useQueryClient();
   const recoveringRef = useRef(false);
+  const refreshTriedAtRef = useRef(0);
 
   useEffect(() => {
     setUnauthorizedHandler(() => {
@@ -159,21 +181,31 @@ function ApiAuthRecovery() {
       recoveringRef.current = true;
       void (async () => {
         try {
+          const now = Date.now();
           const session = clerk.session;
-          if (session) {
+          const recentlyTried = now - refreshTriedAtRef.current < 30_000;
+
+          // Stage 1: benign stale-token case — one quiet refresh + refetch.
+          if (session && !recentlyTried) {
+            refreshTriedAtRef.current = now;
             try {
-              // Force a fresh session token; Clerk updates the cookie the
-              // server reads as a side effect. On success, refetch and stop.
-              await session.getToken({ skipCache: true });
-              await qc.invalidateQueries();
-              return;
+              const token = await withTimeout(
+                Promise.resolve(session.getToken({ skipCache: true })),
+                5000,
+              );
+              if (token) {
+                await qc.invalidateQueries();
+                return;
+              }
             } catch {
-              // Refresh failed — the session is expired or revoked, not just
-              // a stale token. Fall through to the sign-in redirect so the
-              // user never gets stranded on a rendered-but-empty page.
+              // Fall through to a clean re-auth.
             }
           }
-          await clerk.redirectToSignIn();
+
+          // Stage 2: refresh didn't help (or no live session) — force re-login.
+          // Signing out flips Clerk to signed-out; the route guards then
+          // redirect to the landing page, where the user can sign in fresh.
+          await clerk.signOut();
         } catch {
           // Best-effort recovery; the original request error still surfaces.
         } finally {
