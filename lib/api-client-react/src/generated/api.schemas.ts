@@ -203,6 +203,11 @@ export interface PracticeSessionInput {
   weekNumber?: number | null;
   /** @nullable */
   topicId?: number | null;
+  /**
+     * When set, practice is scoped to this graded assignment's topics (and disjoint from its graded problems)
+     * @nullable
+     */
+  assignmentId?: number | null;
   tutorEnabled: boolean;
   focusOnWeaknesses?: boolean;
   /**
@@ -220,6 +225,8 @@ export interface PracticeSession {
   weekNumber: number | null;
   /** @nullable */
   topicId?: number | null;
+  /** @nullable */
+  assignmentId?: number | null;
   focusOnWeaknesses?: boolean;
 }
 
@@ -252,6 +259,13 @@ export interface PracticeGrade {
   correct: boolean;
   correctAnswer?: string;
   explanation: string;
+  /** Extensive, in-depth coaching feedback on the student's reasoning (richer than explanation) */
+  feedback: string;
+  /**
+     * Surgically precise, analytics-based pointer on what to focus on before the graded assignment
+     * @nullable
+     */
+  focusPointer?: string | null;
   newDifficulty: number;
   /** @nullable */
   tutorTip?: string | null;

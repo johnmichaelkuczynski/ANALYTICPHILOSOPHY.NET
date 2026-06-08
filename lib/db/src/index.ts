@@ -5,6 +5,13 @@ import * as schema from "./schema";
 const { Pool } = pg;
 
 function resolveConnectionString(): string {
+  // Explicit override: when the user wants the app to run against THEIR own
+  // external Postgres (so all activity is logged + profiled in their DB),
+  // they set APP_DATABASE_URL. It takes precedence over the runtime-managed
+  // (Helium) DATABASE_URL, which cannot itself be overridden.
+  if (process.env.APP_DATABASE_URL) {
+    return process.env.APP_DATABASE_URL;
+  }
   if (process.env.DATABASE_URL) {
     return process.env.DATABASE_URL;
   }

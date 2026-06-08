@@ -565,6 +565,9 @@ components:
       properties:
         weekNumber: { type: ["integer", "null"] }
         topicId: { type: ["integer", "null"] }
+        assignmentId:
+          type: ["integer", "null"]
+          description: When set, practice is scoped to this graded assignment's topics (and disjoint from its graded problems)
         tutorEnabled: { type: boolean }
         focusOnWeaknesses: { type: boolean, default: true }
         initialDifficulty:
@@ -580,6 +583,7 @@ components:
         difficulty: { type: number }
         weekNumber: { type: ["integer", "null"] }
         topicId: { type: ["integer", "null"] }
+        assignmentId: { type: ["integer", "null"] }
         focusOnWeaknesses: { type: boolean }
 
     NextProblemInput:
@@ -611,12 +615,18 @@ components:
 
     PracticeGrade:
       type: object
-      required: [problemId, correct, explanation, newDifficulty]
+      required: [problemId, correct, explanation, newDifficulty, feedback]
       properties:
         problemId: { type: integer }
         correct: { type: boolean }
         correctAnswer: { type: string }
         explanation: { type: string }
+        feedback:
+          type: string
+          description: Extensive, in-depth coaching feedback on the student's reasoning (richer than explanation)
+        focusPointer:
+          type: ["string", "null"]
+          description: Surgically precise, analytics-based pointer on what to focus on before the graded assignment
         newDifficulty: { type: number }
         tutorTip: { type: ["string", "null"] }
 

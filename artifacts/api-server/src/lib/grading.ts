@@ -49,7 +49,7 @@ export async function gradeAnswer(opts: {
 
   try {
     const out = await chatJson<{ correct: boolean; explanation: string }>(
-      "You grade short quantitative-reasoning answers. Decide if the student's answer is mathematically equivalent to the correct answer (accept equivalent forms like 1/2 and 0.5, simplified fractions, equivalent algebraic expressions, units treated reasonably). Output strict JSON {\"correct\": boolean, \"explanation\": string} where explanation is 1-3 short sentences and includes the correct answer.",
+      "You grade short answers in an analytic-philosophy course where the canonical answer is usually a LOGICAL REGIMENTATION. Decide whether the student's answer is LOGICALLY EQUIVALENT to the correct answer. ACCEPT notational and equivalent variants: different connective glyphs (∧/&/·, ∨/+, ¬/~/!, →/⊃, ↔/≡), ASCII vs unicode, renamed bound variables, logically equivalent rewrites (¬∃x ≡ ∀x¬, contrapositive, De Morgan, reordered conjuncts/disjuncts, set-builder vs quantifier forms), and a correct claim stated in precise English instead of symbols. For the occasional numeric answer, accept mathematically equal forms (1/2 = 0.5). REJECT genuine logical errors: wrong quantifier, wrong scope, missing or extra negation, predicate applied to the wrong argument, a definition/recital that does not actually answer the applied question. Output strict JSON {\"correct\": boolean, \"explanation\": string} where explanation is 1-3 sentences, states the correct answer, and when wrong pinpoints the specific logical error.",
       JSON.stringify({
         prompt: opts.prompt,
         correct_answer: correct,

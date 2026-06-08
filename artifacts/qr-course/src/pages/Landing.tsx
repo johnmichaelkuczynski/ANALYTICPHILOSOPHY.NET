@@ -6,8 +6,8 @@ const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const highlights = [
   {
     icon: BookOpen,
-    title: "29 micro-lectures",
-    body: "Four weeks — from Frege's logical form to the Tractatus, logical positivism, and the map of philosophy.",
+    title: "37 micro-lectures",
+    body: "Eight units — from the analysis of analysis and Frege's logical form to the Tractatus, logical positivism, formal truth, and the map of philosophy.",
   },
   {
     icon: GraduationCap,
@@ -56,7 +56,7 @@ export default function Landing() {
       <main className="flex-1 flex flex-col items-center justify-center px-6 text-center max-w-3xl mx-auto w-full py-16">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary text-secondary-foreground text-xs font-medium mb-8">
           <Sigma className="w-3.5 h-3.5" />
-          A four-week course on the logic behind the words
+          An eight-unit course on the logic behind the words
         </div>
         <h1 className="font-serif text-4xl sm:text-5xl font-bold tracking-tight leading-tight">
           Teach Yourself Analytic Philosophy

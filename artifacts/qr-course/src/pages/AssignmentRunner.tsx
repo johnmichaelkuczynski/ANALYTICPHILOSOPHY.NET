@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AnswerInput } from "@/components/AnswerInput";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
+import { Sparkles } from "lucide-react";
 
 export default function AssignmentRunner() {
   const params = useParams();
@@ -156,6 +157,23 @@ export default function AssignmentRunner() {
               Deadline: {new Date(attempt.deadlineAt).toLocaleTimeString()}
             </div>
           )}
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-lg border border-primary/30 bg-primary/5 p-4">
+          <div className="flex items-start gap-3">
+            <Sparkles className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+            <div>
+              <div className="font-semibold text-primary">Not sure you're ready? Practice first.</div>
+              <p className="text-sm text-muted-foreground">
+                Warm up with unlimited tutor-backed practice on the same topics — never the real questions.
+              </p>
+            </div>
+          </div>
+          <Link href={`/practice/assignment/${assignmentId}`}>
+            <Button variant="secondary" className="whitespace-nowrap">
+              Practice first
+            </Button>
+          </Link>
         </div>
 
         {currentProblem ? (

@@ -274,6 +274,7 @@ export const startPracticeSessionBodyFocusOnWeaknessesDefault = true;
 export const StartPracticeSessionBody = zod.object({
   "weekNumber": zod.number().nullish(),
   "topicId": zod.number().nullish(),
+  "assignmentId": zod.number().nullish().describe('When set, practice is scoped to this graded assignment\'s topics (and disjoint from its graded problems)'),
   "tutorEnabled": zod.boolean(),
   "focusOnWeaknesses": zod.boolean().default(startPracticeSessionBodyFocusOnWeaknessesDefault),
   "initialDifficulty": zod.number().nullish().describe('Starting difficulty 1-5; if omitted defaults to 2.0')
@@ -285,6 +286,7 @@ export const StartPracticeSessionResponse = zod.object({
   "difficulty": zod.number(),
   "weekNumber": zod.number().nullable(),
   "topicId": zod.number().nullish(),
+  "assignmentId": zod.number().nullish(),
   "focusOnWeaknesses": zod.boolean().optional()
 })
 
@@ -339,6 +341,8 @@ export const GradePracticeAnswerResponse = zod.object({
   "correct": zod.boolean(),
   "correctAnswer": zod.string().optional(),
   "explanation": zod.string(),
+  "feedback": zod.string().describe('Extensive, in-depth coaching feedback on the student\'s reasoning (richer than explanation)'),
+  "focusPointer": zod.string().nullish().describe('Surgically precise, analytics-based pointer on what to focus on before the graded assignment'),
   "newDifficulty": zod.number(),
   "tutorTip": zod.string().nullish()
 })

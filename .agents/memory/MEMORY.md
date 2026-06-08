@@ -1,2 +1,3 @@
 - [Clerk web wiring gotchas](clerk-web-wiring.md) — clerkMiddleware goes AFTER body parsers (only the proxy goes before); copy wiring verbatim; web auth is cookie-based, gate /api after a public /healthz.
+- [External DB override](external-db-override.md) — managed DATABASE_URL (Helium) can't be overridden; use APP_DATABASE_URL precedence in lib/db index + drizzle.config to run against the user's own Postgres.
 - [QuantReason clone reskin](quantreason-reskin.md) — reskinning to a new subject means editing live AI prompts (practice/tutor/diagnostics/analytics), not just seed.ts; reseed gates on slugs+sentinel, not CONTENT_REVISION.

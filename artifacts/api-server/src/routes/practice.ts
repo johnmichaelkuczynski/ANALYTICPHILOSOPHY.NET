@@ -1,8 +1,9 @@
 import { Router, type IRouter } from "express";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import {
   db,
   topicsTable,
+  problemsTable,
   practiceSessionsTable,
   practiceProblemsTable,
   practiceAttemptsTable,
@@ -29,14 +30,41 @@ async function pickTopicId(
   weekNumber: number | null | undefined,
   preferred: number | null | undefined,
   focusOnWeaknesses: boolean,
+  assignmentId: number | null | undefined,
 ): Promise<{ id: number; title: string; weekNumber: number }> {
-  if (preferred != null) {
-    const [t] = await db.select().from(topicsTable).where(eq(topicsTable.id, preferred));
-    if (t) return { id: t.id, title: t.title, weekNumber: t.weekNumber };
+  // When the session is scoped to a graded assignment, compute the allowed
+  // topic set FIRST so that an out-of-scope `preferred`/`topicId` override
+  // cannot escape the assignment's coverage.
+  let assignmentTopicIds: number[] | null = null;
+  if (assignmentId != null) {
+    const rows = await db
+      .selectDistinct({ topicId: problemsTable.topicId })
+      .from(problemsTable)
+      .where(eq(problemsTable.assignmentId, assignmentId));
+    assignmentTopicIds = rows.map((r) => r.topicId);
   }
-  const candidates = weekNumber
-    ? await db.select().from(topicsTable).where(eq(topicsTable.weekNumber, weekNumber))
-    : await db.select().from(topicsTable);
+
+  if (preferred != null) {
+    const inScope =
+      assignmentTopicIds == null ||
+      assignmentTopicIds.length === 0 ||
+      assignmentTopicIds.includes(preferred);
+    if (inScope) {
+      const [t] = await db.select().from(topicsTable).where(eq(topicsTable.id, preferred));
+      if (t) return { id: t.id, title: t.title, weekNumber: t.weekNumber };
+    }
+  }
+  let candidates: Array<{ id: number; title: string; weekNumber: number }>;
+  if (assignmentTopicIds != null) {
+    // Scope practice to exactly the topics covered by this graded assignment.
+    candidates = assignmentTopicIds.length
+      ? await db.select().from(topicsTable).where(inArray(topicsTable.id, assignmentTopicIds))
+      : await db.select().from(topicsTable);
+  } else if (weekNumber) {
+    candidates = await db.select().from(topicsTable).where(eq(topicsTable.weekNumber, weekNumber));
+  } else {
+    candidates = await db.select().from(topicsTable);
+  }
 
   if (focusOnWeaknesses) {
     const stats = await db.execute(sql`
@@ -69,7 +97,7 @@ router.post("/practice/sessions", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const { weekNumber, topicId, tutorEnabled, focusOnWeaknesses, initialDifficulty } =
+  const { weekNumber, topicId, assignmentId, tutorEnabled, focusOnWeaknesses, initialDifficulty } =
     parsed.data;
   const startDifficulty =
     typeof initialDifficulty === "number" && !Number.isNaN(initialDifficulty)
@@ -80,6 +108,7 @@ router.post("/practice/sessions", async (req, res): Promise<void> => {
     .values({
       weekNumber: weekNumber ?? null,
       topicId: topicId ?? null,
+      assignmentId: assignmentId ?? null,
       tutorEnabled,
       focusOnWeaknesses: focusOnWeaknesses ?? true,
       difficulty: startDifficulty,
@@ -96,6 +125,7 @@ router.post("/practice/sessions", async (req, res): Promise<void> => {
       difficulty: created.difficulty,
       weekNumber: created.weekNumber,
       topicId: created.topicId,
+      assignmentId: created.assignmentId,
       focusOnWeaknesses: created.focusOnWeaknesses,
     }),
   );
@@ -121,6 +151,7 @@ router.post("/practice/sessions/:sessionId/next", async (req, res): Promise<void
     session.weekNumber,
     parsed.data.topicId ?? session.topicId,
     session.focusOnWeaknesses,
+    session.assignmentId,
   );
 
   const lastProblems = await db
@@ -135,6 +166,27 @@ router.post("/practice/sessions/:sessionId/next", async (req, res): Promise<void
     .orderBy(desc(practiceProblemsTable.id))
     .limit(3);
 
+  // Disjointness: never let a practice problem reproduce a GRADED problem on
+  // this topic. We keep the FULL graded set for a deterministic post-generation
+  // check, and pass a (token-bounded) subset to the model as an explicit avoid
+  // list. Filtering by topic is a superset of the assignment's graded prompts
+  // on that topic, so cross-assignment leakage is also prevented.
+  const gradedProblems = await db
+    .select({ prompt: problemsTable.prompt })
+    .from(problemsTable)
+    .where(eq(problemsTable.topicId, topic.id));
+  const normalizePrompt = (s: string): string =>
+    s
+      .toLowerCase()
+      .replace(/practice\s*\([^)]*\):/g, "")
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
+  const forbidden = new Set<string>([
+    ...gradedProblems.map((p) => normalizePrompt(p.prompt)),
+    ...lastProblems.map((p) => normalizePrompt(p.prompt)),
+  ]);
+  const avoidPrompts = gradedProblems.map((p) => p.prompt).slice(0, 24);
+
   const difficulty = Math.max(1, Math.min(5, session.difficulty));
   const difficultyLabel =
     difficulty <= 1.7
@@ -148,26 +200,61 @@ router.post("/practice/sessions/:sessionId/next", async (req, res): Promise<void
       : "challenging";
 
   const userRequest = parsed.data.request?.trim() || "";
-  let generated: { prompt: string; correctAnswer: string; explanation: string };
-  try {
-    generated = await chatJson<{
+  const generateOnce = (): Promise<{
+    prompt: string;
+    correctAnswer: string;
+    explanation: string;
+  }> =>
+    chatJson<{
       prompt: string;
       correctAnswer: string;
       explanation: string;
     }>(
-      `You generate a single analytic-philosophy practice problem for a college student. The problem MUST be on the topic "${topic.title}" and at difficulty "${difficultyLabel}" (${difficulty.toFixed(
+      `You generate ONE analytic-philosophy practice problem for the topic "${topic.title}" at difficulty "${difficultyLabel}" (${difficulty.toFixed(
         1,
-      )}/5). The problem must ask the student to WRITE THE KEY STATEMENT IN FORMAL LOGICAL NOTATION — quantifiers (∀, ∃), connectives (¬, ∧, ∨, →, ↔), modal operators (□, ◇), entailment (⊨, ⊢), set-builder, or ∅ — not to compute a number. Use $...$ for inline LaTeX where helpful. The correctAnswer must be a short string of logical symbols (e.g. "¬∃x (Square(x) ∧ Circle(x))" or "∃x Smokes(x)"), never multi-paragraph. Respond as strict JSON: {"prompt": string, "correctAnswer": string, "explanation": string}. Avoid these recent prompts: ${JSON.stringify(
+      )}/5).
+
+STRICT QUESTION RULES (a professional philosopher will reject violations):
+1. APPLICATION, NEVER RECALL. Never ask the student to define, state, explain, describe, name, or recite a concept, principle, or distinction. The problem must require APPLYING the principle to a case.
+2. FRESH CONCRETE SCENARIO. Present a brand-new, specific scenario the student has not seen — a particular sentence to regiment, an inference to judge as valid/invalid, a described philosopher's move to diagnose, or a sentence whose real commitments must be read off. Invent your own fresh particulars (ordinary nouns, made-up names, neutral examples).
+3. GENERAL, NOT TEXT-SPECIFIC. Do NOT reference any famous textbook example (no square circle, no "someone smokes", no the rabbit, no the morning star, no the present king of France, no Theseus' ship). Anyone who understands the principle — even if they never read this course — must be able to answer.
+4. REQUIRE REASONING. The scenario should demand genuine, in-depth reasoning, not a one-word recall.
+5. SYMBOLIC HARNESS. Wherever the principle is formal, the canonical correctAnswer is the logical regimentation in symbols — quantifiers (∀, ∃), connectives (¬, ∧, ∨, →, ↔), modal operators (□, ◇), entailment (⊨, ⊢), set-builder, or ∅. Keep correctAnswer concise (a formula or a short precise phrase), never multi-paragraph. Use $...$ for inline LaTeX in the prompt/explanation where helpful.
+
+Respond as strict JSON: {"prompt": string, "correctAnswer": string, "explanation": string}. The explanation (2-4 sentences) justifies the answer. Do NOT duplicate or lightly reword any of these recent prompts: ${JSON.stringify(
         lastProblems.map((p) => p.prompt),
-      )}.`,
+      )}.${
+        avoidPrompts.length
+          ? ` Also never reproduce any of these graded-assignment prompts: ${JSON.stringify(
+              avoidPrompts,
+            )}.`
+          : ""
+      }`,
       userRequest || `Generate a new ${difficultyLabel} problem on ${topic.title}.`,
     );
-  } catch {
+
+  let generated: { prompt: string; correctAnswer: string; explanation: string } | null = null;
+  // Deterministic disjointness: regenerate if a produced prompt collides with a
+  // graded prompt (or a just-served practice prompt). Bounded retries keep the
+  // generator infinite-feeling without risking an unbounded loop.
+  for (let attempt = 0; attempt < 4; attempt++) {
+    let candidate: { prompt: string; correctAnswer: string; explanation: string };
+    try {
+      candidate = await generateOnce();
+    } catch {
+      continue;
+    }
+    if (!candidate?.prompt || !forbidden.has(normalizePrompt(candidate.prompt))) {
+      generated = candidate;
+      break;
+    }
+  }
+  if (!generated) {
     generated = {
-      prompt: `Practice (${topic.title}): Using a negated existential, write in logical symbols the claim "nothing is a square circle".`,
-      correctAnswer: "¬∃x (Square(x) ∧ Circle(x))",
+      prompt: `Practice (${topic.title}): A sign reads "No reptile lives in this greenhouse." Regiment it as a negated existential whose logical form shows it posits no shadowy non-entity, and name the property it declares uninstantiated.`,
+      correctAnswer: "¬∃x (Reptile(x) ∧ LivesInGreenhouse(x))",
       explanation:
-        "The property of being a square circle is uninstantiated: $\\neg\\exists x\\,(\\text{Square}(x) \\wedge \\text{Circle}(x))$.",
+        "The claim attributes no property to an 'un-thing'; it says a property has no instances: $\\neg\\exists x\\,(\\text{Reptile}(x) \\wedge \\text{LivesInGreenhouse}(x))$ — the property of being a greenhouse-dwelling reptile is uninstantiated.",
     };
   }
 
@@ -269,12 +356,56 @@ router.post("/practice/sessions/:sessionId/grade", async (req, res): Promise<voi
     }
   }
 
+  // (a) Extensive feedback — this is low-stakes practice, so be detailed.
+  let feedback = graded.explanation || problem.explanation;
+  try {
+    const fb = await chatJson<{ feedback: string }>(
+      'You are an expert analytic-philosophy coach giving EXTENSIVE practice feedback (low-stakes practice — be generous and thorough). Given the problem, the canonical answer, the student\'s attempt, and whether it was correct, write 3-6 sentences that: (1) name precisely what the student got right; (2) diagnose any logical error by NAME (wrong quantifier, wrong scope, missing/extra negation, predicate applied to the wrong argument, conflating grammatical form with logical form, ontologizing a non-entity, etc.); (3) show the corrected regimentation with a one-line reason. Write inline logic as $...$ (LaTeX). Never just restate the rule abstractly — tie every point to THIS scenario. Respond as strict JSON: {"feedback": string}.',
+      JSON.stringify({
+        prompt: problem.prompt,
+        correctAnswer: problem.correctAnswer,
+        studentAnswer: answer,
+        wasCorrect: graded.correct,
+      }),
+    );
+    if (fb.feedback && fb.feedback.trim()) feedback = fb.feedback.trim();
+  } catch {
+    // keep terse explanation as fallback
+  }
+
+  // (c) Surgically precise, analytics-based focus pointer for this topic.
+  let focusPointer: string | null = null;
+  try {
+    const [tp] = await db
+      .select({ title: topicsTable.title })
+      .from(topicsTable)
+      .where(eq(topicsTable.id, problem.topicId));
+    const statRes = await db.execute(sql`
+      select count(*)::int as n, avg(case when correct then 1.0 else 0.0 end) as acc
+      from practice_attempts where topic_id = ${problem.topicId}
+    `);
+    const row = statRes.rows[0] as { n: number; acc: number } | undefined;
+    if (tp && row && Number(row.n) >= 1) {
+      const n = Number(row.n);
+      const pct = Math.round(Number(row.acc) * 100);
+      const scope = session.assignmentId != null ? " before you attempt the graded assignment" : "";
+      focusPointer =
+        pct < 70
+          ? `Focus area: your practice accuracy on "${tp.title}" is ${pct}% over ${n} attempt(s). Keep drilling this exact topic${scope} — aim for a steady streak of correct regimentations here before moving on.`
+          : `On track: ${pct}% on "${tp.title}" over ${n} attempts. You're nearly graded-ready on this topic${scope}; a few more reps at higher difficulty will lock it in.`;
+    }
+  } catch {
+    focusPointer = null;
+  }
+
   res.json(
     GradePracticeAnswerResponse.parse({
       problemId,
       correct: graded.correct,
       correctAnswer: problem.correctAnswer,
       explanation: graded.explanation || problem.explanation,
+      feedback,
+      focusPointer,
       newDifficulty,
       tutorTip,
     }),

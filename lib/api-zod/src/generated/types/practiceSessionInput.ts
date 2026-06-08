@@ -11,6 +11,11 @@ export interface PracticeSessionInput {
   weekNumber?: number | null;
   /** @nullable */
   topicId?: number | null;
+  /**
+     * When set, practice is scoped to this graded assignment's topics (and disjoint from its graded problems)
+     * @nullable
+     */
+  assignmentId?: number | null;
   tutorEnabled: boolean;
   focusOnWeaknesses?: boolean;
   /**
