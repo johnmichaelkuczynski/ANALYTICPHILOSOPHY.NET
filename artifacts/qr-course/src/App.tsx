@@ -3,6 +3,7 @@ import { Switch, Route, Redirect, useLocation, Router as WouterRouter } from "wo
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { ClerkProvider, SignIn, SignUp, Show, useClerk } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
+import { setUnauthorizedHandler } from "@workspace/api-client-react";
 import { shadcn } from "@clerk/themes";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -140,6 +141,54 @@ function ClerkQueryClientCacheInvalidator() {
   return null;
 }
 
+// Self-heals stale Clerk sessions. The session token cookie is short-lived and
+// refreshed by Clerk.js; if a tab sits idle the token can lapse, so the server
+// returns 401 even though the client still considers the user signed in — the
+// page renders but no data loads. On a 401 we force a fresh session token (which
+// updates the cookie) and refetch; if the session is truly gone we send the user
+// to sign in. A ref-guarded cooldown prevents a persistently-401ing server from
+// triggering a tight loop.
+function ApiAuthRecovery() {
+  const clerk = useClerk();
+  const qc = useQueryClient();
+  const recoveringRef = useRef(false);
+
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      if (recoveringRef.current) return;
+      recoveringRef.current = true;
+      void (async () => {
+        try {
+          const session = clerk.session;
+          if (session) {
+            try {
+              // Force a fresh session token; Clerk updates the cookie the
+              // server reads as a side effect. On success, refetch and stop.
+              await session.getToken({ skipCache: true });
+              await qc.invalidateQueries();
+              return;
+            } catch {
+              // Refresh failed — the session is expired or revoked, not just
+              // a stale token. Fall through to the sign-in redirect so the
+              // user never gets stranded on a rendered-but-empty page.
+            }
+          }
+          await clerk.redirectToSignIn();
+        } catch {
+          // Best-effort recovery; the original request error still surfaces.
+        } finally {
+          setTimeout(() => {
+            recoveringRef.current = false;
+          }, 4000);
+        }
+      })();
+    });
+    return () => setUnauthorizedHandler(null);
+  }, [clerk, qc]);
+
+  return null;
+}
+
 function HomeRedirect() {
   return (
     <>
@@ -208,6 +257,7 @@ function ClerkProviderWithRoutes() {
     >
       <QueryClientProvider client={queryClient}>
         <ClerkQueryClientCacheInvalidator />
+        <ApiAuthRecovery />
         <TooltipProvider>
           <Switch>
             <Route path="/" component={HomeRedirect} />
