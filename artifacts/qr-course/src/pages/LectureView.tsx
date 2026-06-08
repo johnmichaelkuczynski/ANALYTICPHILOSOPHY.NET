@@ -15,12 +15,12 @@ import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { AnswerInput } from "@/components/AnswerInput";
 import { TutorPane } from "@/components/TutorPane";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MessageSquare, Sparkles, X, RefreshCw, CheckCircle2, XCircle } from "lucide-react";
+import { ArrowLeft, MessageSquare, Sparkles, X, RefreshCw, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 
 export default function LectureView() {
   const params = useParams();
   const lectureId = Number(params.lectureId);
-  const { data: lecture, isLoading } = useGetLecture(lectureId);
+  const { data: lecture, isLoading, refetch } = useGetLecture(lectureId);
 
   // shared selected-text state (used by both Tutor and Practice)
   const [selectedText, setSelectedText] = useState("");
@@ -49,6 +49,7 @@ export default function LectureView() {
 
   const [tab, setTab] = useState<"tutor" | "practice">("tutor");
   const [level, setLevel] = useState<"short" | "medium" | "long">("short");
+  const [generatingLevel, setGeneratingLevel] = useState<null | "medium" | "long">(null);
 
   const availableLevels = useMemo(() => {
     const out: Array<"short" | "medium" | "long"> = ["short"];
@@ -63,6 +64,36 @@ export default function LectureView() {
       : level === "medium" && lecture?.bodyMedium
         ? lecture.bodyMedium
         : (lecture?.body ?? "");
+
+  // Generate (or switch to) a depth for THIS lecture only — on the spot.
+  async function handleSelectLevel(lvl: "short" | "medium" | "long") {
+    if (lvl === "short") {
+      setLevel("short");
+      return;
+    }
+    const alreadyHas = lvl === "medium" ? !!lecture?.bodyMedium : !!lecture?.bodyLong;
+    if (alreadyHas) {
+      setLevel(lvl);
+      return;
+    }
+    if (!lecture || generatingLevel) return;
+    setGeneratingLevel(lvl);
+    try {
+      const res = await fetch(
+        `/api/diagnostics/expand-lectures?level=${lvl}&id=${lecture.id}`,
+        { method: "POST" },
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = (await res.json()) as { updated?: number; failed?: number };
+      if (!data.updated) throw new Error("the model returned an empty draft — try again");
+      await refetch();
+      setLevel(lvl);
+    } catch (e) {
+      alert(`Couldn't generate the ${lvl} version of this lecture: ${(e as Error).message}`);
+    } finally {
+      setGeneratingLevel(null);
+    }
+  }
 
   return (
     <Layout>
@@ -98,27 +129,32 @@ export default function LectureView() {
                   </div>
                   <div className="inline-flex rounded-md border border-border overflow-hidden text-xs">
                     {(["short", "medium", "long"] as const).map((lvl) => {
-                      const enabled = availableLevels.includes(lvl);
                       const active = level === lvl;
+                      const has = lvl === "short" || availableLevels.includes(lvl);
+                      const isGen = generatingLevel === lvl;
+                      const label = lvl[0].toUpperCase() + lvl.slice(1);
                       return (
                         <button
                           key={lvl}
-                          onClick={() => enabled && setLevel(lvl)}
-                          disabled={!enabled}
+                          onClick={() => handleSelectLevel(lvl)}
+                          disabled={generatingLevel !== null}
                           title={
-                            enabled
-                              ? `${lvl[0].toUpperCase() + lvl.slice(1)} version`
-                              : `${lvl[0].toUpperCase() + lvl.slice(1)} version not generated yet — click "Generate medium + long lectures" in the top bar`
+                            has
+                              ? `${label} version`
+                              : `Generate the ${label} version of just this lecture`
                           }
-                          className={`px-3 py-1.5 font-medium uppercase tracking-wider transition-colors ${
+                          className={`px-3 py-1.5 font-medium uppercase tracking-wider transition-colors inline-flex items-center gap-1 disabled:opacity-60 ${
                             active
                               ? "bg-primary text-primary-foreground"
-                              : enabled
-                                ? "bg-background hover:bg-secondary text-foreground"
-                                : "bg-background/50 text-muted-foreground/50 cursor-not-allowed"
+                              : "bg-background hover:bg-secondary text-foreground"
                           }`}
                           data-testid={`button-level-${lvl}`}
                         >
+                          {isGen ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : !has ? (
+                            <Sparkles className="w-3 h-3" />
+                          ) : null}
                           {lvl}
                         </button>
                       );
@@ -126,6 +162,12 @@ export default function LectureView() {
                   </div>
                 </div>
               </header>
+              {generatingLevel && (
+                <div className="mb-4 flex items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-primary">
+                  <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                  Writing the {generatingLevel} version of this lecture — this usually takes up to a minute.
+                </div>
+              )}
               <div className="bg-card border shadow-sm rounded-lg p-6 md:p-8" ref={articleRef}>
                 <MarkdownRenderer content={activeBody} />
                 <div className="mt-6 pt-4 border-t border-dashed border-border text-xs text-muted-foreground italic">
