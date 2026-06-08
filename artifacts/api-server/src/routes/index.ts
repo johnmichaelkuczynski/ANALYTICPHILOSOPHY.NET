@@ -7,15 +7,11 @@ import tutorRouter from "./tutor";
 import detectionRouter from "./detection";
 import analyticsRouter from "./analytics";
 import diagnosticsRouter from "./diagnostics";
-import { requireAuth } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
-// Public endpoints (no auth) — deployment health checks.
+// Deployment health checks.
 router.use(healthRouter);
-
-// Everything below requires a valid Clerk session.
-router.use(requireAuth);
 
 router.use(courseRouter);
 router.use(assignmentsRouter);

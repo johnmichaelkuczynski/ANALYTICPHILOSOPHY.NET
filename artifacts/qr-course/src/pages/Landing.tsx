@@ -1,8 +1,6 @@
 import { Link } from "wouter";
 import { BookOpen, Sigma, GraduationCap, PenLine } from "lucide-react";
 
-const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
-
 const highlights = [
   {
     icon: BookOpen,
@@ -34,20 +32,12 @@ export default function Landing() {
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/sign-in">
-            <button
-              className="px-4 py-2 rounded-md text-sm font-medium border border-border hover:bg-secondary transition-colors"
-              data-testid="button-signin"
-            >
-              Sign in
-            </button>
-          </Link>
-          <Link href="/sign-up">
+          <Link href="/dashboard">
             <button
               className="px-4 py-2 rounded-md text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-              data-testid="button-signup"
+              data-testid="button-open-course"
             >
-              Get started
+              Open the course
             </button>
           </Link>
         </div>
@@ -71,20 +61,12 @@ export default function Landing() {
           defining statement in logical symbols of your own.
         </p>
         <div className="mt-10 flex flex-col sm:flex-row items-center gap-3">
-          <Link href="/sign-up">
+          <Link href="/dashboard">
             <button
               className="px-6 py-3 rounded-md text-base font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
               data-testid="button-cta-start"
             >
               Start the course
-            </button>
-          </Link>
-          <Link href="/sign-in">
-            <button
-              className="px-6 py-3 rounded-md text-base font-medium border border-border hover:bg-secondary transition-colors"
-              data-testid="button-cta-signin"
-            >
-              I already have an account
             </button>
           </Link>
         </div>

@@ -49,7 +49,8 @@ The runtime provides lectures with short / medium / long depth, a section-scoped
 - `DATABASE_URL` — Postgres connection string. The app reads this directly (`lib/db`), enables SSL automatically for any non-local host (`DATABASE_SSL=false` overrides), and falls back to the standard `PG*` parts only if `DATABASE_URL` is absent. Pointing it at an external Neon URL is how the app runs against Neon.
 - `OPENAI_API_KEY` — **required**. The OpenAI client (`@workspace/integrations-openai-ai-server`) reads it directly and throws on boot if it is missing. Powers the tutor, practice generator, AI graders, content auditor, and lecture-expansion job. An optional `OPENAI_BASE_URL` can point the client at a compatible proxy.
 - `GPTZERO_API_KEY` — optional, for the GPTZero leg of the static-AI-detection layer. If absent, the system falls back to the LLM scorer + heuristic, but you lose the primary detection signal.
-- `CLERK_SECRET_KEY` / `CLERK_PUBLISHABLE_KEY` / `VITE_CLERK_PUBLISHABLE_KEY` — Clerk auth (the `/api` surface is cookie-gated behind Clerk; `/api/healthz` stays public).
+
+**No authentication.** This is a single-user app: there is no login, no Clerk, and no third-party auth. The data model has no per-user scoping — all course data, attempts, practice, and analytics belong to the one user. Auth was removed because Clerk's cookie-based session fails inside the Replit preview iframe (the session cookie is treated as third-party and dropped), which made every `/api` call return 401. The entire `/api` surface is open; `/api/healthz` stays public for deployment health checks.
 
 ---
 
