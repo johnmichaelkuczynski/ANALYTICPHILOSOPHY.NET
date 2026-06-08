@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAskTutor } from "@workspace/api-client-react";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { StarterQuestionCard } from "@/components/StarterQuestionCard";
+import { MathKeyboard } from "@/components/MathKeyboard";
 import { Button } from "@/components/ui/button";
-import { Send, X } from "lucide-react";
+import { Send, X, Sigma } from "lucide-react";
 
 export type ChatMsg = { role: "user" | "tutor"; text: string };
 
@@ -18,8 +19,10 @@ export function TutorPane({
 }) {
   const [history, setHistory] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
+  const [showKeyboard, setShowKeyboard] = useState(false);
   const ask = useAskTutor();
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
   // Preloaded starter questions for this lecture
   const [suggestions, setSuggestions] = useState<string[] | null>(null);
@@ -84,6 +87,69 @@ export function TutorPane({
     sendMessage(msg);
   }
 
+  const insertAtCursor = useCallback((text: string) => {
+    if (!text) return;
+    const ta = inputRef.current;
+    setInput((current) => {
+      let next: string;
+      let caret: number;
+      if (ta && document.activeElement === ta) {
+        const start = ta.selectionStart ?? current.length;
+        const end = ta.selectionEnd ?? current.length;
+        next = current.slice(0, start) + text + current.slice(end);
+        caret = start + text.length;
+      } else {
+        next = current + text;
+        caret = next.length;
+      }
+      requestAnimationFrame(() => {
+        if (!ta) return;
+        ta.focus();
+        try {
+          ta.setSelectionRange(caret, caret);
+        } catch {}
+      });
+      return next;
+    });
+  }, []);
+
+  const backspaceAtCursor = useCallback(() => {
+    const ta = inputRef.current;
+    setInput((current) => {
+      let next: string;
+      let caret: number;
+      if (ta && document.activeElement === ta) {
+        const start = ta.selectionStart ?? current.length;
+        const end = ta.selectionEnd ?? current.length;
+        if (start === end) {
+          if (start === 0) return current;
+          next = current.slice(0, start - 1) + current.slice(end);
+          caret = start - 1;
+        } else {
+          next = current.slice(0, start) + current.slice(end);
+          caret = start;
+        }
+      } else {
+        if (current.length === 0) return current;
+        next = current.slice(0, -1);
+        caret = next.length;
+      }
+      requestAnimationFrame(() => {
+        if (!ta) return;
+        ta.focus();
+        try {
+          ta.setSelectionRange(caret, caret);
+        } catch {}
+      });
+      return next;
+    });
+  }, []);
+
+  const clearInput = useCallback(() => {
+    setInput("");
+    requestAnimationFrame(() => inputRef.current?.focus());
+  }, []);
+
   function submitAttempt(question: string, attempt: string) {
     const a = attempt.trim();
     if (!a) return;
@@ -104,24 +170,46 @@ export function TutorPane({
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
-      <div className="border-b border-border bg-background p-3 flex gap-2 items-end">
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              send();
-            }
-          }}
-          placeholder={placeholder}
-          rows={4}
-          className="flex-1 bg-secondary border-none rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-y min-h-[96px] max-h-[280px]"
-          data-testid="input-tutor-question"
-        />
-        <Button size="lg" onClick={send} disabled={!input.trim() || ask.isPending}>
-          <Send className="w-4 h-4" />
-        </Button>
+      <div className="border-b border-border bg-background p-3 flex flex-col gap-2">
+        <div className="flex gap-2 items-end">
+          <textarea
+            ref={inputRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                send();
+              }
+            }}
+            placeholder={placeholder}
+            rows={4}
+            className="flex-1 bg-secondary border-none rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-y min-h-[96px] max-h-[280px]"
+            data-testid="input-tutor-question"
+          />
+          <div className="flex flex-col gap-2">
+            <Button
+              size="lg"
+              variant={showKeyboard ? "secondary" : "outline"}
+              onClick={() => setShowKeyboard((s) => !s)}
+              title={showKeyboard ? "Hide symbol keyboard" : "Show symbol keyboard"}
+              aria-pressed={showKeyboard}
+              data-testid="button-toggle-tutor-keyboard"
+            >
+              <Sigma className="w-4 h-4" />
+            </Button>
+            <Button size="lg" onClick={send} disabled={!input.trim() || ask.isPending}>
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+        {showKeyboard && (
+          <MathKeyboard
+            onInsert={insertAtCursor}
+            onBackspace={backspaceAtCursor}
+            onClear={clearInput}
+          />
+        )}
       </div>
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
         {showSuggestions && (
