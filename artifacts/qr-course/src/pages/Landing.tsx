@@ -30,7 +30,7 @@ export default function Landing() {
             ∑
           </div>
           <span className="font-serif font-semibold text-lg tracking-tight">
-            AnalyticPhil
+            Analytic Philosophy 101
           </span>
         </div>
         <div className="flex items-center gap-3">
