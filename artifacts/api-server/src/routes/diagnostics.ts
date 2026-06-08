@@ -352,7 +352,7 @@ router.post("/diagnostics/synthetic-run", async (_req, res) => {
           correctAnswer: string;
           explanation: string;
         }>(
-          `You generate a single analytic-philosophy practice problem on "${topic.title}" at easy difficulty. The problem asks the student to write the key statement in formal logical notation (quantifiers, connectives, modal operators). Respond as strict JSON: {"prompt": string, "correctAnswer": string, "explanation": string}.`,
+          `You generate a single analytic-philosophy practice problem on "${topic.title}" at easy difficulty. This course is taught entirely in PLAIN PROSE — the way the author writes. ABSOLUTE RULE: do NOT use any formal-logic notation, symbols, quantifiers, connectives, modal operators, set-builder, or LaTeX/math markup of any kind, and never ask the student to "write it in symbols." The problem must require a short piece of PROSE reasoning (explain, apply a distinction, or defend a verdict in words). "correctAnswer" is a full prose model answer. Respond as strict JSON: {"prompt": string, "correctAnswer": string, "explanation": string}.`,
           `New problem on ${topic.title}.`,
         );
         const [stored] = await db
@@ -491,14 +491,15 @@ router.post("/diagnostics/expand-lectures", async (req, res) => {
       : "Noticeably more explanation: clarify each definition, motivate each rule, and add a short 'why this works' note where useful.";
 
   const sys =
-    `You are a college analytic-philosophy lecturer producing the ${level.toUpperCase()} version of a lecture. ` +
+    `You are a lecturer producing the ${level.toUpperCase()} version of a lecture for a course on analytic philosophy taught entirely in PLAIN PROSE. ` +
     "You are given the SHORT version of the lecture. Rewrite it as a longer teaching version. RULES, no exceptions:\n" +
     "1. KEEP every heading and every concept from the SHORT version, in the same order, with the same names. You may add new sub-sections only when needed to introduce additional examples — but no new top-level topics.\n" +
     `2. ${moreExplanation}\n` +
-    `3. ${moreExamples} Use \`## Example\` / \`### Example 1\`, \`### Example 2\` headings, with numbered steps. Inline logic/math \`$...$\`, display \`$$...$$\` (escape backslashes in LaTeX commands).\n` +
-    `4. Length target: ${ratio}.\n` +
-    "5. Friendly, plain English. No filler, no hedging, no 'in conclusion'. Examples carry the load.\n" +
-    "6. Return ONLY the rewritten Markdown lecture body. No preface, no commentary, no code fences around the whole thing.";
+    `3. ${moreExamples} Use \`## Example\` / \`### Example 1\`, \`### Example 2\` headings, with prose explanations and the kind of worked sentence-examples the author uses (e.g. "someone smokes but Smith does not", the square circle, "nothing smokes").\n` +
+    "4. ABSOLUTE RULE: write in ordinary English ONLY. Do NOT use any formal-logic notation, symbols, quantifiers, connectives, modal operators, set-builder, or LaTeX/math markup of any kind. The author never does. Say things like 'the property of being a square circle is uninstantiated' in words, never in symbols.\n" +
+    `5. Length target: ${ratio}.\n` +
+    "6. Friendly, plain English. No filler, no hedging, no 'in conclusion'. Examples carry the load.\n" +
+    "7. Return ONLY the rewritten Markdown lecture body. No preface, no commentary, no code fences around the whole thing.";
 
   let updated = 0;
   let failed = 0;
@@ -555,8 +556,9 @@ async function auditLecture(
 ): Promise<LectureAuditRow> {
   try {
     const out = await chatJson<{ issues?: LectureIssue[] }>(
-      "You are a rigorous logic and philosophy fact-checker for a college-level course on analytic philosophy. " +
-        "You scrutinize a single lecture body for FACTUAL ERRORS only — wrong definitions, faulty logical reasoning, invalid inferences or entailment claims, wrong worked examples, misuse of logical notation (e.g. wrong quantifier or scope, mislabeling a formula), misattributed positions (e.g. wrong philosopher or wrong claim), or self-contradictions. " +
+      "You are a rigorous philosophy fact-checker for a college-level course on analytic philosophy taught entirely in PLAIN PROSE. " +
+        "You scrutinize a single lecture body for FACTUAL ERRORS only — wrong definitions, faulty reasoning, invalid inferences or entailment claims, wrong worked examples, misattributed positions (e.g. wrong philosopher or wrong claim), or self-contradictions. " +
+        "ALSO flag, as an error, ANY use of formal-logic notation or symbols (quantifiers, connectives, modal operators, set-builder, predicate notation, LaTeX/math markup): this course must be written in ordinary English and the source manuscript contains no such symbols. Plain-text sentence labels like (SC) or (TM) are fine and must NOT be flagged. " +
         "Style, tone, completeness, and pedagogy are OUT OF SCOPE — do NOT flag them. " +
         'Respond as strict JSON: {"issues": [{"quote": string, "problem": string, "fix": string}]}. ' +
         '"quote" must be a short verbatim snippet from the lecture (<= 160 chars). "problem" states the error in one sentence. "fix" proposes the correction in one sentence. ' +
@@ -596,10 +598,10 @@ async function auditProblem(p: {
       issue?: string;
       betterAnswer?: string;
     }>(
-      "You are a rigorous grader for a college-level analytic-philosophy course taught through formal logic. " +
+      "You are a rigorous grader for a college-level analytic-philosophy course taught entirely in PLAIN PROSE. " +
         "You are given a problem PROMPT and the STATED CORRECT ANSWER stored in the course database. " +
-        "Decide whether the stated answer is genuinely correct, fully sufficient, and notationally appropriate for the prompt. " +
-        "Minor stylistic differences (LaTeX vs unicode, spacing, logically-equivalent formulations, variable renaming, predicate-letter choice) are NOT issues. Flag only true errors: a logically wrong formalization, wrong quantifier or scope, wrong connective or modal operator, a symbolization that does not capture the claim in the prompt, or a missing required part of the answer. " +
+        "Decide whether the stated answer is genuinely correct, fully sufficient, and responsive to the prompt as a piece of prose reasoning. " +
+        "Minor stylistic differences (wording, ordering, logically-equivalent phrasings) are NOT issues. Flag only true errors: reasoning that is wrong or invalid, an answer that does not actually address the claim in the prompt, a missing required part of the answer, OR any use of formal-logic notation/symbols (this course must be answered in ordinary English — plain-text labels like (SC) are fine). " +
         'Respond as strict JSON: {"verdict": "correct" | "incorrect" | "ambiguous", "issue": string, "betterAnswer": string}. ' +
         'If verdict is "correct", issue and betterAnswer may be empty strings. ' +
         'If verdict is "incorrect" or "ambiguous", "issue" must explain the problem in one sentence and "betterAnswer" must give the answer you would store instead.',

@@ -11,18 +11,6 @@ function normalize(s: string): string {
     .replace(/\s*=\s*/g, "=");
 }
 
-function asNumber(s: string): number | null {
-  const cleaned = s.replace(/[$,%\s]/g, "").replace(/[\u2212]/g, "-");
-  if (/^-?\d+(\.\d+)?$/.test(cleaned)) return parseFloat(cleaned);
-  const frac = cleaned.match(/^(-?\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)$/);
-  if (frac) {
-    const n = parseFloat(frac[1]!);
-    const d = parseFloat(frac[2]!);
-    if (d !== 0) return n / d;
-  }
-  return null;
-}
-
 export async function gradeAnswer(opts: {
   prompt: string;
   correctAnswer: string;
@@ -38,18 +26,9 @@ export async function gradeAnswer(opts: {
     };
   }
 
-  const u = asNumber(user);
-  const c = asNumber(correct);
-  if (u != null && c != null) {
-    const tol = Math.max(0.01, Math.abs(c) * 0.01);
-    if (Math.abs(u - c) <= tol) {
-      return { correct: true, explanation: `Correct. The expected answer is ${correct}.` };
-    }
-  }
-
   try {
     const out = await chatJson<{ correct: boolean; explanation: string }>(
-      "You grade short quantitative-reasoning answers. Decide if the student's answer is mathematically equivalent to the correct answer (accept equivalent forms like 1/2 and 0.5, simplified fractions, equivalent algebraic expressions, units treated reasonably). Output strict JSON {\"correct\": boolean, \"explanation\": string} where explanation is 1-3 short sentences and includes the correct answer.",
+      "You grade short PROSE answers for a college course on analytic philosophy taught entirely in plain English. You are given the prompt, a model correct answer, and the student's answer. Judge SEMANTICALLY: mark the student correct if their answer captures the essential claim and reasoning of the model answer, even if the wording, ordering, or examples differ. Accept partial wordings as long as the core point and its justification are present and not contradicted; mark incorrect if the central reasoning is missing, wrong, or contradicted. Do NOT require formal-logic notation or symbols — the course is taught in prose, and a symbol-free answer is fully acceptable. Be a fair but rigorous grader, not a keyword matcher. Output strict JSON {\"correct\": boolean, \"explanation\": string} where explanation is 1-3 short sentences that say what was right or missing and state the key point of the correct answer.",
       JSON.stringify({
         prompt: opts.prompt,
         correct_answer: correct,

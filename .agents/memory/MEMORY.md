@@ -1,2 +1,3 @@
 - [Clerk web wiring gotchas](clerk-web-wiring.md) — clerkMiddleware goes AFTER body parsers (only the proxy goes before); copy wiring verbatim; web auth is cookie-based, gate /api after a public /healthz.
 - [QuantReason clone reskin](quantreason-reskin.md) — reskinning to a new subject means editing live AI prompts (practice/tutor/diagnostics/analytics), not just seed.ts; reseed gates on slugs+sentinel, not CONTENT_REVISION.
+- [AnalyticPhil is prose-only](analyticphil-prose-only.md) — qr-course must never use logic/LaTeX notation; manuscript is pure prose, a prior build fabricated symbols and enraged the user.

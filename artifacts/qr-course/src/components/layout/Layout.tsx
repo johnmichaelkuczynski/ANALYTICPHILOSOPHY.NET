@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { LayoutDashboard, PenTool, BarChart3, Activity, RotateCcw, Sparkles, LogOut } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useClerk, useUser } from "@clerk/react";
+import { LiveTutor } from "@/components/LiveTutor";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -190,6 +191,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <TopBar />
         {children}
       </main>
+      <LiveTutor />
     </div>
   );
 }

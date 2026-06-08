@@ -17,6 +17,7 @@ import LectureView from "@/pages/LectureView";
 import AssignmentRunner from "@/pages/AssignmentRunner";
 import Diagnostics from "@/pages/Diagnostics";
 import TopicPractice from "@/pages/TopicPractice";
+import AssignmentPractice from "@/pages/AssignmentPractice";
 
 const queryClient = new QueryClient();
 
@@ -176,6 +177,7 @@ const DiagnosticsGuarded = protect(Diagnostics);
 const WeekViewGuarded = protect(WeekView);
 const LectureViewGuarded = protect(LectureView);
 const TopicPracticeGuarded = protect(TopicPractice);
+const AssignmentPracticeGuarded = protect(AssignmentPractice);
 
 function ClerkProviderWithRoutes() {
   const [, setLocation] = useLocation();
@@ -213,6 +215,7 @@ function ClerkProviderWithRoutes() {
             <Route path="/sign-up/*?" component={SignUpPage} />
             <Route path="/dashboard" component={DashboardGuarded} />
             <Route path="/assignments" component={AssignmentsGuarded} />
+            <Route path="/assignments/:id/practice" component={AssignmentPracticeGuarded} />
             <Route path="/assignments/:id" component={AssignmentRunnerGuarded} />
             <Route path="/analytics" component={AnalyticsGuarded} />
             <Route path="/diagnostics" component={DiagnosticsGuarded} />

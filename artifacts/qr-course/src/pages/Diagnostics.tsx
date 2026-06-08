@@ -330,8 +330,8 @@ export default function Diagnostics() {
               <p className="text-sm text-muted-foreground mt-1">
                 Sends every lecture body and every stored "correct answer" to OpenAI and asks for
                 an independent verdict on whether each is actually correct. Flags faulty
-                reasoning, misuse of logical notation (e.g. wrong quantifier or scope), incorrect
-                symbolizations, and answers that don't actually satisfy their prompt. This is the
+                reasoning, misattributed positions, any stray formal-logic notation (the course is
+                taught in prose), and answers that don't actually satisfy their prompt. This is the
                 audit you run before shipping; it takes several minutes because every lecture and
                 every problem is an LLM call.
               </p>

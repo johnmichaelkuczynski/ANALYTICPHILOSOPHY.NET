@@ -155,19 +155,20 @@ router.post("/practice/sessions/:sessionId/next", async (req, res): Promise<void
       correctAnswer: string;
       explanation: string;
     }>(
-      `You generate a single analytic-philosophy practice problem for a college student. The problem MUST be on the topic "${topic.title}" and at difficulty "${difficultyLabel}" (${difficulty.toFixed(
+      `You generate a single SUBSTANTIVE analytic-philosophy practice problem for a college student. It MUST be on the topic "${topic.title}" at difficulty "${difficultyLabel}" (${difficulty.toFixed(
         1,
-      )}/5). The problem must ask the student to WRITE THE KEY STATEMENT IN FORMAL LOGICAL NOTATION — quantifiers (∀, ∃), connectives (¬, ∧, ∨, →, ↔), modal operators (□, ◇), entailment (⊨, ⊢), set-builder, or ∅ — not to compute a number. Use $...$ for inline LaTeX where helpful. The correctAnswer must be a short string of logical symbols (e.g. "¬∃x (Square(x) ∧ Circle(x))" or "∃x Smokes(x)"), never multi-paragraph. Respond as strict JSON: {"prompt": string, "correctAnswer": string, "explanation": string}. Avoid these recent prompts: ${JSON.stringify(
+      )}/5).\n\nThis course is taught entirely in PLAIN PROSE, the way the author writes. ABSOLUTE RULE: do NOT use any formal-logic notation, symbols, quantifiers, connectives, modal operators, set-builder, or LaTeX/math markup of any kind. NEVER ask the student to "write it in symbols" or "regiment it into logical notation." Everything — prompt and answer — is ordinary English. Say "the property of being a square circle is uninstantiated" in words, never in symbols.\n\nThe problem must require REASONING or APPLICATION that proves understanding — never one-word recall, never "state the definition of X", and never trivially copyable from a textbook. Good forms: (a) give a NEW sentence and ask the student to explain, in prose, why its grammatical form misleads and what it really says; (b) a True/False claim plus a multi-sentence prose defense about a subtle consequence (what a logical positivist would say, whether something is meaningful or tautologous, whether one claim entails another); (c) "construct your own example of X and analyze it in words"; (d) "apply criterion C to decide whether S is meaningful / true / a case of ontologizing, and defend the verdict in prose"; (e) compare two positions and name the exact crux where they disagree.\n\n"correctAnswer" must be a FULL prose model answer — several sentences of reasoning — because it is graded semantically. NO symbol strings. "explanation" says why the model answer is right and flags one common wrong move. Respond as strict JSON: {"prompt": string, "correctAnswer": string, "explanation": string}. Avoid these recent prompts: ${JSON.stringify(
         lastProblems.map((p) => p.prompt),
       )}.`,
       userRequest || `Generate a new ${difficultyLabel} problem on ${topic.title}.`,
     );
   } catch {
     generated = {
-      prompt: `Practice (${topic.title}): Using a negated existential, write in logical symbols the claim "nothing is a square circle".`,
-      correctAnswer: "¬∃x (Square(x) ∧ Circle(x))",
+      prompt: `Practice (${topic.title}): Consider the claim "nothing is a square circle." Explain, in 3-4 sentences and in plain prose, why this claim is obviously true yet needs no special "non-existent object" to be the thing it is about.`,
+      correctAnswer:
+        "The sentence does not name some thing and then deny its existence. It says that the property of being both square and circular has no instances — that it is uninstantiated. So there is no commitment to any 'square circle' entity at all; the claim is simply that nothing whatever has that contradictory pair of properties, which is why it is plainly true.",
       explanation:
-        "The property of being a square circle is uninstantiated: $\\neg\\exists x\\,(\\text{Square}(x) \\wedge \\text{Circle}(x))$.",
+        "The grammatical form 'nothing is a square circle' tempts us to posit a featureless non-entity that the sentence is supposedly 'about.' But its real meaning attributes a property (being uninstantiated) to a property (being a square circle). A common wrong move is to treat 'nothing' as if it picked out some object rather than saying that a property lacks instances.",
     };
   }
 
@@ -256,7 +257,7 @@ router.post("/practice/sessions/:sessionId/grade", async (req, res): Promise<voi
     try {
       tutorTip = (
         await chatJson<{ tip: string }>(
-          "You are a kind, concise analytic-philosophy tutor. Given a problem, the correct answer, and the student's wrong attempt, give ONE focused next-step tip (2 sentences max) about how to express the claim in formal logical notation. Respond as strict JSON: {\"tip\": string}.",
+          "You are a kind, concise analytic-philosophy tutor. Given a problem, the correct answer, and the student's wrong attempt, give ONE focused next-step tip (2 sentences max) in plain prose about how to sharpen their reasoning. Do NOT use any logic symbols, formal notation, or LaTeX — the course is taught entirely in words. Respond as strict JSON: {\"tip\": string}.",
           JSON.stringify({
             prompt: problem.prompt,
             correctAnswer: problem.correctAnswer,
