@@ -3,7 +3,6 @@ import { Switch, Route, Redirect, useLocation, Router as WouterRouter } from "wo
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { ClerkProvider, SignIn, SignUp, Show, useClerk } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
-import { setUnauthorizedHandler } from "@workspace/api-client-react";
 import { shadcn } from "@clerk/themes";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,7 +17,6 @@ import LectureView from "@/pages/LectureView";
 import AssignmentRunner from "@/pages/AssignmentRunner";
 import Diagnostics from "@/pages/Diagnostics";
 import TopicPractice from "@/pages/TopicPractice";
-import AssignmentPractice from "@/pages/AssignmentPractice";
 
 const queryClient = new QueryClient();
 
@@ -141,86 +139,6 @@ function ClerkQueryClientCacheInvalidator() {
   return null;
 }
 
-// Resolves the promise, or rejects after `ms` so a hung Clerk call (e.g. a
-// rate-limited dev instance) can't stall recovery forever.
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new Error("timeout")), ms),
-    ),
-  ]);
-}
-
-// Self-heals stale Clerk sessions. The session token cookie is short-lived and
-// refreshed by Clerk.js; if a tab sits idle the token can lapse, so the server
-// returns 401 for every /api call even though the client still considers the
-// user signed in — the page renders but no data loads.
-//
-// Recovery is two-stage:
-//   1. Quietly force one fresh session token (Clerk updates the cookie the
-//      server reads), then refetch. Handles the benign idle-tab case with no
-//      visible interruption.
-//   2. If that doesn't clear it (token refresh failed, returned nothing, hung,
-//      or the very next request still 401s), the session is dead server-side —
-//      not just stale. Sign out so the route guards drop the user onto the
-//      working landing / sign-in page instead of a half-broken dashboard.
-//
-// A ref-guarded cooldown plus a 30s "already tried a refresh" window guarantee
-// at most one silent refresh before escalating, so a persistently-401ing
-// backend can never trap the user in a blank, retrying loop.
-function ApiAuthRecovery() {
-  const clerk = useClerk();
-  const qc = useQueryClient();
-  const recoveringRef = useRef(false);
-  const refreshTriedAtRef = useRef(0);
-
-  useEffect(() => {
-    setUnauthorizedHandler(() => {
-      if (recoveringRef.current) return;
-      recoveringRef.current = true;
-      void (async () => {
-        try {
-          const now = Date.now();
-          const session = clerk.session;
-          const recentlyTried = now - refreshTriedAtRef.current < 30_000;
-
-          // Stage 1: benign stale-token case — one quiet refresh + refetch.
-          if (session && !recentlyTried) {
-            refreshTriedAtRef.current = now;
-            try {
-              const token = await withTimeout(
-                Promise.resolve(session.getToken({ skipCache: true })),
-                5000,
-              );
-              if (token) {
-                await qc.invalidateQueries();
-                return;
-              }
-            } catch {
-              // Fall through to a clean re-auth.
-            }
-          }
-
-          // Stage 2: refresh didn't help (or no live session) — force re-login.
-          // Signing out flips Clerk to signed-out; the route guards then
-          // redirect to the landing page, where the user can sign in fresh.
-          await clerk.signOut();
-        } catch {
-          // Best-effort recovery; the original request error still surfaces.
-        } finally {
-          setTimeout(() => {
-            recoveringRef.current = false;
-          }, 4000);
-        }
-      })();
-    });
-    return () => setUnauthorizedHandler(null);
-  }, [clerk, qc]);
-
-  return null;
-}
-
 function HomeRedirect() {
   return (
     <>
@@ -258,7 +176,6 @@ const DiagnosticsGuarded = protect(Diagnostics);
 const WeekViewGuarded = protect(WeekView);
 const LectureViewGuarded = protect(LectureView);
 const TopicPracticeGuarded = protect(TopicPractice);
-const AssignmentPracticeGuarded = protect(AssignmentPractice);
 
 function ClerkProviderWithRoutes() {
   const [, setLocation] = useLocation();
@@ -289,7 +206,6 @@ function ClerkProviderWithRoutes() {
     >
       <QueryClientProvider client={queryClient}>
         <ClerkQueryClientCacheInvalidator />
-        <ApiAuthRecovery />
         <TooltipProvider>
           <Switch>
             <Route path="/" component={HomeRedirect} />
@@ -297,7 +213,6 @@ function ClerkProviderWithRoutes() {
             <Route path="/sign-up/*?" component={SignUpPage} />
             <Route path="/dashboard" component={DashboardGuarded} />
             <Route path="/assignments" component={AssignmentsGuarded} />
-            <Route path="/assignments/:id/practice" component={AssignmentPracticeGuarded} />
             <Route path="/assignments/:id" component={AssignmentRunnerGuarded} />
             <Route path="/analytics" component={AnalyticsGuarded} />
             <Route path="/diagnostics" component={DiagnosticsGuarded} />

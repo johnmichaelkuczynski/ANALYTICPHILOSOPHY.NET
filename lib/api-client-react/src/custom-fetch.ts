@@ -17,25 +17,6 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 
 let _baseUrl: string | null = null;
 let _authTokenGetter: AuthTokenGetter | null = null;
-let _onUnauthorized: ((error: ApiError) => void) | null = null;
-
-/**
- * Register a handler invoked whenever an API call fails with HTTP 401.
- *
- * Web apps use Clerk's session cookie, whose short-lived token can go stale
- * if a tab sits idle. When that happens the server returns 401 even though the
- * Clerk *client* still believes the user is signed in, leaving the UI rendered
- * but starved of data. Registering a handler here lets the app react — e.g.
- * refresh the Clerk session token and refetch, or redirect to sign-in.
- *
- * Pass `null` to clear the handler. The handler is best-effort and must never
- * throw; any error it raises is swallowed.
- */
-export function setUnauthorizedHandler(
-  handler: ((error: ApiError) => void) | null,
-): void {
-  _onUnauthorized = handler;
-}
 
 /**
  * Set a base URL that is prepended to every relative request URL
@@ -383,15 +364,7 @@ export async function customFetch<T = unknown>(
 
   if (!response.ok) {
     const errorData = await parseErrorBody(response, method);
-    const error = new ApiError(response, errorData, requestInfo);
-    if (response.status === 401 && _onUnauthorized) {
-      try {
-        _onUnauthorized(error);
-      } catch {
-        // Recovery handlers are best-effort; never let them mask the request error.
-      }
-    }
-    throw error;
+    throw new ApiError(response, errorData, requestInfo);
   }
 
   return (await parseSuccessBody(response, responseType, requestInfo)) as T;

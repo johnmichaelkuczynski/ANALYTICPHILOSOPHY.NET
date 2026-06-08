@@ -16,8 +16,8 @@ const highlights = [
   },
   {
     icon: PenLine,
-    title: "Reason it out in prose",
-    body: "Answer in your own words: take a sentence apart, say what it really commits you to, and defend the verdict — the way the author actually argues.",
+    title: "Write it in symbols",
+    body: "Compose answers in genuine logical notation — quantifiers, ¬, →, ↔, □, ◇, set-builder — with an on-screen symbol keyboard.",
   },
 ];
 
@@ -67,8 +67,8 @@ export default function Landing() {
           <span className="text-foreground font-medium">
             what do these statements really say?
           </span>{" "}
-          Read the idea, see it grounded in a real example, then work out — in
-          your own words — what the claim really says.
+          Read the idea, see it grounded in a real example, then write the
+          defining statement in logical symbols of your own.
         </p>
         <div className="mt-10 flex flex-col sm:flex-row items-center gap-3">
           <Link href="/sign-up">

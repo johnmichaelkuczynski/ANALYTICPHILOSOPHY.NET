@@ -1,5 +1,8 @@
 import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 
 interface MarkdownRendererProps {
   content: string;
@@ -7,7 +10,15 @@ interface MarkdownRendererProps {
 }
 
 function normalize(src: string): string {
-  return src.replace(/\r\n/g, "\n").replace(/\n{3,}/g, "\n\n");
+  let s = src.replace(/\r\n/g, "\n");
+
+  s = s.replace(/\$\$([\s\S]*?)\$\$/g, (_m, inner: string) => {
+    const collapsed = inner.replace(/\s+/g, " ").trim();
+    return `\n\n$$\n${collapsed}\n$$\n\n`;
+  });
+
+  s = s.replace(/\n{3,}/g, "\n\n");
+  return s;
 }
 
 export function MarkdownRenderer({ content, inverted = false }: MarkdownRendererProps) {
@@ -19,7 +30,12 @@ export function MarkdownRenderer({ content, inverted = false }: MarkdownRenderer
     : "prose-slate dark:prose-invert";
   return (
     <div className={`${base} ${theme}`}>
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{normalized}</ReactMarkdown>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[[rehypeKatex, { strict: false, throwOnError: false, output: "html" }]]}
+      >
+        {normalized}
+      </ReactMarkdown>
     </div>
   );
 }

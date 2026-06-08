@@ -59,6 +59,20 @@ export default function AssignmentRunner() {
     }
   };
 
+  const _handleInsertSymbol = (symbol: string) => {
+    const problem = assignment?.problems[currentProblemIdx];
+    if (!problem) return;
+    const currentVal = answers[problem.id] || "";
+    const newVal = currentVal + symbol;
+    
+    // Fake trace for keyboard insert
+    const trace: KeystrokeTrace = {
+      keystrokeCount: 1, eraseCount: 0, durationMs: 0
+    };
+    
+    handleAnswerChange(problem.id, newVal, trace);
+  };
+
   const handleSubmit = () => {
     if (!attemptId) return;
     submitAttempt.mutate({ attemptId }, {
@@ -136,13 +150,6 @@ export default function AssignmentRunner() {
           <div>
             <h1 className="text-2xl font-serif font-bold text-primary">{assignment.title}</h1>
             <p className="text-sm text-muted-foreground">Problem {currentProblemIdx + 1} of {assignment.problems.length}</p>
-            <Link
-              href={`/assignments/${assignmentId}/practice`}
-              className="text-xs text-primary hover:underline mt-1 inline-block"
-              data-testid="link-practice-from-runner"
-            >
-              Practice these topics first →
-            </Link>
           </div>
           {attempt?.deadlineAt && (
             <div className="text-destructive font-mono font-bold px-3 py-1 rounded bg-destructive/10 border border-destructive/20">
