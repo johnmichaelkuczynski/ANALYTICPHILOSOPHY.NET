@@ -1,7 +1,29 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, PenTool, BarChart3, Activity, RotateCcw } from "lucide-react";
+import { LayoutDashboard, PenTool, BarChart3, Activity, RotateCcw, LogOut } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { Show, useClerk } from "@clerk/react";
+
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+function SignOutButton() {
+  const { signOut } = useClerk();
+
+  return (
+    <Show when="signed-in">
+      <button
+        type="button"
+        onClick={() => signOut({ redirectUrl: basePath || "/" })}
+        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium border border-border hover:bg-secondary"
+        data-testid="button-signout"
+        title="Sign out"
+      >
+        <LogOut className="w-4 h-4" />
+        Sign out
+      </button>
+    </Show>
+  );
+}
 
 export function Sidebar() {
   const [location] = useLocation();
@@ -100,6 +122,7 @@ function TopBar() {
           Diagnostic
         </button>
       </Link>
+      <SignOutButton />
     </div>
   );
 }

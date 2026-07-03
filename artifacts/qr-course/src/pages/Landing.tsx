@@ -1,6 +1,11 @@
 import { Link } from "wouter";
 import { BookOpen, Sigma, GraduationCap, PenLine } from "lucide-react";
 
+// In the published build, entering the course requires signing in. In dev the
+// preview iframe drops Clerk's session cookie, so the course opens directly.
+const authEnforced = import.meta.env.PROD;
+const startHref = authEnforced ? "/sign-up" : "/dashboard";
+
 const highlights = [
   {
     icon: BookOpen,
@@ -32,7 +37,17 @@ export default function Landing() {
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/dashboard">
+          {authEnforced && (
+            <Link href="/sign-in">
+              <button
+                className="px-4 py-2 rounded-md text-sm font-medium border border-border hover:bg-secondary transition-colors"
+                data-testid="button-signin"
+              >
+                Sign in
+              </button>
+            </Link>
+          )}
+          <Link href={startHref}>
             <button
               className="px-4 py-2 rounded-md text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
               data-testid="button-open-course"
@@ -61,7 +76,7 @@ export default function Landing() {
           defining statement in logical symbols of your own.
         </p>
         <div className="mt-10 flex flex-col sm:flex-row items-center gap-3">
-          <Link href="/dashboard">
+          <Link href={startHref}>
             <button
               className="px-6 py-3 rounded-md text-base font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
               data-testid="button-cta-start"
@@ -69,6 +84,16 @@ export default function Landing() {
               Start the course
             </button>
           </Link>
+          {authEnforced && (
+            <Link href="/sign-in">
+              <button
+                className="px-6 py-3 rounded-md text-base font-medium border border-border hover:bg-secondary transition-colors"
+                data-testid="button-cta-signin"
+              >
+                I already have an account
+              </button>
+            </Link>
+          )}
         </div>
       </main>
 
