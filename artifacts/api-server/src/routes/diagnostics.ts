@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { asc, eq, sql } from "drizzle-orm";
 import {
   db,
+  pool,
   topicsTable,
   lecturesTable,
   assignmentsTable,
@@ -11,6 +12,8 @@ import {
   practiceSessionsTable,
   practiceProblemsTable,
   practiceAttemptsTable,
+  usersTable,
+  loginEventsTable,
 } from "@workspace/db";
 import { chatText, chatJson, FAST_MODEL, TEXT_MODEL } from "../lib/ai";
 import { detect } from "../lib/detection";
@@ -23,6 +26,21 @@ const router: IRouter = Router();
 // whitespace heartbeats every few seconds; the route eventually `res.end()`s
 // with the full JSON payload. Leading whitespace is valid JSON, so the client
 // can still call `r.json()` unchanged.
+// In production, diagnostics are owner-only: they trigger paid OpenAI calls
+// and write to the database, so a merely-authenticated visitor must not be
+// able to run them. Dev preview stays open (no session cookie in the iframe).
+const DIAGNOSTIC_ADMIN_EMAILS = new Set(["johnmichaelkuczynski@gmail.com"]);
+router.use("/diagnostics", (req, res, next) => {
+  if (process.env.NODE_ENV === "production") {
+    const email = req.session?.email?.toLowerCase();
+    if (!email || !DIAGNOSTIC_ADMIN_EMAILS.has(email)) {
+      res.status(403).json({ error: "Not authorized" });
+      return;
+    }
+  }
+  next();
+});
+
 router.use("/diagnostics", (_req, res, next) => {
   res.setHeader("Cache-Control", "no-store");
   // Don't flush a first byte immediately — that would lock in status 200 and
@@ -103,6 +121,154 @@ router.get("/diagnostics/system", async (_req, res) => {
       if (a.length < 1) throw new Error("no assignments");
       if (p.length < 1) throw new Error("no problems");
       return `${t.length} topics · ${l.length} lectures · ${a.length} assignments · ${p.length} problems`;
+    }),
+  );
+
+  steps.push(
+    await run("Environment: Google OAuth + session secrets present", async () => {
+      const missing = [
+        "GOOGLE_OAUTH_CLIENT_ID",
+        "GOOGLE_OAUTH_CLIENT_SECRET",
+        "SESSION_SECRET",
+      ].filter((k) => !process.env[k]);
+      if (missing.length > 0) throw new Error(`missing: ${missing.join(", ")}`);
+      return "all present";
+    }),
+  );
+
+  steps.push(
+    await run("Google OAuth: client credentials valid", async () => {
+      // Exchange a deliberately bogus code. Google validates the client id +
+      // secret FIRST: valid credentials yield "invalid_grant" (bad code),
+      // while bad credentials yield "invalid_client". No user involved.
+      const r = await fetch("https://oauth2.googleapis.com/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          code: "synthetic-diagnostic-code",
+          client_id: (process.env.GOOGLE_OAUTH_CLIENT_ID ?? "").trim(),
+          client_secret: (process.env.GOOGLE_OAUTH_CLIENT_SECRET ?? "").trim(),
+          redirect_uri: "https://localhost/api/auth/google/callback",
+          grant_type: "authorization_code",
+        }),
+      });
+      const body = (await r.json()) as { error?: string };
+      if (body.error === "invalid_client") {
+        throw new Error("Google rejected the client id/secret (invalid_client)");
+      }
+      if (body.error !== "invalid_grant" && body.error !== "invalid_request") {
+        throw new Error(`unexpected response: ${body.error ?? r.status}`);
+      }
+      return `credentials accepted by Google (got expected "${body.error}" for bogus code)`;
+    }),
+  );
+
+  steps.push(
+    await run("Google OAuth: kickoff redirects to Google consent screen", async () => {
+      const port = process.env.PORT ?? "8080";
+      const r = await fetch(`http://localhost:${port}/api/auth/google`, {
+        redirect: "manual",
+      });
+      if (r.status !== 302) throw new Error(`expected 302, got ${r.status}`);
+      const loc = r.headers.get("location") ?? "";
+      const u = new URL(loc);
+      if (u.hostname !== "accounts.google.com") {
+        throw new Error(`redirects to ${u.hostname}, not accounts.google.com`);
+      }
+      for (const p of ["client_id", "redirect_uri", "state", "scope"]) {
+        if (!u.searchParams.get(p)) throw new Error(`missing ${p} param`);
+      }
+      const setCookie = r.headers.get("set-cookie") ?? "";
+      if (!setCookie.includes("sid=")) {
+        throw new Error("no session cookie set (state would not survive)");
+      }
+      return `302 → accounts.google.com with state + CSRF cookie`;
+    }),
+  );
+
+  steps.push(
+    await run("Session store: Postgres round-trip", async () => {
+      const sid = `diagnostic-${Date.now()}`;
+      await pool.query(
+        `INSERT INTO "session" (sid, sess, expire) VALUES ($1, $2, NOW() + interval '1 minute')`,
+        [sid, JSON.stringify({ diagnostic: true })],
+      );
+      const r = await pool.query(`SELECT sess FROM "session" WHERE sid = $1`, [sid]);
+      await pool.query(`DELETE FROM "session" WHERE sid = $1`, [sid]);
+      if (r.rowCount !== 1) throw new Error("session row not found after insert");
+      return "insert → read → delete ok";
+    }),
+  );
+
+  steps.push(
+    await run("Synthetic login: user upsert + login event (same path as callback)", async () => {
+      const googleId = "synthetic-diagnostic-user";
+      let userId: number | null = null;
+      let eventId: number | null = null;
+      try {
+        // Same upsert the real Google callback performs.
+        const [user] = await db
+          .insert(usersTable)
+          .values({
+            googleId,
+            email: "synthetic.student@example.com",
+            name: "Synthetic Student",
+            avatar: null,
+          })
+          .onConflictDoUpdate({
+            target: usersTable.googleId,
+            set: { lastSignInAt: new Date() },
+          })
+          .returning();
+        if (!user) throw new Error("user upsert returned nothing");
+        userId = user.id;
+
+        const [event] = await db
+          .insert(loginEventsTable)
+          .values({ userId: user.id, email: user.email, name: user.name })
+          .returning();
+        if (!event) throw new Error("login event insert returned nothing");
+        eventId = event.id;
+
+        const [readUser] = await db
+          .select()
+          .from(usersTable)
+          .where(eq(usersTable.googleId, googleId));
+        if (!readUser) throw new Error("user not found after upsert");
+        return `user #${user.id} + login event #${event.id} created, verified, cleaned up`;
+      } finally {
+        // Always clean up so visitor stats stay real, even if a check throws.
+        if (eventId !== null) {
+          await db.delete(loginEventsTable).where(eq(loginEventsTable.id, eventId));
+        }
+        if (userId !== null) {
+          await db.delete(usersTable).where(eq(usersTable.id, userId));
+        }
+      }
+    }),
+  );
+
+  steps.push(
+    await run("Auth API: /auth/me and admin gating", async () => {
+      const port = process.env.PORT ?? "8080";
+      const me = await fetch(`http://localhost:${port}/api/auth/me`);
+      if (!me.ok) throw new Error(`/auth/me returned ${me.status}`);
+      const body = (await me.json()) as { authenticated?: boolean };
+      if (typeof body.authenticated !== "boolean") {
+        throw new Error("/auth/me missing authenticated flag");
+      }
+      const admin = await fetch(`http://localhost:${port}/api/admin/visitors`);
+      // Dev: open (200). Production: anonymous must be rejected (401/403).
+      const prod = process.env.NODE_ENV === "production";
+      if (prod && admin.status !== 401 && admin.status !== 403) {
+        throw new Error(`anonymous /admin/visitors returned ${admin.status} in production`);
+      }
+      if (!prod && !admin.ok) {
+        throw new Error(`/admin/visitors returned ${admin.status} in development`);
+      }
+      return prod
+        ? `anonymous correctly blocked from admin (${admin.status})`
+        : `/auth/me ok · admin reachable in dev (${admin.status})`;
     }),
   );
 

@@ -1,4 +1,5 @@
 - [Clerk web wiring gotchas](clerk-web-wiring.md) — clerkMiddleware goes AFTER body parsers (only the proxy goes before); copy wiring verbatim; web auth is cookie-based, gate /api after a public /healthz.
+- [Direct Google OAuth gotchas](google-oauth-direct.md) — trim OAuth env vars (stray newline → invalid_client at token exchange only); bogus-code token POST validates credentials without a user; create the pg session table yourself under esbuild.
 - [NODE_ENV-as-secret trap](node-env-secret-trap.md) — a NODE_ENV secret (even empty) overrides deployment env, silently kills prod mode (Clerk proxy 404 → sign-in broken); delete it and republish.
 - [Clerk iframe cookie trap](clerk-iframe-cookie-trap.md) — dev preview drops Clerk's cookie (401s); keep wiring verbatim but gate ENFORCEMENT on prod only; login ≠ multi-tenancy without user scoping.
 - [External DB override](external-db-override.md) — managed DATABASE_URL (Helium) can't be overridden; use APP_DATABASE_URL precedence in lib/db index + drizzle.config to run against the user's own Postgres.
