@@ -5,6 +5,8 @@ import { GetAdminVisitorStatsResponse } from "@workspace/api-zod";
 
 const router: IRouter = Router();
 
+// Only the site owner may see visitor data.
+const ADMIN_EMAILS = new Set(["johnmichaelkuczynski@gmail.com"]);
 
 const HOUR = 3600_000;
 const DAY = 24 * HOUR;
@@ -21,8 +23,20 @@ function bucketize(
   }));
 }
 
-router.get("/admin/visitors", async (_req, res, next) => {
+router.get("/admin/visitors", async (req, res, next) => {
   try {
+    // Owner check is enforced in production only — the dev preview has no
+    // session (the preview iframe is cross-site, so the sameSite=lax cookie
+    // is not sent), matching how the rest of the API is gated. The session
+    // email comes straight from Google's verified profile.
+    if (process.env.NODE_ENV === "production") {
+      const email = req.session?.email?.toLowerCase();
+      if (!email || !ADMIN_EMAILS.has(email)) {
+        res.status(403).json({ error: "Not authorized" });
+        return;
+      }
+    }
+
     const rows = await db
       .select()
       .from(loginEventsTable)
