@@ -2,26 +2,49 @@ import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { LayoutDashboard, PenTool, BarChart3, Activity, RotateCcw, LogOut } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Show, useClerk } from "@clerk/react";
+import { Show, useClerk, useUser } from "@clerk/react";
+import { LogIn } from "lucide-react";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-function SignOutButton() {
+// Account section pinned to the bottom of the sidebar so it stays visible at
+// any window width. Shows the signed-in user's email + Sign out, or a Sign in
+// button when signed out.
+function AccountSection() {
   const { signOut } = useClerk();
+  const { user } = useUser();
 
   return (
-    <Show when="signed-in">
-      <button
-        type="button"
-        onClick={() => signOut({ redirectUrl: basePath || "/" })}
-        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium border border-border hover:bg-secondary"
-        data-testid="button-signout"
-        title="Sign out"
-      >
-        <LogOut className="w-4 h-4" />
-        Sign out
-      </button>
-    </Show>
+    <div className="p-4 border-t border-border">
+      <Show when="signed-in">
+        <div className="flex flex-col gap-2">
+          <div className="text-xs text-muted-foreground truncate" data-testid="text-user-email">
+            {user?.primaryEmailAddress?.emailAddress ?? user?.fullName ?? "Signed in"}
+          </div>
+          <button
+            type="button"
+            onClick={() => signOut({ redirectUrl: basePath || "/" })}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium border border-border hover:bg-secondary w-full justify-center"
+            data-testid="button-signout"
+          >
+            <LogOut className="w-4 h-4" />
+            Sign out
+          </button>
+        </div>
+      </Show>
+      <Show when="signed-out">
+        <Link href="/sign-in">
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium border border-border hover:bg-secondary w-full justify-center"
+            data-testid="button-sidebar-signin"
+          >
+            <LogIn className="w-4 h-4" />
+            Sign in
+          </button>
+        </Link>
+      </Show>
+    </div>
   );
 }
 
@@ -67,6 +90,7 @@ export function Sidebar() {
         })}
       </div>
 
+      <AccountSection />
     </div>
   );
 }
@@ -122,7 +146,6 @@ function TopBar() {
           Diagnostic
         </button>
       </Link>
-      <SignOutButton />
     </div>
   );
 }

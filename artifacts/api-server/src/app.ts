@@ -38,7 +38,38 @@ app.use(
 // Mount the Clerk Frontend API proxy before body parsers (it streams raw bytes).
 app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 
-app.use(cors({ credentials: true, origin: true }));
+// CORS allowlist: the app's own domains only. With cookie-based auth,
+// reflecting arbitrary origins (origin: true) would be a security hole.
+const allowedOrigins = new Set<string>(
+  [
+    ...(process.env.REPLIT_DOMAINS?.split(",") ?? []),
+    process.env.REPLIT_DEV_DOMAIN ?? "",
+  ]
+    .map((d) => d.trim())
+    .filter(Boolean)
+    .map((d) => `https://${d}`),
+);
+
+app.use(
+  cors({
+    credentials: true,
+    origin(origin, callback) {
+      // Same-origin/non-browser requests (no Origin header) are allowed.
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.has(origin)) return callback(null, true);
+      // localhost origins are trusted in development only.
+      if (
+        process.env.NODE_ENV !== "production" &&
+        (/^https?:\/\/localhost(:\d+)?$/.test(origin) ||
+          /^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(origin))
+      ) {
+        return callback(null, true);
+      }
+      // Disallowed origin: no CORS headers, browser blocks the response.
+      return callback(null, false);
+    },
+  }),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
