@@ -4,8 +4,13 @@ import { LayoutDashboard, PenTool, BarChart3, Activity, RotateCcw, LogOut, Shiel
 import { useQueryClient } from "@tanstack/react-query";
 import { Show, useClerk, useUser } from "@clerk/react";
 import { LogIn } from "lucide-react";
+import { useGoogleSignIn } from "@/hooks/use-google-signin";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+// In production the sign-in button launches Google OAuth directly. In dev the
+// preview iframe drops Clerk's session cookie, so it falls back to /sign-in.
+const authEnforced = import.meta.env.PROD;
 
 // Account section pinned to the bottom of the sidebar so it stays visible at
 // any window width. Shows the signed-in user's email + Sign out, or a Sign in
@@ -13,6 +18,8 @@ const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 function AccountSection() {
   const { signOut } = useClerk();
   const { user } = useUser();
+  const [, setLocation] = useLocation();
+  const signInWithGoogle = useGoogleSignIn();
 
   return (
     <div className="p-4 border-t border-border">
@@ -33,16 +40,21 @@ function AccountSection() {
         </div>
       </Show>
       <Show when="signed-out">
-        <Link href="/sign-in">
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium border border-border hover:bg-secondary w-full justify-center"
-            data-testid="button-sidebar-signin"
-          >
-            <LogIn className="w-4 h-4" />
-            Sign in
-          </button>
-        </Link>
+        <button
+          type="button"
+          onClick={() => {
+            if (authEnforced) {
+              void signInWithGoogle();
+            } else {
+              setLocation("/sign-in");
+            }
+          }}
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium border border-border hover:bg-secondary w-full justify-center"
+          data-testid="button-sidebar-signin"
+        >
+          <LogIn className="w-4 h-4" />
+          Sign in with Google
+        </button>
       </Show>
     </div>
   );
