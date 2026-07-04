@@ -65,15 +65,6 @@ export default function Landing() {
             Analytic Philosophy 101
           </span>
         </div>
-        <a
-          href={googleSignInUrl}
-          target="_top"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium border border-border hover:bg-secondary transition-colors"
-          data-testid="button-signin"
-        >
-          <GoogleIcon className="w-4 h-4" />
-          Sign in with Google
-        </a>
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center px-6 text-center max-w-3xl mx-auto w-full py-16">

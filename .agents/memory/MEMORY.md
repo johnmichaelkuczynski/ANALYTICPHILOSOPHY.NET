@@ -1,4 +1,5 @@
 - [Clerk web wiring gotchas](clerk-web-wiring.md) — clerkMiddleware goes AFTER body parsers (only the proxy goes before); copy wiring verbatim; web auth is cookie-based, gate /api after a public /healthz.
+- [Google OAuth restore gotchas](google-oauth-restore.md) — old snapshots use GOOGLE_OAUTH_* secret names (live ones are GOOGLE_CLIENT_ID/SECRET); exactly ONE sign-in button on landing; auth state has flip-flopped — only change it on explicit instruction.
 - [Direct Google OAuth gotchas](google-oauth-direct.md) — trim OAuth env vars (stray newline → invalid_client at token exchange only); bogus-code token POST validates credentials without a user; create the pg session table yourself under esbuild.
 - [NODE_ENV-as-secret trap](node-env-secret-trap.md) — a NODE_ENV secret (even empty) overrides deployment env, silently kills prod mode (Clerk proxy 404 → sign-in broken); delete it and republish.
 - [Clerk iframe cookie trap](clerk-iframe-cookie-trap.md) — dev preview drops Clerk's cookie (401s); keep wiring verbatim but gate ENFORCEMENT on prod only; login ≠ multi-tenancy without user scoping.

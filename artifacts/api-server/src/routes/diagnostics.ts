@@ -127,8 +127,8 @@ router.get("/diagnostics/system", async (_req, res) => {
   steps.push(
     await run("Environment: Google OAuth + session secrets present", async () => {
       const missing = [
-        "GOOGLE_OAUTH_CLIENT_ID",
-        "GOOGLE_OAUTH_CLIENT_SECRET",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
         "SESSION_SECRET",
       ].filter((k) => !process.env[k]);
       if (missing.length > 0) throw new Error(`missing: ${missing.join(", ")}`);
@@ -146,8 +146,8 @@ router.get("/diagnostics/system", async (_req, res) => {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
           code: "synthetic-diagnostic-code",
-          client_id: (process.env.GOOGLE_OAUTH_CLIENT_ID ?? "").trim(),
-          client_secret: (process.env.GOOGLE_OAUTH_CLIENT_SECRET ?? "").trim(),
+          client_id: (process.env.GOOGLE_CLIENT_ID ?? "").trim(),
+          client_secret: (process.env.GOOGLE_CLIENT_SECRET ?? "").trim(),
           redirect_uri: "https://localhost/api/auth/google/callback",
           grant_type: "authorization_code",
         }),

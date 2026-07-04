@@ -13,14 +13,14 @@ const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo";
 function getClientId(): string {
   // Trim: copy-pasted secrets often carry a stray newline, which Google
   // rejects as invalid_client at the token exchange.
-  const id = process.env.GOOGLE_OAUTH_CLIENT_ID?.trim();
-  if (!id) throw new Error("GOOGLE_OAUTH_CLIENT_ID is not set");
+  const id = process.env.GOOGLE_CLIENT_ID?.trim();
+  if (!id) throw new Error("GOOGLE_CLIENT_ID is not set");
   return id;
 }
 
 function getClientSecret(): string {
-  const secret = process.env.GOOGLE_OAUTH_CLIENT_SECRET?.trim();
-  if (!secret) throw new Error("GOOGLE_OAUTH_CLIENT_SECRET is not set");
+  const secret = process.env.GOOGLE_CLIENT_SECRET?.trim();
+  if (!secret) throw new Error("GOOGLE_CLIENT_SECRET is not set");
   return secret;
 }
 
