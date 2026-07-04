@@ -388,16 +388,10 @@ paths:
                 $ref: "#/components/schemas/LoginEventList"
 
   /admin/visitors:
-    post:
+    get:
       operationId: getAdminVisitorStats
       tags: [auth]
-      summary: Password-gated visitor statistics for the Administrative page
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AdminVisitorsRequest"
+      summary: Owner-only visitor statistics for the Administrative page
       responses:
         "200":
           description: OK
@@ -406,7 +400,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/AdminVisitorStats"
         "401":
-          description: Wrong password
+          description: Not signed in (production)
+        "403":
+          description: Signed in but not the site owner
 
 components:
   schemas:
@@ -725,12 +721,6 @@ components:
           items:
             $ref: "#/components/schemas/LoginEvent"
         total: { type: integer }
-
-    AdminVisitorsRequest:
-      type: object
-      required: [password]
-      properties:
-        password: { type: string }
 
     SeriesPoint:
       type: object

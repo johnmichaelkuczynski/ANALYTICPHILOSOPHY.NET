@@ -8,7 +8,6 @@
 
 export * from './activityItem';
 export * from './activityItemKind';
-export * from './adminVisitorsRequest';
 export * from './adminVisitorStats';
 export * from './analyticsReport';
 export * from './analyticsSummary';

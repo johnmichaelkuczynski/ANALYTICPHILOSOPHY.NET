@@ -22,7 +22,6 @@ import type {
 import type {
   ActivityItem,
   AdminVisitorStats,
-  AdminVisitorsRequest,
   AnalyticsReport,
   AnalyticsSummary,
   AnswerInput,
@@ -1634,65 +1633,71 @@ export const getGetAdminVisitorStatsUrl = () => {
 }
 
 /**
- * @summary Password-gated visitor statistics for the Administrative page
+ * @summary Owner-only visitor statistics for the Administrative page
  */
-export const getAdminVisitorStats = async (adminVisitorsRequest: AdminVisitorsRequest, options?: RequestInit): Promise<AdminVisitorStats> => {
+export const getAdminVisitorStats = async ( options?: RequestInit): Promise<AdminVisitorStats> => {
 
   return customFetch<AdminVisitorStats>(getGetAdminVisitorStatsUrl(),
   {
     ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      adminVisitorsRequest,)
+    method: 'GET'
+
+
   }
 );}
 
 
 
 
-export const getGetAdminVisitorStatsMutationOptions = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getAdminVisitorStats>>, TError,{data: BodyType<AdminVisitorsRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof getAdminVisitorStats>>, TError,{data: BodyType<AdminVisitorsRequest>}, TContext> => {
 
-const mutationKey = ['getAdminVisitorStats'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof getAdminVisitorStats>>, {data: BodyType<AdminVisitorsRequest>}> = (props) => {
-          const {data} = props ?? {};
-
-          return  getAdminVisitorStats(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type GetAdminVisitorStatsMutationResult = NonNullable<Awaited<ReturnType<typeof getAdminVisitorStats>>>
-    export type GetAdminVisitorStatsMutationBody = BodyType<AdminVisitorsRequest>
-    export type GetAdminVisitorStatsMutationError = ErrorType<void>
-
-    /**
- * @summary Password-gated visitor statistics for the Administrative page
- */
-export const useGetAdminVisitorStats = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getAdminVisitorStats>>, TError,{data: BodyType<AdminVisitorsRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof getAdminVisitorStats>>,
-        TError,
-        {data: BodyType<AdminVisitorsRequest>},
-        TContext
-      > => {
-      return useMutation(getGetAdminVisitorStatsMutationOptions(options));
+export const getGetAdminVisitorStatsQueryKey = () => {
+    return [
+    `/api/admin/visitors`
+    ] as const;
     }
+
+
+export const getGetAdminVisitorStatsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminVisitorStats>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminVisitorStats>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminVisitorStatsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminVisitorStats>>> = ({ signal }) => getAdminVisitorStats({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminVisitorStats>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminVisitorStatsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminVisitorStats>>>
+export type GetAdminVisitorStatsQueryError = ErrorType<void>
+
+
+/**
+ * @summary Owner-only visitor statistics for the Administrative page
+ */
+
+export function useGetAdminVisitorStats<TData = Awaited<ReturnType<typeof getAdminVisitorStats>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminVisitorStats>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminVisitorStatsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 

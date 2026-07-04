@@ -464,12 +464,8 @@ export const GetLoginEventsResponse = zod.object({
 
 
 /**
- * @summary Password-gated visitor statistics for the Administrative page
+ * @summary Owner-only visitor statistics for the Administrative page
  */
-export const GetAdminVisitorStatsBody = zod.object({
-  "password": zod.string()
-})
-
 export const GetAdminVisitorStatsResponse = zod.object({
   "allTime": zod.number(),
   "last24h": zod.number(),

@@ -48,14 +48,31 @@ function AccountSection() {
   );
 }
 
+// The Administrative page only appears for the site owner. In dev the link
+// stays visible for preview (no Clerk session exists in the preview iframe).
+const ADMIN_EMAILS = new Set(["johnmichaelkuczynski@gmail.com"]);
+
+function useIsOwner(): boolean {
+  const { user } = useUser();
+  if (!import.meta.env.PROD) return true;
+  return (
+    user?.emailAddresses?.some((e) =>
+      ADMIN_EMAILS.has(e.emailAddress.toLowerCase()),
+    ) ?? false
+  );
+}
+
 export function Sidebar() {
   const [location] = useLocation();
+  const isOwner = useIsOwner();
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/assignments", label: "Assignments", icon: PenTool },
     { href: "/analytics", label: "Analytics", icon: BarChart3 },
-    { href: "/administrative", label: "Administrative", icon: ShieldCheck },
+    ...(isOwner
+      ? [{ href: "/administrative", label: "Administrative", icon: ShieldCheck }]
+      : []),
   ];
 
   return (

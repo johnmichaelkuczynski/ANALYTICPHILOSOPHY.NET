@@ -309,10 +309,6 @@ export interface LoginEventList {
   total: number;
 }
 
-export interface AdminVisitorsRequest {
-  password: string;
-}
-
 export interface SeriesPoint {
   label: string;
   count: number;

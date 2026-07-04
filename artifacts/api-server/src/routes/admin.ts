@@ -1,14 +1,13 @@
 import { Router, type IRouter } from "express";
 import { desc } from "drizzle-orm";
+import { getAuth, clerkClient } from "@clerk/express";
 import { db, loginEventsTable } from "@workspace/db";
-import {
-  GetAdminVisitorStatsBody,
-  GetAdminVisitorStatsResponse,
-} from "@workspace/api-zod";
+import { GetAdminVisitorStatsResponse } from "@workspace/api-zod";
 
 const router: IRouter = Router();
 
-const ADMIN_PASSWORD = "1234";
+// Only the site owner may see visitor data.
+const ADMIN_EMAILS = new Set(["johnmichaelkuczynski@gmail.com"]);
 
 const HOUR = 3600_000;
 const DAY = 24 * HOUR;
@@ -25,12 +24,29 @@ function bucketize(
   }));
 }
 
-router.post("/admin/visitors", async (req, res, next) => {
+router.get("/admin/visitors", async (req, res, next) => {
   try {
-    const parsed = GetAdminVisitorStatsBody.safeParse(req.body);
-    if (!parsed.success || parsed.data.password !== ADMIN_PASSWORD) {
-      res.status(401).json({ error: "Wrong password" });
-      return;
+    // Owner check is enforced in production only — the dev preview has no
+    // Clerk session (the preview iframe drops the cookie), matching how the
+    // rest of the API is gated.
+    if (process.env.NODE_ENV === "production") {
+      const { userId } = getAuth(req);
+      if (!userId) {
+        res.status(403).json({ error: "Not authorized" });
+        return;
+      }
+      const user = await clerkClient.users.getUser(userId);
+      // Only verified email addresses count — otherwise anyone could add the
+      // owner's address as an unverified secondary email to gain access.
+      const isOwner = user.emailAddresses.some(
+        (e) =>
+          e.verification?.status === "verified" &&
+          ADMIN_EMAILS.has(e.emailAddress.toLowerCase()),
+      );
+      if (!isOwner) {
+        res.status(403).json({ error: "Not authorized" });
+        return;
+      }
     }
 
     const rows = await db

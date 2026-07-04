@@ -1,8 +1,7 @@
-import { useState } from "react";
 import { Layout } from "@/components/layout/Layout";
-import { Loader2, Lock, Users } from "lucide-react";
+import { Loader2, ShieldAlert, Users } from "lucide-react";
 import { useGetAdminVisitorStats } from "@workspace/api-client-react";
-import type { AdminVisitorStats, SeriesPoint } from "@workspace/api-client-react";
+import type { SeriesPoint } from "@workspace/api-client-react";
 import {
   BarChart,
   Bar,
@@ -18,7 +17,10 @@ function StatCard({ label, value }: { label: string; value: number }) {
       <div className="text-xs uppercase tracking-wide text-muted-foreground">
         {label}
       </div>
-      <div className="font-serif text-3xl mt-1 tabular-nums" data-testid={`stat-${label.replace(/\s+/g, "-").toLowerCase()}`}>
+      <div
+        className="font-serif text-3xl mt-1 tabular-nums"
+        data-testid={`stat-${label.replace(/\s+/g, "-").toLowerCase()}`}
+      >
         {value}
       </div>
     </div>
@@ -48,27 +50,7 @@ function VisitChart({ title, data }: { title: string; data: SeriesPoint[] }) {
 }
 
 export default function Administrative() {
-  const [password, setPassword] = useState("");
-  const [stats, setStats] = useState<AdminVisitorStats | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const { mutate, isPending } = useGetAdminVisitorStats({
-    mutation: {
-      onSuccess: (data) => {
-        setStats(data);
-        setError(null);
-      },
-      onError: () => {
-        setStats(null);
-        setError("Wrong password.");
-      },
-    },
-  });
-
-  function submit(e: React.FormEvent) {
-    e.preventDefault();
-    mutate({ data: { password } });
-  }
+  const { data: stats, isLoading, error } = useGetAdminVisitorStats();
 
   return (
     <Layout>
@@ -79,42 +61,25 @@ export default function Administrative() {
           </h1>
           <p className="text-muted-foreground">
             Who has visited the site (by Google login), with totals and graphs.
+            Only visible to the site owner.
           </p>
         </div>
 
-        {!stats ? (
-          <form
-            onSubmit={submit}
-            className="border border-border rounded-lg bg-card p-6 max-w-sm space-y-4"
-            data-testid="form-admin-password"
+        {isLoading ? (
+          <div className="p-5 text-sm text-muted-foreground flex items-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin" /> Loading visitor data…
+          </div>
+        ) : error || !stats ? (
+          <div
+            className="border border-border rounded-lg bg-card p-6 flex items-center gap-3 text-sm"
+            data-testid="text-not-authorized"
           >
-            <div className="flex items-center gap-2 font-medium">
-              <Lock className="w-4 h-4" /> Enter the admin password
+            <ShieldAlert className="w-5 h-5 text-red-700 shrink-0" />
+            <div>
+              This page is restricted to the site owner. Sign in with the
+              owner account to view visitor data.
             </div>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              className="w-full px-3 py-2 rounded-md border border-border bg-background"
-              data-testid="input-admin-password"
-              autoFocus
-            />
-            {error && (
-              <div className="text-sm text-red-700" data-testid="text-password-error">
-                {error}
-              </div>
-            )}
-            <button
-              type="submit"
-              disabled={isPending || !password}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground font-medium disabled:opacity-60"
-              data-testid="button-admin-unlock"
-            >
-              {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-              Unlock
-            </button>
-          </form>
+          </div>
         ) : (
           <>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -139,9 +104,12 @@ export default function Administrative() {
                 </div>
               </div>
               {stats.visitors.length === 0 ? (
-                <div className="p-5 text-sm text-muted-foreground" data-testid="text-no-visitors">
-                  No visits recorded yet. Visits are recorded when someone signs in
-                  on the published site.
+                <div
+                  className="p-5 text-sm text-muted-foreground"
+                  data-testid="text-no-visitors"
+                >
+                  No visits recorded yet. Visits are recorded when someone signs
+                  in on the published site.
                 </div>
               ) : (
                 <div className="divide-y divide-border max-h-[28rem] overflow-y-auto">
@@ -152,7 +120,9 @@ export default function Administrative() {
                       data-testid={`row-visitor-${i}`}
                     >
                       <div className="min-w-0">
-                        <div className="text-sm font-medium truncate">{v.email}</div>
+                        <div className="text-sm font-medium truncate">
+                          {v.email}
+                        </div>
                         {v.name && (
                           <div className="text-xs text-muted-foreground truncate">
                             {v.name}
