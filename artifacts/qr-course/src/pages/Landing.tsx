@@ -65,26 +65,15 @@ export default function Landing() {
             Analytic Philosophy 101
           </span>
         </div>
-        {authEnforced ? (
-          <a
-            href={googleSignInUrl}
-            target="_top"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium border border-border hover:bg-secondary transition-colors"
-            data-testid="button-signin"
-          >
-            <GoogleIcon className="w-4 h-4" />
-            Sign in with Google
-          </a>
-        ) : (
-          <button
-            type="button"
-            onClick={enterDev}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium border border-border hover:bg-secondary transition-colors"
-            data-testid="button-signin"
-          >
-            Open the course
-          </button>
-        )}
+        <a
+          href={googleSignInUrl}
+          target="_top"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium border border-border hover:bg-secondary transition-colors"
+          data-testid="button-signin"
+        >
+          <GoogleIcon className="w-4 h-4" />
+          Sign in with Google
+        </a>
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center px-6 text-center max-w-3xl mx-auto w-full py-16">
@@ -104,25 +93,24 @@ export default function Landing() {
           Read the idea, see it grounded in a real example, then write the
           defining statement in logical symbols of your own.
         </p>
-        <div className="mt-10">
-          {authEnforced ? (
-            <a
-              href={googleSignInUrl}
-              target="_top"
-              className="inline-flex items-center gap-3 px-6 py-3 rounded-md text-base font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-              data-testid="button-cta-start"
-            >
-              <GoogleIcon className="w-5 h-5" />
-              Sign in with Google
-            </a>
-          ) : (
+        <div className="mt-10 flex flex-col items-center gap-4">
+          <a
+            href={googleSignInUrl}
+            target="_top"
+            className="inline-flex items-center gap-3 px-6 py-3 rounded-md text-base font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+            data-testid="button-cta-start"
+          >
+            <GoogleIcon className="w-5 h-5" />
+            Sign in with Google
+          </a>
+          {!authEnforced && (
             <button
               type="button"
               onClick={enterDev}
-              className="px-6 py-3 rounded-md text-base font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-              data-testid="button-cta-start"
+              className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground transition-colors"
+              data-testid="button-dev-preview"
             >
-              Start the course
+              Preview without signing in (dev only)
             </button>
           )}
         </div>
