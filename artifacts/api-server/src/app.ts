@@ -4,7 +4,6 @@ import pinoHttp from "pino-http";
 import path from "node:path";
 import fs from "node:fs";
 import router from "./routes";
-import { sessionMiddleware } from "./middlewares/session";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
@@ -67,10 +66,6 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Cookie-backed sessions stored in Postgres (created by the Google OAuth
-// callback, read by requireAuth and the admin owner check).
-app.use(sessionMiddleware);
 
 app.use("/api", router);
 
