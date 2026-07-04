@@ -449,6 +449,28 @@ export const GenerateReportResponse = zod.object({
 
 
 /**
+ * @summary Current session state (who is signed in, if anyone)
+ */
+export const GetAuthMeResponse = zod.object({
+  "authenticated": zod.boolean(),
+  "user": zod.union([zod.object({
+  "id": zod.number(),
+  "email": zod.string(),
+  "name": zod.string().nullish(),
+  "avatar": zod.string().nullish()
+}),zod.null()])
+})
+
+
+/**
+ * @summary Destroy the current session and clear the cookie
+ */
+export const LogoutResponse = zod.object({
+  "ok": zod.boolean()
+})
+
+
+/**
  * @summary List recorded login events (who signed in and when)
  */
 export const GetLoginEventsResponse = zod.object({

@@ -1,16 +1,73 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, PenTool, BarChart3, Activity, RotateCcw, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, PenTool, BarChart3, Activity, RotateCcw, LogOut, ShieldCheck, LogIn } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth, useSignOut, googleSignInUrl } from "@/hooks/use-auth";
+
+// Account section pinned to the bottom of the sidebar so it stays visible at
+// any window width. Shows the signed-in user's email + Sign out, or a Sign in
+// link when signed out.
+function AccountSection() {
+  const { isAuthenticated, user } = useAuth();
+  const signOut = useSignOut();
+
+  if (isAuthenticated && user) {
+    return (
+      <div className="p-4 border-t border-border">
+        <div className="flex flex-col gap-2">
+          <div className="text-xs text-muted-foreground truncate" data-testid="text-user-email">
+            {user.email}
+          </div>
+          <button
+            type="button"
+            onClick={() => void signOut()}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium border border-border hover:bg-secondary w-full justify-center"
+            data-testid="button-signout"
+          >
+            <LogOut className="w-4 h-4" />
+            Sign out
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 border-t border-border">
+      <a
+        href={googleSignInUrl}
+        target="_top"
+        className="inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium border border-border hover:bg-secondary w-full justify-center"
+        data-testid="button-sidebar-signin"
+      >
+        <LogIn className="w-4 h-4" />
+        Sign in with Google
+      </a>
+    </div>
+  );
+}
+
+// The Administrative page only appears for the site owner. In dev the link
+// stays visible for preview (the preview iframe carries no session cookie).
+const ADMIN_EMAILS = new Set(["johnmichaelkuczynski@gmail.com"]);
+
+function useIsOwner(): boolean {
+  const { user } = useAuth();
+  if (!import.meta.env.PROD) return true;
+  return user ? ADMIN_EMAILS.has(user.email.toLowerCase()) : false;
+}
 
 export function Sidebar() {
   const [location] = useLocation();
+  const isOwner = useIsOwner();
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/assignments", label: "Assignments", icon: PenTool },
     { href: "/analytics", label: "Analytics", icon: BarChart3 },
-    { href: "/administrative", label: "Administrative", icon: ShieldCheck },
+    ...(isOwner
+      ? [{ href: "/administrative", label: "Administrative", icon: ShieldCheck }]
+      : []),
   ];
 
   return (
@@ -45,6 +102,8 @@ export function Sidebar() {
           );
         })}
       </div>
+
+      <AccountSection />
     </div>
   );
 }
