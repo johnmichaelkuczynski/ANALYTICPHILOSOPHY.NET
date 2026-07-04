@@ -374,6 +374,32 @@ paths:
               schema:
                 $ref: "#/components/schemas/AnalyticsReport"
 
+  /auth/me:
+    get:
+      operationId: getAuthMe
+      tags: [auth]
+      summary: Current session state (who is signed in, if anyone)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthMe"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Destroy the current session and clear the cookie
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LogoutResult"
+
   /logins:
     get:
       operationId: getLoginEvents
@@ -704,13 +730,38 @@ components:
 
     LoginEvent:
       type: object
-      required: [id, clerkUserId, occurredAt]
+      required: [id, userId, occurredAt]
       properties:
         id: { type: integer }
-        clerkUserId: { type: string }
+        userId: { type: integer }
         email: { type: ["string", "null"] }
         name: { type: ["string", "null"] }
         occurredAt: { type: string }
+
+    AuthUser:
+      type: object
+      required: [id, email]
+      properties:
+        id: { type: integer }
+        email: { type: string }
+        name: { type: ["string", "null"] }
+        avatar: { type: ["string", "null"] }
+
+    AuthMe:
+      type: object
+      required: [authenticated, user]
+      properties:
+        authenticated: { type: boolean }
+        user:
+          oneOf:
+            - $ref: "#/components/schemas/AuthUser"
+            - type: "null"
+
+    LogoutResult:
+      type: object
+      required: [ok]
+      properties:
+        ok: { type: boolean }
 
     LoginEventList:
       type: object

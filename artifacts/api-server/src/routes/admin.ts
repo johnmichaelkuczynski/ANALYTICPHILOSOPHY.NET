@@ -1,6 +1,5 @@
 import { Router, type IRouter } from "express";
 import { desc } from "drizzle-orm";
-import { getAuth, clerkClient } from "@clerk/express";
 import { db, loginEventsTable } from "@workspace/db";
 import { GetAdminVisitorStatsResponse } from "@workspace/api-zod";
 
@@ -27,23 +26,12 @@ function bucketize(
 router.get("/admin/visitors", async (req, res, next) => {
   try {
     // Owner check is enforced in production only — the dev preview has no
-    // Clerk session (the preview iframe drops the cookie), matching how the
-    // rest of the API is gated.
+    // session (the preview iframe is cross-site, so the sameSite=lax cookie
+    // is not sent), matching how the rest of the API is gated. The session
+    // email comes straight from Google's verified profile.
     if (process.env.NODE_ENV === "production") {
-      const { userId } = getAuth(req);
-      if (!userId) {
-        res.status(403).json({ error: "Not authorized" });
-        return;
-      }
-      const user = await clerkClient.users.getUser(userId);
-      // Only verified email addresses count — otherwise anyone could add the
-      // owner's address as an unverified secondary email to gain access.
-      const isOwner = user.emailAddresses.some(
-        (e) =>
-          e.verification?.status === "verified" &&
-          ADMIN_EMAILS.has(e.emailAddress.toLowerCase()),
-      );
-      if (!isOwner) {
+      const email = req.session?.email?.toLowerCase();
+      if (!email || !ADMIN_EMAILS.has(email)) {
         res.status(403).json({ error: "Not authorized" });
         return;
       }
@@ -137,7 +125,7 @@ router.get("/admin/visitors", async (req, res, next) => {
         seriesYear,
         seriesAllTime,
         visitors: rows.map((r) => ({
-          email: r.email ?? r.clerkUserId,
+          email: r.email ?? `user-${r.userId}`,
           name: r.name,
           occurredAt: r.occurredAt.toISOString(),
         })),

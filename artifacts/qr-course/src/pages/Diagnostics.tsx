@@ -398,7 +398,7 @@ function LoginHistorySection() {
                 <div key={e.id} className="px-5 py-3 flex items-center justify-between gap-4" data-testid={`row-login-${e.id}`}>
                   <div className="min-w-0">
                     <div className="text-sm font-medium truncate">
-                      {e.name || e.email || e.clerkUserId}
+                      {e.name || e.email || `user-${e.userId}`}
                     </div>
                     {e.email && e.name && (
                       <div className="text-xs text-muted-foreground truncate">{e.email}</div>

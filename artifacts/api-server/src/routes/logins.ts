@@ -20,7 +20,7 @@ router.get("/logins", async (_req, res, next) => {
       GetLoginEventsResponse.parse({
         events: rows.map((r) => ({
           id: r.id,
-          clerkUserId: r.clerkUserId,
+          userId: r.userId,
           email: r.email,
           name: r.name,
           occurredAt: r.occurredAt.toISOString(),

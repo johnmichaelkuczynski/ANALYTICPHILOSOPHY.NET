@@ -296,12 +296,30 @@ export interface DetectionScanInput {
 
 export interface LoginEvent {
   id: number;
-  clerkUserId: string;
+  userId: number;
   /** @nullable */
   email?: string | null;
   /** @nullable */
   name?: string | null;
   occurredAt: string;
+}
+
+export interface AuthUser {
+  id: number;
+  email: string;
+  /** @nullable */
+  name?: string | null;
+  /** @nullable */
+  avatar?: string | null;
+}
+
+export interface AuthMe {
+  authenticated: boolean;
+  user: AuthUser | null;
+}
+
+export interface LogoutResult {
+  ok: boolean;
 }
 
 export interface LoginEventList {

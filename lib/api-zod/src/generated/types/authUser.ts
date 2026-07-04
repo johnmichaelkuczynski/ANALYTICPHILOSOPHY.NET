@@ -6,12 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface LoginEvent {
+export interface AuthUser {
   id: number;
-  userId: number;
-  /** @nullable */
-  email?: string | null;
+  email: string;
   /** @nullable */
   name?: string | null;
-  occurredAt: string;
+  /** @nullable */
+  avatar?: string | null;
 }

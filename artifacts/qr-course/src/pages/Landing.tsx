@@ -1,10 +1,11 @@
 import { useLocation } from "wouter";
 import { BookOpen, Sigma, GraduationCap, PenLine } from "lucide-react";
-import { useGoogleSignIn } from "@/hooks/use-google-signin";
+import { googleSignInUrl } from "@/hooks/use-auth";
 
 // In the published build, entering the course requires signing in with Google.
-// The buttons launch Google OAuth directly (two-click flow). In dev the
-// preview iframe drops Clerk's session cookie, so the course opens directly.
+// The buttons are plain links to the server-side OAuth kickoff (two-click
+// flow: click the button, pick a Google account, land in the course). In dev
+// the preview iframe carries no session cookie, so the course opens directly.
 const authEnforced = import.meta.env.PROD;
 
 const highlights = [
@@ -50,15 +51,8 @@ function GoogleIcon({ className }: { className?: string }) {
 
 export default function Landing() {
   const [, setLocation] = useLocation();
-  const signInWithGoogle = useGoogleSignIn();
 
-  const enter = () => {
-    if (authEnforced) {
-      void signInWithGoogle();
-    } else {
-      setLocation("/dashboard");
-    }
-  };
+  const enterDev = () => setLocation("/dashboard");
 
   return (
     <div className="min-h-[100dvh] bg-background text-foreground flex flex-col">
@@ -71,21 +65,26 @@ export default function Landing() {
             Analytic Philosophy 101
           </span>
         </div>
-        <button
-          type="button"
-          onClick={enter}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium border border-border hover:bg-secondary transition-colors"
-          data-testid="button-signin"
-        >
-          {authEnforced ? (
-            <>
-              <GoogleIcon className="w-4 h-4" />
-              Sign in with Google
-            </>
-          ) : (
-            "Open the course"
-          )}
-        </button>
+        {authEnforced ? (
+          <a
+            href={googleSignInUrl}
+            target="_top"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium border border-border hover:bg-secondary transition-colors"
+            data-testid="button-signin"
+          >
+            <GoogleIcon className="w-4 h-4" />
+            Sign in with Google
+          </a>
+        ) : (
+          <button
+            type="button"
+            onClick={enterDev}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium border border-border hover:bg-secondary transition-colors"
+            data-testid="button-signin"
+          >
+            Open the course
+          </button>
+        )}
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center px-6 text-center max-w-3xl mx-auto w-full py-16">
@@ -107,19 +106,19 @@ export default function Landing() {
         </p>
         <div className="mt-10">
           {authEnforced ? (
-            <button
-              type="button"
-              onClick={enter}
+            <a
+              href={googleSignInUrl}
+              target="_top"
               className="inline-flex items-center gap-3 px-6 py-3 rounded-md text-base font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
               data-testid="button-cta-start"
             >
               <GoogleIcon className="w-5 h-5" />
               Sign in with Google
-            </button>
+            </a>
           ) : (
             <button
               type="button"
-              onClick={enter}
+              onClick={enterDev}
               className="px-6 py-3 rounded-md text-base font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
               data-testid="button-cta-start"
             >

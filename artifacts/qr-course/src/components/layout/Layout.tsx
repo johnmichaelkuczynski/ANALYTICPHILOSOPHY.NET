@@ -1,36 +1,26 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, PenTool, BarChart3, Activity, RotateCcw, LogOut, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, PenTool, BarChart3, Activity, RotateCcw, LogOut, ShieldCheck, LogIn } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Show, useClerk, useUser } from "@clerk/react";
-import { LogIn } from "lucide-react";
-import { useGoogleSignIn } from "@/hooks/use-google-signin";
-
-const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
-
-// In production the sign-in button launches Google OAuth directly. In dev the
-// preview iframe drops Clerk's session cookie, so it falls back to /sign-in.
-const authEnforced = import.meta.env.PROD;
+import { useAuth, useSignOut, googleSignInUrl } from "@/hooks/use-auth";
 
 // Account section pinned to the bottom of the sidebar so it stays visible at
 // any window width. Shows the signed-in user's email + Sign out, or a Sign in
-// button when signed out.
+// link when signed out.
 function AccountSection() {
-  const { signOut } = useClerk();
-  const { user } = useUser();
-  const [, setLocation] = useLocation();
-  const signInWithGoogle = useGoogleSignIn();
+  const { isAuthenticated, user } = useAuth();
+  const signOut = useSignOut();
 
-  return (
-    <div className="p-4 border-t border-border">
-      <Show when="signed-in">
+  if (isAuthenticated && user) {
+    return (
+      <div className="p-4 border-t border-border">
         <div className="flex flex-col gap-2">
           <div className="text-xs text-muted-foreground truncate" data-testid="text-user-email">
-            {user?.primaryEmailAddress?.emailAddress ?? user?.fullName ?? "Signed in"}
+            {user.email}
           </div>
           <button
             type="button"
-            onClick={() => signOut({ redirectUrl: basePath || "/" })}
+            onClick={() => void signOut()}
             className="inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium border border-border hover:bg-secondary w-full justify-center"
             data-testid="button-signout"
           >
@@ -38,40 +28,33 @@ function AccountSection() {
             Sign out
           </button>
         </div>
-      </Show>
-      <Show when="signed-out">
-        <button
-          type="button"
-          onClick={() => {
-            if (authEnforced) {
-              void signInWithGoogle();
-            } else {
-              setLocation("/sign-in");
-            }
-          }}
-          className="inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium border border-border hover:bg-secondary w-full justify-center"
-          data-testid="button-sidebar-signin"
-        >
-          <LogIn className="w-4 h-4" />
-          Sign in with Google
-        </button>
-      </Show>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 border-t border-border">
+      <a
+        href={googleSignInUrl}
+        target="_top"
+        className="inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium border border-border hover:bg-secondary w-full justify-center"
+        data-testid="button-sidebar-signin"
+      >
+        <LogIn className="w-4 h-4" />
+        Sign in with Google
+      </a>
     </div>
   );
 }
 
 // The Administrative page only appears for the site owner. In dev the link
-// stays visible for preview (no Clerk session exists in the preview iframe).
+// stays visible for preview (the preview iframe carries no session cookie).
 const ADMIN_EMAILS = new Set(["johnmichaelkuczynski@gmail.com"]);
 
 function useIsOwner(): boolean {
-  const { user } = useUser();
+  const { user } = useAuth();
   if (!import.meta.env.PROD) return true;
-  return (
-    user?.emailAddresses?.some((e) =>
-      ADMIN_EMAILS.has(e.emailAddress.toLowerCase()),
-    ) ?? false
-  );
+  return user ? ADMIN_EMAILS.has(user.email.toLowerCase()) : false;
 }
 
 export function Sidebar() {

@@ -3,18 +3,15 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import path from "node:path";
 import fs from "node:fs";
-import { clerkMiddleware } from "@clerk/express";
-import { publishableKeyFromHost } from "@clerk/shared/keys";
-import {
-  CLERK_PROXY_PATH,
-  clerkProxyMiddleware,
-  getClerkProxyHost,
-} from "./middlewares/clerkProxyMiddleware";
 import router from "./routes";
-import { recordLogin } from "./middlewares/recordLogin";
+import { sessionMiddleware } from "./middlewares/session";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
+
+// Behind Replit's reverse proxy: trust X-Forwarded-* so secure cookies and
+// req.get("host") resolve correctly.
+app.set("trust proxy", 1);
 
 app.use(
   pinoHttp({
@@ -35,9 +32,6 @@ app.use(
     },
   }),
 );
-
-// Mount the Clerk Frontend API proxy before body parsers (it streams raw bytes).
-app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 
 // CORS allowlist: the app's own domains only. With cookie-based auth,
 // reflecting arbitrary origins (origin: true) would be a security hole.
@@ -74,20 +68,9 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Resolve the publishable key from the incoming request host so the same
-// server can serve multiple Clerk custom domains. Falls back to
-// CLERK_PUBLISHABLE_KEY when the host doesn't map to a custom domain.
-app.use(
-  clerkMiddleware((req) => ({
-    publishableKey: publishableKeyFromHost(
-      getClerkProxyHost(req) ?? "",
-      process.env.CLERK_PUBLISHABLE_KEY,
-    ),
-  })),
-);
-
-// Record every new Clerk session as a login event (who + when).
-app.use(recordLogin);
+// Cookie-backed sessions stored in Postgres (created by the Google OAuth
+// callback, read by requireAuth and the admin owner check).
+app.use(sessionMiddleware);
 
 app.use("/api", router);
 
