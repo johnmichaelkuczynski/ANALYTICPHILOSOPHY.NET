@@ -8,6 +8,8 @@
 
 export * from './activityItem';
 export * from './activityItemKind';
+export * from './adminVisitorsRequest';
+export * from './adminVisitorStats';
 export * from './analyticsReport';
 export * from './analyticsSummary';
 export * from './answerInput';
@@ -39,9 +41,11 @@ export * from './practiceSessionInput';
 export * from './problem';
 export * from './problemResult';
 export * from './savedAnswer';
+export * from './seriesPoint';
 export * from './topic';
 export * from './topicAnalytics';
 export * from './topicAnalyticsStrengthLabel';
 export * from './tutorAskInput';
 export * from './tutorReply';
+export * from './visitorRow';
 export * from './week';

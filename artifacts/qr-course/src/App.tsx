@@ -16,6 +16,7 @@ import WeekView from "@/pages/WeekView";
 import LectureView from "@/pages/LectureView";
 import AssignmentRunner from "@/pages/AssignmentRunner";
 import Diagnostics from "@/pages/Diagnostics";
+import Administrative from "@/pages/Administrative";
 import TopicPractice from "@/pages/TopicPractice";
 import AssignmentPractice from "@/pages/AssignmentPractice";
 
@@ -182,6 +183,7 @@ const AssignmentsGuarded = protect(Assignments);
 const AssignmentRunnerGuarded = protect(AssignmentRunner);
 const AnalyticsGuarded = protect(Analytics);
 const DiagnosticsGuarded = protect(Diagnostics);
+const AdministrativeGuarded = protect(Administrative);
 const WeekViewGuarded = protect(WeekView);
 const LectureViewGuarded = protect(LectureView);
 const TopicPracticeGuarded = protect(TopicPractice);
@@ -226,6 +228,7 @@ function ClerkProviderWithRoutes() {
             <Route path="/assignments/:id" component={AssignmentRunnerGuarded} />
             <Route path="/analytics" component={AnalyticsGuarded} />
             <Route path="/diagnostics" component={DiagnosticsGuarded} />
+            <Route path="/administrative" component={AdministrativeGuarded} />
             <Route path="/weeks/:weekNumber" component={WeekViewGuarded} />
             <Route path="/lectures/:lectureId" component={LectureViewGuarded} />
             <Route path="/practice/topic/:topicId" component={TopicPracticeGuarded} />

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, PenTool, BarChart3, Activity, RotateCcw, LogOut } from "lucide-react";
+import { LayoutDashboard, PenTool, BarChart3, Activity, RotateCcw, LogOut, ShieldCheck } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Show, useClerk, useUser } from "@clerk/react";
 import { LogIn } from "lucide-react";
@@ -55,6 +55,7 @@ export function Sidebar() {
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/assignments", label: "Assignments", icon: PenTool },
     { href: "/analytics", label: "Analytics", icon: BarChart3 },
+    { href: "/administrative", label: "Administrative", icon: ShieldCheck },
   ];
 
   return (

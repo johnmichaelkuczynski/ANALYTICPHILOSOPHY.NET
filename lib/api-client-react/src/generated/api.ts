@@ -21,6 +21,8 @@ import type {
 
 import type {
   ActivityItem,
+  AdminVisitorStats,
+  AdminVisitorsRequest,
   AnalyticsReport,
   AnalyticsSummary,
   AnswerInput,
@@ -1622,4 +1624,75 @@ export function useGetLoginEvents<TData = Awaited<ReturnType<typeof getLoginEven
 
 
 
+
+export const getGetAdminVisitorStatsUrl = () => {
+
+
+
+
+  return `/api/admin/visitors`
+}
+
+/**
+ * @summary Password-gated visitor statistics for the Administrative page
+ */
+export const getAdminVisitorStats = async (adminVisitorsRequest: AdminVisitorsRequest, options?: RequestInit): Promise<AdminVisitorStats> => {
+
+  return customFetch<AdminVisitorStats>(getGetAdminVisitorStatsUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      adminVisitorsRequest,)
+  }
+);}
+
+
+
+
+export const getGetAdminVisitorStatsMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getAdminVisitorStats>>, TError,{data: BodyType<AdminVisitorsRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof getAdminVisitorStats>>, TError,{data: BodyType<AdminVisitorsRequest>}, TContext> => {
+
+const mutationKey = ['getAdminVisitorStats'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof getAdminVisitorStats>>, {data: BodyType<AdminVisitorsRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  getAdminVisitorStats(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GetAdminVisitorStatsMutationResult = NonNullable<Awaited<ReturnType<typeof getAdminVisitorStats>>>
+    export type GetAdminVisitorStatsMutationBody = BodyType<AdminVisitorsRequest>
+    export type GetAdminVisitorStatsMutationError = ErrorType<void>
+
+    /**
+ * @summary Password-gated visitor statistics for the Administrative page
+ */
+export const useGetAdminVisitorStats = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getAdminVisitorStats>>, TError,{data: BodyType<AdminVisitorsRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof getAdminVisitorStats>>,
+        TError,
+        {data: BodyType<AdminVisitorsRequest>},
+        TContext
+      > => {
+      return useMutation(getGetAdminVisitorStatsMutationOptions(options));
+    }
 

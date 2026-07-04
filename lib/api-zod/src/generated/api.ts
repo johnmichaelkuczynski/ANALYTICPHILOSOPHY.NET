@@ -463,3 +463,39 @@ export const GetLoginEventsResponse = zod.object({
 })
 
 
+/**
+ * @summary Password-gated visitor statistics for the Administrative page
+ */
+export const GetAdminVisitorStatsBody = zod.object({
+  "password": zod.string()
+})
+
+export const GetAdminVisitorStatsResponse = zod.object({
+  "allTime": zod.number(),
+  "last24h": zod.number(),
+  "lastMonth": zod.number(),
+  "lastYear": zod.number(),
+  "series24h": zod.array(zod.object({
+  "label": zod.string(),
+  "count": zod.number()
+})),
+  "seriesMonth": zod.array(zod.object({
+  "label": zod.string(),
+  "count": zod.number()
+})),
+  "seriesYear": zod.array(zod.object({
+  "label": zod.string(),
+  "count": zod.number()
+})),
+  "seriesAllTime": zod.array(zod.object({
+  "label": zod.string(),
+  "count": zod.number()
+})),
+  "visitors": zod.array(zod.object({
+  "email": zod.string(),
+  "name": zod.string().nullish(),
+  "occurredAt": zod.string()
+}))
+})
+
+

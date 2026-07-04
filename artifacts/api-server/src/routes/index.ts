@@ -8,6 +8,7 @@ import detectionRouter from "./detection";
 import analyticsRouter from "./analytics";
 import diagnosticsRouter from "./diagnostics";
 import loginsRouter from "./logins";
+import adminRouter from "./admin";
 import { requireAuth } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
@@ -30,5 +31,6 @@ router.use(detectionRouter);
 router.use(analyticsRouter);
 router.use(diagnosticsRouter);
 router.use(loginsRouter);
+router.use(adminRouter);
 
 export default router;

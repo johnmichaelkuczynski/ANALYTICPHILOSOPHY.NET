@@ -387,6 +387,27 @@ paths:
               schema:
                 $ref: "#/components/schemas/LoginEventList"
 
+  /admin/visitors:
+    post:
+      operationId: getAdminVisitorStats
+      tags: [auth]
+      summary: Password-gated visitor statistics for the Administrative page
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminVisitorsRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminVisitorStats"
+        "401":
+          description: Wrong password
+
 components:
   schemas:
     HealthStatus:
@@ -704,6 +725,67 @@ components:
           items:
             $ref: "#/components/schemas/LoginEvent"
         total: { type: integer }
+
+    AdminVisitorsRequest:
+      type: object
+      required: [password]
+      properties:
+        password: { type: string }
+
+    SeriesPoint:
+      type: object
+      required: [label, count]
+      properties:
+        label: { type: string }
+        count: { type: integer }
+
+    VisitorRow:
+      type: object
+      required: [email, occurredAt]
+      properties:
+        email: { type: string }
+        name: { type: ["string", "null"] }
+        occurredAt: { type: string }
+
+    AdminVisitorStats:
+      type: object
+      required:
+        [
+          allTime,
+          last24h,
+          lastMonth,
+          lastYear,
+          series24h,
+          seriesMonth,
+          seriesYear,
+          seriesAllTime,
+          visitors,
+        ]
+      properties:
+        allTime: { type: integer }
+        last24h: { type: integer }
+        lastMonth: { type: integer }
+        lastYear: { type: integer }
+        series24h:
+          type: array
+          items:
+            $ref: "#/components/schemas/SeriesPoint"
+        seriesMonth:
+          type: array
+          items:
+            $ref: "#/components/schemas/SeriesPoint"
+        seriesYear:
+          type: array
+          items:
+            $ref: "#/components/schemas/SeriesPoint"
+        seriesAllTime:
+          type: array
+          items:
+            $ref: "#/components/schemas/SeriesPoint"
+        visitors:
+          type: array
+          items:
+            $ref: "#/components/schemas/VisitorRow"
 
     AnalyticsSummary:
       type: object

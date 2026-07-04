@@ -309,6 +309,34 @@ export interface LoginEventList {
   total: number;
 }
 
+export interface AdminVisitorsRequest {
+  password: string;
+}
+
+export interface SeriesPoint {
+  label: string;
+  count: number;
+}
+
+export interface VisitorRow {
+  email: string;
+  /** @nullable */
+  name?: string | null;
+  occurredAt: string;
+}
+
+export interface AdminVisitorStats {
+  allTime: number;
+  last24h: number;
+  lastMonth: number;
+  lastYear: number;
+  series24h: SeriesPoint[];
+  seriesMonth: SeriesPoint[];
+  seriesYear: SeriesPoint[];
+  seriesAllTime: SeriesPoint[];
+  visitors: VisitorRow[];
+}
+
 export interface AnalyticsSummary {
   officialAverage: number;
   practiceAccuracy: number;
