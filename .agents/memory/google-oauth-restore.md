@@ -9,4 +9,5 @@ description: Pitfalls when restoring/rebuilding the Google login in this project
 - The landing page must have exactly ONE "Sign in with Google" button (hero only). The user angrily complained about a duplicate header button.
   **Why:** Direct user directive July 2026; a second button was treated as a defect.
   **How to apply:** When touching Landing/Layout, verify only the hero CTA renders a Google button on the landing page.
-- User has flip-flopped on auth three times (rip-out → rebuild → rip-out → rebuild). Never re-add or remove auth without an explicit instruction, and always update the replit.md auth section to match the current state.
+- User has flip-flopped on auth repeatedly (rip-out → rebuild → rip-out → rebuild → rip-out, July 2026). Final state: NO auth, and the user deleted the Google keys from the project. Never re-add or remove auth without an explicit instruction, and always update the replit.md auth section to match the current state.
+- Rip-out recipe that works: restore auth-free files from the known auth-free commit (keep the current health.ts — it has the bare `GET /api` route needed by deployment health checks), delete auth.ts/session.ts/requireAuth.ts/use-auth.ts, rerun codegen, uninstall express-session + connect-pg-simple, typecheck, restart both workflows, verify /api/auth/* 404s.
