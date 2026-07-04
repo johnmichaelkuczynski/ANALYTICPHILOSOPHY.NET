@@ -294,6 +294,21 @@ export interface DetectionScanInput {
   trace: KeystrokeTrace;
 }
 
+export interface LoginEvent {
+  id: number;
+  clerkUserId: string;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  name?: string | null;
+  occurredAt: string;
+}
+
+export interface LoginEventList {
+  events: LoginEvent[];
+  total: number;
+}
+
 export interface AnalyticsSummary {
   officialAverage: number;
   practiceAccuracy: number;

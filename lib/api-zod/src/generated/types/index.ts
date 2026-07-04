@@ -28,6 +28,8 @@ export * from './healthStatus';
 export * from './keystrokeTrace';
 export * from './lecture';
 export * from './lectureRef';
+export * from './loginEvent';
+export * from './loginEventList';
 export * from './nextProblemInput';
 export * from './practiceAnswerInput';
 export * from './practiceGrade';

@@ -22,6 +22,8 @@ tags:
     description: AI-generation and diachronic detection
   - name: analytics
     description: User performance analytics and reports
+  - name: auth
+    description: Authentication and login tracking
 paths:
   /healthz:
     get:
@@ -372,6 +374,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/AnalyticsReport"
 
+  /logins:
+    get:
+      operationId: getLoginEvents
+      tags: [auth]
+      summary: List recorded login events (who signed in and when)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginEventList"
+
 components:
   schemas:
     HealthStatus:
@@ -669,6 +684,26 @@ components:
           description: 0..1 probability the user is rewording AI output (based on keystroke pattern)
         diachronicFlagged: { type: boolean }
         rationale: { type: string }
+
+    LoginEvent:
+      type: object
+      required: [id, clerkUserId, occurredAt]
+      properties:
+        id: { type: integer }
+        clerkUserId: { type: string }
+        email: { type: ["string", "null"] }
+        name: { type: ["string", "null"] }
+        occurredAt: { type: string }
+
+    LoginEventList:
+      type: object
+      required: [events, total]
+      properties:
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/LoginEvent"
+        total: { type: integer }
 
     AnalyticsSummary:
       type: object

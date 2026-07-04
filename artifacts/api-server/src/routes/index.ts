@@ -7,6 +7,7 @@ import tutorRouter from "./tutor";
 import detectionRouter from "./detection";
 import analyticsRouter from "./analytics";
 import diagnosticsRouter from "./diagnostics";
+import loginsRouter from "./logins";
 import { requireAuth } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
@@ -28,5 +29,6 @@ router.use(tutorRouter);
 router.use(detectionRouter);
 router.use(analyticsRouter);
 router.use(diagnosticsRouter);
+router.use(loginsRouter);
 
 export default router;

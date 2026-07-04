@@ -11,6 +11,7 @@ import {
   getClerkProxyHost,
 } from "./middlewares/clerkProxyMiddleware";
 import router from "./routes";
+import { recordLogin } from "./middlewares/recordLogin";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
@@ -84,6 +85,9 @@ app.use(
     ),
   })),
 );
+
+// Record every new Clerk session as a login event (who + when).
+app.use(recordLogin);
 
 app.use("/api", router);
 

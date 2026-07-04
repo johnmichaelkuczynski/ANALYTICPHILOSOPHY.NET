@@ -448,3 +448,18 @@ export const GenerateReportResponse = zod.object({
 })
 
 
+/**
+ * @summary List recorded login events (who signed in and when)
+ */
+export const GetLoginEventsResponse = zod.object({
+  "events": zod.array(zod.object({
+  "id": zod.number(),
+  "clerkUserId": zod.string(),
+  "email": zod.string().nullish(),
+  "name": zod.string().nullish(),
+  "occurredAt": zod.string()
+})),
+  "total": zod.number()
+})
+
+

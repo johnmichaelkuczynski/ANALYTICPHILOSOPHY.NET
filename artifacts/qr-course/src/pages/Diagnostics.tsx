@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Layout } from "@/components/layout/Layout";
-import { CheckCircle2, XCircle, Loader2, PlayCircle, Activity } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, PlayCircle, Activity, Users } from "lucide-react";
+import { useGetLoginEvents } from "@workspace/api-client-react";
 
 type Step = {
   name: string;
@@ -350,7 +351,68 @@ export default function Diagnostics() {
           )}
           <AuditResultCard result={auditResult} />
         </section>
+
+        <LoginHistorySection />
       </div>
     </Layout>
+  );
+}
+
+function LoginHistorySection() {
+  const { data, isLoading, error } = useGetLoginEvents();
+
+  return (
+    <section className="space-y-3" data-testid="section-login-history">
+      <div>
+        <h2 className="font-serif text-xl flex items-center gap-2">
+          <Users className="w-5 h-5" /> Login history
+        </h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Every sign-in to the published site is recorded automatically — who signed in
+          and when. Logins happen on the published site (the dev preview doesn't require
+          sign-in), so this list fills up as people log into the live app.
+        </p>
+      </div>
+
+      <div className="border border-border rounded-lg bg-card">
+        {isLoading ? (
+          <div className="p-5 text-sm text-muted-foreground flex items-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin" /> Loading login history…
+          </div>
+        ) : error ? (
+          <div className="p-5 text-sm text-red-700 font-mono">
+            Could not load login history: {error instanceof Error ? error.message : String(error)}
+          </div>
+        ) : !data || data.events.length === 0 ? (
+          <div className="p-5 text-sm text-muted-foreground" data-testid="text-no-logins">
+            No logins recorded yet.
+          </div>
+        ) : (
+          <div>
+            <div className="px-5 py-3 border-b border-border flex items-center justify-between">
+              <div className="font-serif text-lg">Recorded logins</div>
+              <div className="text-sm text-muted-foreground">{data.total} total</div>
+            </div>
+            <div className="divide-y divide-border">
+              {data.events.map((e) => (
+                <div key={e.id} className="px-5 py-3 flex items-center justify-between gap-4" data-testid={`row-login-${e.id}`}>
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium truncate">
+                      {e.name || e.email || e.clerkUserId}
+                    </div>
+                    {e.email && e.name && (
+                      <div className="text-xs text-muted-foreground truncate">{e.email}</div>
+                    )}
+                  </div>
+                  <div className="text-xs text-muted-foreground tabular-nums shrink-0">
+                    {new Date(e.occurredAt).toLocaleString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

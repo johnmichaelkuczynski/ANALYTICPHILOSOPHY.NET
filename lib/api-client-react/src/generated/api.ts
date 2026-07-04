@@ -34,6 +34,7 @@ import type {
   DetectionScanInput,
   HealthStatus,
   Lecture,
+  LoginEventList,
   NextProblemInput,
   PracticeAnswerInput,
   PracticeGrade,
@@ -1544,4 +1545,81 @@ export const useGenerateReport = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getGenerateReportMutationOptions(options));
     }
+
+export const getGetLoginEventsUrl = () => {
+
+
+
+
+  return `/api/logins`
+}
+
+/**
+ * @summary List recorded login events (who signed in and when)
+ */
+export const getLoginEvents = async ( options?: RequestInit): Promise<LoginEventList> => {
+
+  return customFetch<LoginEventList>(getGetLoginEventsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetLoginEventsQueryKey = () => {
+    return [
+    `/api/logins`
+    ] as const;
+    }
+
+
+export const getGetLoginEventsQueryOptions = <TData = Awaited<ReturnType<typeof getLoginEvents>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLoginEvents>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetLoginEventsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLoginEvents>>> = ({ signal }) => getLoginEvents({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLoginEvents>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetLoginEventsQueryResult = NonNullable<Awaited<ReturnType<typeof getLoginEvents>>>
+export type GetLoginEventsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List recorded login events (who signed in and when)
+ */
+
+export function useGetLoginEvents<TData = Awaited<ReturnType<typeof getLoginEvents>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLoginEvents>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetLoginEventsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 
