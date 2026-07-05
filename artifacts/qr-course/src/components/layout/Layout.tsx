@@ -52,12 +52,17 @@ function AuthControls() {
 
 export function Sidebar() {
   const [location] = useLocation();
+  const { data: auth } = useAuth();
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/assignments", label: "Assignments", icon: PenTool },
     { href: "/analytics", label: "Analytics", icon: BarChart3 },
-    { href: "/administrative", label: "Administrative", icon: ShieldCheck },
+    // Administrative only appears for the signed-in site owner.
+    ...(auth?.authenticated &&
+    auth.user?.email?.toLowerCase() === "johnmichaelkuczynski@gmail.com"
+      ? [{ href: "/administrative", label: "Administrative", icon: ShieldCheck }]
+      : []),
   ];
 
   return (

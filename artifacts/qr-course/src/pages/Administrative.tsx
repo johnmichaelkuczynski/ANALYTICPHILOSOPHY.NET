@@ -20,11 +20,13 @@ interface AdminVisitsResponse {
   stats: {
     allTime: number;
     last24Hours: number;
+    lastWeek: number;
     lastMonth: number;
     lastYear: number;
   };
   series: {
     last24Hours: SeriesPoint[];
+    lastWeek: SeriesPoint[];
     lastMonth: SeriesPoint[];
     lastYear: SeriesPoint[];
     allTime: SeriesPoint[];
@@ -130,15 +132,17 @@ export default function Administrative() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <StatCard label="All time" value={data.stats.allTime} />
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
               <StatCard label="Last 24 hours" value={data.stats.last24Hours} />
+              <StatCard label="Last week" value={data.stats.lastWeek} />
               <StatCard label="Last month" value={data.stats.lastMonth} />
               <StatCard label="Last year" value={data.stats.lastYear} />
+              <StatCard label="All time" value={data.stats.allTime} />
             </div>
 
             <div className="grid lg:grid-cols-2 gap-4">
               <VisitChart title="Last 24 hours (by hour)" data={data.series.last24Hours} />
+              <VisitChart title="Last week (by day)" data={data.series.lastWeek} />
               <VisitChart title="Last month (by day)" data={data.series.lastMonth} />
               <VisitChart title="Last year (by month)" data={data.series.lastYear} />
               <VisitChart title="All time" data={data.series.allTime} />

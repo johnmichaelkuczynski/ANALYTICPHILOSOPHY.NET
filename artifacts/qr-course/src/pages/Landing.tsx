@@ -62,14 +62,16 @@ export default function Landing() {
             Analytic Philosophy 101
           </span>
         </div>
-        <button
-          type="button"
-          onClick={enterCourse}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium border border-border hover:bg-secondary transition-colors"
-          data-testid="button-enter-course"
-        >
-          Enter the course
-        </button>
+        {signedIn && (
+          <button
+            type="button"
+            onClick={enterCourse}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium border border-border hover:bg-secondary transition-colors"
+            data-testid="button-enter-course"
+          >
+            Enter the course
+          </button>
+        )}
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center px-6 text-center max-w-3xl mx-auto w-full py-16">
@@ -90,42 +92,49 @@ export default function Landing() {
           defining statement in logical symbols of your own.
         </p>
         <div className="mt-10 flex flex-col items-center gap-4">
-          <button
-            type="button"
-            onClick={enterCourse}
-            className="inline-flex items-center gap-3 px-6 py-3 rounded-md text-base font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-            data-testid="button-cta-start"
-          >
-            Start the course
-          </button>
           {signedIn ? (
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <span data-testid="text-landing-signed-in">
-                Signed in as{" "}
-                <span className="text-foreground font-medium">
-                  {auth!.user!.displayName || auth!.user!.email}
-                </span>
-              </span>
+            <>
               <button
                 type="button"
-                onClick={() => logout.mutate()}
-                disabled={logout.isPending}
-                className="inline-flex items-center gap-1.5 underline underline-offset-4 hover:text-foreground transition-colors disabled:opacity-50"
-                data-testid="button-landing-logout"
+                onClick={enterCourse}
+                className="inline-flex items-center gap-3 px-6 py-3 rounded-md text-base font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+                data-testid="button-cta-start"
               >
-                <LogOut className="w-3.5 h-3.5" />
-                Sign out
+                Start the course
               </button>
-            </div>
+              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                <span data-testid="text-landing-signed-in">
+                  Signed in as{" "}
+                  <span className="text-foreground font-medium">
+                    {auth!.user!.displayName || auth!.user!.email}
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => logout.mutate()}
+                  disabled={logout.isPending}
+                  className="inline-flex items-center gap-1.5 underline underline-offset-4 hover:text-foreground transition-colors disabled:opacity-50"
+                  data-testid="button-landing-logout"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  Sign out
+                </button>
+              </div>
+            </>
           ) : (
-            <a
-              href={GOOGLE_SIGN_IN_URL}
-              className="inline-flex items-center gap-3 px-6 py-3 rounded-md text-base font-medium border border-border hover:bg-secondary transition-colors"
-              data-testid="button-google-signin"
-            >
-              <GoogleIcon className="w-5 h-5" />
-              Sign in with Google
-            </a>
+            <>
+              <a
+                href={GOOGLE_SIGN_IN_URL}
+                className="inline-flex items-center gap-3 px-6 py-3 rounded-md text-base font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+                data-testid="button-google-signin"
+              >
+                <GoogleIcon className="w-5 h-5" />
+                Sign in with Google
+              </a>
+              <p className="text-sm text-muted-foreground">
+                Signing in with Google is required to enter the course.
+              </p>
+            </>
           )}
         </div>
       </main>
