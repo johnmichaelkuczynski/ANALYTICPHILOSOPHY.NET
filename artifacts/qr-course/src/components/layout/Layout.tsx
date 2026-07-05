@@ -1,7 +1,54 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, PenTool, BarChart3, Activity, RotateCcw, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, PenTool, BarChart3, Activity, RotateCcw, ShieldCheck, LogIn, LogOut } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth, useLogout, GOOGLE_SIGN_IN_URL } from "@/hooks/use-auth";
+
+function AuthControls() {
+  const { data: auth, isLoading } = useAuth();
+  const logout = useLogout();
+
+  if (isLoading) return null;
+
+  if (auth?.authenticated && auth.user) {
+    return (
+      <div className="flex items-center gap-2 mr-auto">
+        <span
+          className="text-sm text-muted-foreground truncate max-w-[220px]"
+          data-testid="text-signed-in-user"
+          title={auth.user.email ?? undefined}
+        >
+          Signed in as{" "}
+          <span className="text-foreground font-medium">
+            {auth.user.displayName || auth.user.email || auth.user.username}
+          </span>
+        </span>
+        <button
+          onClick={() => logout.mutate()}
+          disabled={logout.isPending}
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium border border-border hover:bg-secondary disabled:opacity-50"
+          data-testid="button-logout"
+        >
+          <LogOut className="w-4 h-4" />
+          {logout.isPending ? "Signing out…" : "Sign out"}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mr-auto">
+      <a
+        href={GOOGLE_SIGN_IN_URL}
+        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium border border-border hover:bg-secondary"
+        data-testid="button-login"
+      >
+        <LogIn className="w-4 h-4" />
+        Sign in with Google
+      </a>
+    </div>
+  );
+}
 
 export function Sidebar() {
   const [location] = useLocation();
@@ -77,6 +124,7 @@ function TopBar() {
 
   return (
     <div className="sticky top-0 z-10 flex items-center justify-end gap-2 px-6 py-3 border-b border-border bg-background/80 backdrop-blur">
+      <AuthControls />
       <button
         onClick={handleReset}
         disabled={resetting}

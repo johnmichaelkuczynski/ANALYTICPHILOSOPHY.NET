@@ -1,9 +1,12 @@
 import {
+  index,
   integer,
+  json,
   pgTable,
   serial,
   text,
   timestamp,
+  varchar,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
@@ -30,6 +33,18 @@ export const insertUserSchema = createInsertSchema(usersTable).omit({
 });
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof usersTable.$inferSelect;
+
+// Session store table used by connect-pg-simple (express-session).
+// Declared here so drizzle tracks it and the publish flow migrates prod.
+export const userSessionsTable = pgTable(
+  "user_sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: json("sess").notNull(),
+    expire: timestamp("expire", { precision: 6 }).notNull(),
+  },
+  (table) => [index("IDX_user_sessions_expire").on(table.expire)],
+);
 
 // One row per successful Google OAuth callback — a login event.
 export const loginEventsTable = pgTable("login_events", {

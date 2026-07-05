@@ -1,7 +1,7 @@
 import { Layout } from "@/components/layout/Layout";
 import { Loader2, ShieldAlert, Users } from "lucide-react";
-import { useGetAdminVisitorStats } from "@workspace/api-client-react";
-import type { SeriesPoint } from "@workspace/api-client-react";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth, GOOGLE_SIGN_IN_URL } from "@/hooks/use-auth";
 import {
   BarChart,
   Bar,
@@ -10,6 +10,40 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+
+interface SeriesPoint {
+  label: string;
+  count: number;
+}
+
+interface AdminVisitsResponse {
+  stats: {
+    allTime: number;
+    last24Hours: number;
+    lastMonth: number;
+    lastYear: number;
+  };
+  series: {
+    last24Hours: SeriesPoint[];
+    lastMonth: SeriesPoint[];
+    lastYear: SeriesPoint[];
+    allTime: SeriesPoint[];
+  };
+  visits: { id: number; email: string | null; visitedAt: string }[];
+}
+
+function useAdminVisits() {
+  return useQuery<AdminVisitsResponse>({
+    queryKey: ["admin", "visits"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/visits", { credentials: "include" });
+      if (res.status === 403) throw new Error("forbidden");
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    },
+    retry: false,
+  });
+}
 
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
@@ -50,7 +84,8 @@ function VisitChart({ title, data }: { title: string; data: SeriesPoint[] }) {
 }
 
 export default function Administrative() {
-  const { data: stats, isLoading, error } = useGetAdminVisitorStats();
+  const { data, isLoading, error } = useAdminVisits();
+  const { data: auth } = useAuth();
 
   return (
     <Layout>
@@ -69,68 +104,76 @@ export default function Administrative() {
           <div className="p-5 text-sm text-muted-foreground flex items-center gap-2">
             <Loader2 className="w-4 h-4 animate-spin" /> Loading visitor data…
           </div>
-        ) : error || !stats ? (
+        ) : error || !data ? (
           <div
             className="border border-border rounded-lg bg-card p-6 flex items-center gap-3 text-sm"
             data-testid="text-not-authorized"
           >
             <ShieldAlert className="w-5 h-5 text-red-700 shrink-0" />
             <div>
-              This page is restricted to the site owner. Sign in with the
-              owner account to view visitor data.
+              This page is restricted to the site owner.{" "}
+              {auth?.authenticated ? (
+                <>The account you are signed in with is not the owner account.</>
+              ) : (
+                <>
+                  <a
+                    href={GOOGLE_SIGN_IN_URL}
+                    className="underline underline-offset-4 font-medium"
+                    data-testid="link-admin-signin"
+                  >
+                    Sign in with Google
+                  </a>{" "}
+                  using the owner account to view visitor data.
+                </>
+              )}
             </div>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <StatCard label="All time" value={stats.allTime} />
-              <StatCard label="Last 24 hours" value={stats.last24h} />
-              <StatCard label="Last month" value={stats.lastMonth} />
-              <StatCard label="Last year" value={stats.lastYear} />
+              <StatCard label="All time" value={data.stats.allTime} />
+              <StatCard label="Last 24 hours" value={data.stats.last24Hours} />
+              <StatCard label="Last month" value={data.stats.lastMonth} />
+              <StatCard label="Last year" value={data.stats.lastYear} />
             </div>
 
             <div className="grid lg:grid-cols-2 gap-4">
-              <VisitChart title="Last 24 hours (by hour)" data={stats.series24h} />
-              <VisitChart title="Last month (by day)" data={stats.seriesMonth} />
-              <VisitChart title="Last year (by month)" data={stats.seriesYear} />
-              <VisitChart title="All time (by month)" data={stats.seriesAllTime} />
+              <VisitChart title="Last 24 hours (by hour)" data={data.series.last24Hours} />
+              <VisitChart title="Last month (by day)" data={data.series.lastMonth} />
+              <VisitChart title="Last year (by month)" data={data.series.lastYear} />
+              <VisitChart title="All time" data={data.series.allTime} />
             </div>
 
             <div className="border border-border rounded-lg bg-card">
               <div className="px-5 py-3 border-b border-border flex items-center justify-between">
                 <div className="font-serif text-lg">Visits (by Gmail)</div>
                 <div className="text-sm text-muted-foreground">
-                  {stats.visitors.length} logins
+                  {data.visits.length} logins
                 </div>
               </div>
-              {stats.visitors.length === 0 ? (
+              {data.visits.length === 0 ? (
                 <div
                   className="p-5 text-sm text-muted-foreground"
                   data-testid="text-no-visitors"
                 >
                   No visits recorded yet. Visits are recorded when someone signs
-                  in on the published site.
+                  in with Google.
                 </div>
               ) : (
                 <div className="divide-y divide-border max-h-[28rem] overflow-y-auto">
-                  {stats.visitors.map((v, i) => (
+                  {data.visits.map((v, i) => (
                     <div
-                      key={i}
+                      key={v.id}
                       className="px-5 py-3 flex items-center justify-between gap-4"
                       data-testid={`row-visitor-${i}`}
                     >
                       <div className="min-w-0">
                         <div className="text-sm font-medium truncate">
-                          {v.email}
+                          {v.email ?? "(no email)"}
                         </div>
-                        {v.name && (
-                          <div className="text-xs text-muted-foreground truncate">
-                            {v.name}
-                          </div>
-                        )}
                       </div>
                       <div className="text-xs text-muted-foreground tabular-nums shrink-0">
-                        {new Date(v.occurredAt).toLocaleString()}
+                        {new Date(v.visitedAt).toLocaleString()}
                       </div>
                     </div>
                   ))}

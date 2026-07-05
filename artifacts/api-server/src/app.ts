@@ -4,6 +4,7 @@ import pinoHttp from "pino-http";
 import path from "node:path";
 import fs from "node:fs";
 import router from "./routes";
+import { setupAuth } from "./auth";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
@@ -66,6 +67,10 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Canonical authentication (Google OAuth via Passport, sessions, admin
+// analytics). Mounts /api/auth/* and /api/admin/visits directly on the app.
+setupAuth(app);
 
 app.use("/api", router);
 
