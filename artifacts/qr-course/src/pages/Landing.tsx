@@ -1,5 +1,12 @@
 import { useLocation } from "wouter";
-import { BookOpen, Sigma, GraduationCap, PenLine, LogOut } from "lucide-react";
+import {
+  BookOpen,
+  Sigma,
+  GraduationCap,
+  PenLine,
+  LogOut,
+  Loader2,
+} from "lucide-react";
 import { useAuth, useLogout, GOOGLE_SIGN_IN_URL } from "@/hooks/use-auth";
 
 function GoogleIcon({ className }: { className?: string }) {
@@ -45,11 +52,45 @@ const highlights = [
 
 export default function Landing() {
   const [, setLocation] = useLocation();
-  const { data: auth } = useAuth();
+  const { data: auth, isLoading } = useAuth();
   const logout = useLogout();
 
   const enterCourse = () => setLocation("/dashboard");
   const signedIn = !!auth?.authenticated && !!auth.user;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[100dvh] bg-background flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  // Logged out: a bare sign-in gate. No course content, no descriptions,
+  // nothing — just the title and the single Google button.
+  if (!signedIn) {
+    return (
+      <div className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-center px-6 text-center">
+        <div className="w-12 h-12 bg-primary rounded-md flex items-center justify-center text-primary-foreground font-serif font-bold text-2xl mb-6">
+          ∑
+        </div>
+        <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight">
+          Teach Yourself Analytic Philosophy
+        </h1>
+        <a
+          href={GOOGLE_SIGN_IN_URL}
+          className="mt-10 inline-flex items-center gap-3 px-6 py-3 rounded-md text-base font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+          data-testid="button-google-signin"
+        >
+          <GoogleIcon className="w-5 h-5" />
+          Sign in with Google
+        </a>
+        <p className="mt-4 text-sm text-muted-foreground">
+          Sign in with Google to access this site.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[100dvh] bg-background text-foreground flex flex-col">
