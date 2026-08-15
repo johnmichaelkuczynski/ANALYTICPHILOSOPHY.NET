@@ -8,6 +8,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useAuth, useLogout, GOOGLE_SIGN_IN_URL } from "@/hooks/use-auth";
+import { TopicsRail } from "@/components/TopicsRail";
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -66,32 +67,8 @@ export default function Landing() {
     );
   }
 
-  // Logged out: a bare sign-in gate. No course content, no descriptions,
-  // nothing — just the title and the single Google button.
-  if (!signedIn) {
-    return (
-      <div className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-center px-6 text-center">
-        <div className="w-12 h-12 bg-primary rounded-md flex items-center justify-center text-primary-foreground font-serif font-bold text-2xl mb-6">
-          ∑
-        </div>
-        <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight">
-          Teach Yourself Analytic Philosophy
-        </h1>
-        <a
-          href={GOOGLE_SIGN_IN_URL}
-          className="mt-10 inline-flex items-center gap-3 px-6 py-3 rounded-md text-base font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-          data-testid="button-google-signin"
-        >
-          <GoogleIcon className="w-5 h-5" />
-          Sign in with Google
-        </a>
-        <p className="mt-4 text-sm text-muted-foreground">
-          Sign in with Google to access this site.
-        </p>
-      </div>
-    );
-  }
-
+  // The site is open: everyone sees the full landing page and can browse the
+  // course. Signing in is only required once the free AI sample is used up.
   return (
     <div className="min-h-[100dvh] bg-background text-foreground flex flex-col">
       <header className="flex items-center justify-between px-6 py-5 max-w-6xl mx-auto w-full">
@@ -103,19 +80,22 @@ export default function Landing() {
             Analytic Philosophy 101
           </span>
         </div>
-        {signedIn && (
-          <button
-            type="button"
-            onClick={enterCourse}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium border border-border hover:bg-secondary transition-colors"
-            data-testid="button-enter-course"
-          >
-            Enter the course
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={enterCourse}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium border border-border hover:bg-secondary transition-colors"
+          data-testid="button-enter-course"
+        >
+          Enter the course
+        </button>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-6 text-center max-w-3xl mx-auto w-full py-16">
+      <div className="flex-1 flex flex-col lg:flex-row max-w-6xl mx-auto w-full px-6 gap-8">
+        <div className="pt-6 lg:pt-10 order-2 lg:order-1 shrink-0">
+          <TopicsRail />
+        </div>
+
+        <main className="flex-1 order-1 lg:order-2 flex flex-col items-center justify-center text-center max-w-3xl mx-auto w-full py-16">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary text-secondary-foreground text-xs font-medium mb-8">
           <Sigma className="w-3.5 h-3.5" />
           An eight-unit course on the logic behind the words
@@ -173,12 +153,23 @@ export default function Landing() {
                 Sign in with Google
               </a>
               <p className="text-sm text-muted-foreground">
-                Signing in with Google is required to enter the course.
+                Or just{" "}
+                <button
+                  type="button"
+                  onClick={enterCourse}
+                  className="underline underline-offset-4 hover:text-foreground transition-colors"
+                  data-testid="button-browse-course"
+                >
+                  start browsing the course
+                </button>{" "}
+                — no sign-in needed until you use the AI tutor beyond a free
+                sample.
               </p>
             </>
           )}
         </div>
-      </main>
+        </main>
+      </div>
 
       <section className="px-6 pb-20 max-w-5xl mx-auto w-full">
         <div className="grid gap-6 sm:grid-cols-3">

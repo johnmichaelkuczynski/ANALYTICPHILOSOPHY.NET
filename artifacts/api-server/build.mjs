@@ -30,6 +30,9 @@ async function buildAll() {
     external: [
       "*.node",
       "sharp",
+      // pdfkit's font stack (fontkit/brotli) requires cjs helper files at
+      // runtime that esbuild can't bundle — keep it external.
+      "pdfkit",
       "better-sqlite3",
       "sqlite3",
       "canvas",

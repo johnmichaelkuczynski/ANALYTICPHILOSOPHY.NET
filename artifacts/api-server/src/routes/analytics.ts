@@ -14,6 +14,7 @@ import {
   GenerateReportResponse,
 } from "@workspace/api-zod";
 import { chatJson } from "../lib/ai";
+import { enforceAiQuota, addAiUsage } from "../lib/quota";
 
 const router: IRouter = Router();
 
@@ -159,7 +160,7 @@ router.get("/analytics/activity", async (_req, res) => {
   res.json(GetRecentActivityResponse.parse(items.slice(0, 30)));
 });
 
-router.post("/analytics/report", async (_req, res) => {
+router.post("/analytics/report", enforceAiQuota, async (req, res) => {
   const topics = await topicStats();
   const submitted = await db
     .select()
@@ -190,6 +191,7 @@ router.post("/analytics/report", async (_req, res) => {
     );
     narrative = out.narrative;
     recommendations = out.recommendations ?? [];
+    addAiUsage(req, `${narrative}${recommendations.join(" ")}`);
   } catch {
     narrative =
       tested.length === 0

@@ -4,6 +4,7 @@ import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import type { Express, RequestHandler } from "express";
 import { storage } from "./storage";
+import { uniqueVisitorStats } from "./routes/visits";
 import pg from "pg";
 
 declare global {
@@ -312,9 +313,10 @@ export function setupAuth(app: Express) {
       const monthAgo = new Date(now - 30 * 24 * 60 * 60 * 1000);
       const yearAgo = new Date(now - 365 * 24 * 60 * 60 * 1000);
 
-      const [visitList, allTimestamps] = await Promise.all([
+      const [visitList, allTimestamps, uniqueVisitors] = await Promise.all([
         storage.getVisits(500),
         storage.getVisitTimestampsSince(null),
+        uniqueVisitorStats(),
       ]);
 
       const times = allTimestamps.map((t) => new Date(t).getTime());
@@ -363,6 +365,7 @@ export function setupAuth(app: Express) {
 
       res.json({
         stats,
+        uniqueVisitors,
         series,
         visits: visitList.map((v) => ({
           id: v.id,

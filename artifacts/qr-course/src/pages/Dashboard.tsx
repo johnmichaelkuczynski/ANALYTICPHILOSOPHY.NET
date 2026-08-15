@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
+import { TopicsRail } from "@/components/TopicsRail";
 
 export default function Dashboard() {
   const { data: overview, isLoading: isLoadingOverview } = useGetCourseOverview();
@@ -12,7 +13,11 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="p-8 max-w-6xl mx-auto w-full flex flex-col gap-8">
+      <div className="p-8 max-w-7xl mx-auto w-full flex flex-col xl:flex-row gap-8">
+        <div className="shrink-0 order-2 xl:order-1">
+          <TopicsRail />
+        </div>
+      <div className="flex-1 order-1 xl:order-2 flex flex-col gap-8 min-w-0">
         <div>
           <h1 className="text-3xl font-serif font-bold text-primary mb-2">
             {overview ? overview.title : <Skeleton className="h-9 w-64" />}
@@ -101,6 +106,7 @@ export default function Dashboard() {
             </Card>
           </div>
         </div>
+      </div>
       </div>
     </Layout>
   );

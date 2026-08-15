@@ -24,6 +24,13 @@ interface AdminVisitsResponse {
     lastMonth: number;
     lastYear: number;
   };
+  uniqueVisitors: {
+    allTime: number;
+    last24Hours: number;
+    lastWeek: number;
+    lastMonth: number;
+    lastYear: number;
+  };
   series: {
     last24Hours: SeriesPoint[];
     lastWeek: SeriesPoint[];
@@ -132,12 +139,29 @@ export default function Administrative() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-              <StatCard label="Last 24 hours" value={data.stats.last24Hours} />
-              <StatCard label="Last week" value={data.stats.lastWeek} />
-              <StatCard label="Last month" value={data.stats.lastMonth} />
-              <StatCard label="Last year" value={data.stats.lastYear} />
-              <StatCard label="All time" value={data.stats.allTime} />
+            <div>
+              <h2 className="font-serif text-xl mb-3">Unique visitors</h2>
+              <p className="text-sm text-muted-foreground mb-3">
+                Distinct browsers that opened the site (signed in or not).
+              </p>
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                <StatCard label="Unique 24 hours" value={data.uniqueVisitors?.last24Hours ?? 0} />
+                <StatCard label="Unique week" value={data.uniqueVisitors?.lastWeek ?? 0} />
+                <StatCard label="Unique month" value={data.uniqueVisitors?.lastMonth ?? 0} />
+                <StatCard label="Unique year" value={data.uniqueVisitors?.lastYear ?? 0} />
+                <StatCard label="Unique all time" value={data.uniqueVisitors?.allTime ?? 0} />
+              </div>
+            </div>
+
+            <div>
+              <h2 className="font-serif text-xl mb-3">Logins</h2>
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                <StatCard label="Last 24 hours" value={data.stats.last24Hours} />
+                <StatCard label="Last week" value={data.stats.lastWeek} />
+                <StatCard label="Last month" value={data.stats.lastMonth} />
+                <StatCard label="Last year" value={data.stats.lastYear} />
+                <StatCard label="All time" value={data.stats.allTime} />
+              </div>
             </div>
 
             <div className="grid lg:grid-cols-2 gap-4">

@@ -18,6 +18,7 @@ import {
 } from "@workspace/api-zod";
 import { gradeAnswer } from "../lib/grading";
 import { detect } from "../lib/detection";
+import { enforceAiQuota, addAiUsage } from "../lib/quota";
 
 const router: IRouter = Router();
 
@@ -243,7 +244,7 @@ router.put("/assignments/attempts/:attemptId/answer", async (req, res): Promise<
   res.json({ ok: true });
 });
 
-router.post("/assignments/attempts/:attemptId/submit", async (req, res): Promise<void> => {
+router.post("/assignments/attempts/:attemptId/submit", enforceAiQuota, async (req, res): Promise<void> => {
   const id = parseIdParam(req.params.attemptId);
   if (!Number.isFinite(id)) {
     res.status(400).json({ error: "invalid id" });
@@ -280,6 +281,7 @@ router.post("/assignments/attempts/:attemptId/submit", async (req, res): Promise
       userAnswer,
     });
     if (graded.correct) score += 1;
+    addAiUsage(req, graded.explanation);
     perProblem.push({
       problemId: p.id,
       correct: graded.correct,
@@ -298,6 +300,7 @@ router.post("/assignments/attempts/:attemptId/submit", async (req, res): Promise
         durationMs: a.durationMs,
       });
       detection.push({ problemId: p.id, ...det });
+      addAiUsage(req, det.rationale);
       await db
         .update(answersTable)
         .set({

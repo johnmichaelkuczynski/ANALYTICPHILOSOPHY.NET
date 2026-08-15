@@ -4,7 +4,7 @@ import pinoHttp from "pino-http";
 import path from "node:path";
 import fs from "node:fs";
 import router from "./routes";
-import { setupAuth, isAuthenticated } from "./auth";
+import { setupAuth } from "./auth";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
@@ -72,14 +72,10 @@ app.use(express.urlencoded({ extended: true }));
 // analytics). Mounts /api/auth/* and /api/admin/visits directly on the app.
 setupAuth(app);
 
-// The site is login-only: every course API requires a signed-in Google user.
-// The sole exception is the bare GET /api health endpoint, which deployment
-// health checks must reach anonymously. Auth routes (/api/auth/*) are mounted
-// directly on the app above, so they stay reachable for the login flow itself.
-app.use("/api", (req, res, next) => {
-  if (req.path === "/" || req.path === "") return next();
-  return isAuthenticated(req, res, next);
-});
+// The site is open: anyone can browse the course anonymously ("sample the
+// goods"). AI-powered endpoints enforce a per-session free-sample quota and
+// then require Google sign-in (see lib/quota.ts). Owner-only surfaces
+// (/api/admin/*, /api/logins, /api/diagnostics/*) are gated in their routers.
 
 app.use("/api", router);
 

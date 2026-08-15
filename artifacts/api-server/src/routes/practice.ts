@@ -18,6 +18,7 @@ import {
 } from "@workspace/api-zod";
 import { chatJson } from "../lib/ai";
 import { gradeAnswer } from "../lib/grading";
+import { enforceAiQuota, addAiUsage } from "../lib/quota";
 
 const router: IRouter = Router();
 
@@ -131,7 +132,7 @@ router.post("/practice/sessions", async (req, res): Promise<void> => {
   );
 });
 
-router.post("/practice/sessions/:sessionId/next", async (req, res): Promise<void> => {
+router.post("/practice/sessions/:sessionId/next", enforceAiQuota, async (req, res): Promise<void> => {
   const sessionId = parseIdParam(req.params.sessionId);
   const parsed = NextPracticeProblemBody.safeParse(req.body);
   if (!parsed.success) {
@@ -274,6 +275,8 @@ Respond as strict JSON: {"prompt": string, "correctAnswer": string, "explanation
     return;
   }
 
+  addAiUsage(req, `${generated.prompt}${generated.correctAnswer}${generated.explanation}`);
+
   res.json(
     NextPracticeProblemResponse.parse({
       id: stored.id,
@@ -285,7 +288,7 @@ Respond as strict JSON: {"prompt": string, "correctAnswer": string, "explanation
   );
 });
 
-router.post("/practice/sessions/:sessionId/grade", async (req, res): Promise<void> => {
+router.post("/practice/sessions/:sessionId/grade", enforceAiQuota, async (req, res): Promise<void> => {
   const sessionId = parseIdParam(req.params.sessionId);
   const parsed = GradePracticeAnswerBody.safeParse(req.body);
   if (!parsed.success) {
@@ -397,6 +400,8 @@ router.post("/practice/sessions/:sessionId/grade", async (req, res): Promise<voi
   } catch {
     focusPointer = null;
   }
+
+  addAiUsage(req, `${feedback}${tutorTip ?? ""}`);
 
   res.json(
     GradePracticeAnswerResponse.parse({
